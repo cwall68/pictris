@@ -23,14 +23,25 @@ class Controls(QtWidgets.QMainWindow):
         # self.setGeometry(30, 50, self.breite, self.hoehe)
         self.setWindowTitle('Pictris Controls')
 
-        self.filter_loop = QPushButton("Play", self)
-        self.filter_loop.setGeometry(170, 330, 130, 20)
-        self.filter_loop.setCheckable(True)
-        self.filter_loop.setStyleSheet(
+        self.puzzle_start = QPushButton("Puzzle", self)
+        self.puzzle_start.setGeometry(170, 330, 130, 20)
+        self.puzzle_start.setCheckable(True)
+        self.puzzle_start.setStyleSheet(
             ":checked{background: solid red}"
             ":checked{border: 2px solid lightblue}"
             ":!checked{background-color: rgb(255,255,255)}"
             ":!checked{border: 2px solid red}"
+            ":!checked{font-size: 10px}"
+        )
+
+        self.slider_start = QPushButton("Slider", self)
+        self.slider_start.setGeometry(170, 430, 130, 20)
+        self.slider_start.setCheckable(True)
+        self.slider_start.setStyleSheet(
+            ":checked{background: solid lightblue}"
+            ":checked{border: 2px solid red}"
+            ":!checked{background-color: rgb(255,255,255)}"
+            ":!checked{border: 2px solid lightblue}"
             ":!checked{font-size: 10px}"
         )
 
@@ -67,12 +78,12 @@ tolerance = 25
 part_anz_init = 3
 game_rounds = 0
 offset_y = 50
-fade_factor = 2
+fade_factor = 1.2
 
 
 game_dir = r"D:\Pictures\Bilderserien\Jahre\2020"
 
-def start():
+def start(game):
     global spielbild
     global alphawert
     global part_size
@@ -87,28 +98,16 @@ def start():
     global screen
     global screen_width
     global screen_heigh
+    global full_image_x
+    global full_image_y
     global font
+    global x_anz
+    global y_anz
 
     RED = (255, 0, 0)
     GRAY = (150, 150, 150)
 
-    #w_floor, h_floor = screen_width - screen_width // 6, screen_height - 30
-    game_x = screen_width - w_floor
-    game_y = screen_height - h_floor
-
-    os.environ['SDL_VIDEO_WINDOW_POS'] = '%d,%d' % (game_x, game_y)
-    os.environ['SDL_WINDOW_ALWAYS_ON_TOP'] = '%s' % ('SDL_VIDEO_WINDOW')
-
-    screen = pygame.display.set_mode(size=(w_floor, h_floor))
-    pygame.display.set_caption("PicTris")
-
-    # font = pygame.font.Font(pygame.font.get_default_font(), 36)
-    #
-    # number = 12
-    #
-    # # now print the text
-    # text_surface = pygame.font.Font.render(font, f'Hello world {number}', True, (55, 55, 55))
-    # screen.blit(text_surface, dest=(50, 50))
+    make_game_floor(game)
 
     if init == True:
         spielbild = find_pic()
@@ -136,8 +135,8 @@ def start():
     full_image_y = h_floor - height - offset_y
     pic_pos_x = full_image_x
 
-    x_anz = math.floor(width / part_size)
-    y_anz = math.floor(height / part_size)
+    x_anz = width // part_size
+    y_anz = height // part_size
 
     grid = make_grid(full_image_x, full_image_y, x_anz, y_anz, part_size)
 
@@ -160,7 +159,10 @@ def start():
     #     blit_grid(grid, RED)
     #     pygame.display.update()
 
-    mouse_move()
+    if game == "puzzle":
+        puzzle()
+    elif game == "slider":
+        slider()
     return
 
 
@@ -175,7 +177,23 @@ def resize(file):
 
     return(image)
 
-def mouse_move():
+def make_game_floor(game):
+    global w_floor
+    global h_floor
+    global screen
+    global screen_width
+    global screen_heigh
+
+    game_x = screen_width - w_floor
+    game_y = screen_height - h_floor
+
+    os.environ['SDL_VIDEO_WINDOW_POS'] = '%d,%d' % (game_x, game_y)
+    os.environ['SDL_WINDOW_ALWAYS_ON_TOP'] = '%s' % ('SDL_VIDEO_WINDOW')
+
+    screen = pygame.display.set_mode(size=(w_floor, h_floor))
+    pygame.display.set_caption(game)
+
+def puzzle():
     global spielbild
     global alphawert
     global game_rounds
@@ -216,7 +234,7 @@ def mouse_move():
 
     anz_w = width // part_size
     anz_h = height // part_size
-    fade = int((alphawert // (anz_h * anz_w))*fade_factor)
+    fade = int((alphawert // (anz_h * anz_w))**fade_factor)
     print(f'Breite: {anz_w} Pieces, Höhe: {anz_h} Pieces')
     full_img = pygame.image.load(r"C:\Users\User\Desktop\tmp_resize.JPG")
     full_img.convert()
@@ -234,7 +252,7 @@ def mouse_move():
     randlist = []
     zugzahl = 0
     while running:
-        screen = pygame.display.set_mode(size=(w_floor, h_floor))
+        #screen = pygame.display.set_mode(size=(w_floor, h_floor))
         full_img.set_alpha(alphawert)
         screen.fill(GRAY)
         screen.blit(full_img, (pic_pos_x,pic_pos_y))
@@ -341,22 +359,151 @@ def mouse_move():
         pygame.display.update()
 
 
+def slider():
+    global w_floor
+    global h_floor
+    global full_image_x
+    global full_image_y
+    global x_anz
+    global y_anz
+
+    moving = False
+    fertig = False
+
+    #Dictonary hat als Key die x,y Position im Grid und als Value das Image i
+    # und dessen Koordinaten auf dem Spielfeld
+    full_partsdict = {}
+    # Dictonary hat als Key die x,y Werte aus full_partsdict und als Value das Image und dessen aktuelle Koordinaten auf dem Spielfeld
+    act_pos_dict = {}
+
+
+    running = True
+
+    full_partsdict = make_full_partsdict(x_anz, y_anz)
+
+
+    rand_values = []
+    for key, value in full_partsdict.items():
+        if key == (0,0):
+            continue
+        rand_x = random.randint(0, x_anz-1)
+        rand_y = random.randint(0, y_anz-1)
+        randpos = [rand_x, rand_y]
+        while randpos in rand_values or randpos == [0, 0]:
+            rand_x = random.randint(0, x_anz-1)
+            rand_y = random.randint(0, y_anz-1)
+            randpos = [rand_x, rand_y]
+        rand_values.append(randpos)
+
+        rand_pos_x = full_image_x + rand_x * part_size
+        rand_pos_y = full_image_y + rand_y * part_size
+
+        rand_coord = (rand_pos_x, rand_pos_y)
+
+        act_pos_dict[(rand_x, rand_y)] = (value[0], rand_coord)
+        #screen.blit(value[0], rand_coord)
+
+    for key, value in act_pos_dict.items():
+        screen.blit(value[0], value[1])
+
+    print(x_anz*y_anz)
+    for element in rand_values:
+        print(element)
+
+
+    while running:
+
+        pygame.display.flip()
+
+        for event in pygame.event.get():
+
+            if event.type == pygame.QUIT:
+                sys.exit()
+
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    sys.exit()
+                if event.key == pygame.K_SPACE:
+                    game_rounds = 0
+                    counter = 0
+                    init = True
+                    return
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                print(f'Mausposition: {event.pos}')
+                pass
+                # get mousposition
+                eventpos_x, eventpos_y = event.pos
+                # find x, y
+                x_wert = int(eventpos_x - full_image_x) // part_size
+                y_wert = int(eventpos_y - full_image_y) // part_size
+                print(f'Coord: {x_wert} / {y_wert}')
+                # img rect zuweisen aus dict_actualPosition
+                img = act_pos_dict[(x_wert, y_wert)][0]
+                rect = img.get_rect()
+                rect.center = (full_image_x + x_wert*part_size + part_size//2), (full_image_y + y_wert*part_size + part_size//2)
+                print(f'RECT_CENTER: {rect.center}')
+                if rect.collidepoint(event.pos):
+                    moving = True
+                    print("moving")
+
+            elif event.type == pygame.MOUSEMOTION and moving == True:
+
+                if fertig == False:
+                    print("moving 2")
+                    rect.move_ip(event.rel)
+
+                screen.blit(img, rect)
+                for key, value in act_pos_dict.items():
+                    screen.blit(value[0], value[1])
+
+                pygame.display.update()
+
+            elif event.type == pygame.MOUSEBUTTONUP:
+                moving = False
+
+    return
+
+
 def pic_parts(x,y):
 
     pic = pygame.image.load(r"C:\Users\User\Desktop\tmp_resize.JPG")
-    pic_width, pic_height = pic.get_width(), pic.get_height()
     w, h = screen_width, screen_height
     screen = pygame.display.set_mode((w, h))
     screen.blit(pic, (0,0))
 
-    rect = pygame.Rect(x, y, part_size, part_size)
+    # rect = pygame.Rect(x, y, part_size, part_size)
+    rect = pygame.Rect(x*part_size, y*part_size, part_size, part_size)
     sub = screen.subsurface(rect)
     screenshot = pygame.Surface((part_size, part_size))
     screenshot.blit(sub, (0, 0))
     part = screenshot
-    #screen.blit(backdrop, (0, 0))
-    screen.blit(part,(800,pic_width))
+    screen.fill(GRAY)
+
     return(part)
+
+def make_full_partsdict(anz_x, anz_y):
+    global full_image_x
+    global full_image_y
+    global part_size
+
+    full_partsdict = {}
+
+    for x in range(0, anz_x):
+        for y in range(0,anz_y):
+            #part = pic_parts(x,y)
+            part_pos_x = full_image_x + x * part_size
+            part_pos_y = full_image_y + y * part_size
+            list_element = make_list_element(x,y, part_pos_x, part_pos_y)
+            full_partsdict[(x,y)] = (list_element)
+
+    return(full_partsdict)
+
+def make_list_element(x,y, part_pos_x, part_pos_y):
+
+    part = pic_parts(x, y)
+    list_element = [part, (part_pos_x, part_pos_y)]
+    return(list_element)
+
 
 def make_grid(x_init, y_init, x_anz, y_anz, part_size):
     grid = {}
@@ -415,7 +562,7 @@ def find_pic():
     daily_pic = random.randint(1, file_count)
     daily_pic_file = full_pic_dict[daily_pic]
     return(daily_pic_file)
-def start_game():
+def start_game(game):
     global init
 
     pygame.init()
@@ -427,7 +574,7 @@ def start_game():
     #controlsWindow.lower()
     init = True
     while True:
-        start()
+        start(game)
 
 
 if __name__ == '__main__':
@@ -435,7 +582,8 @@ if __name__ == '__main__':
     # spielbild = find_pic()
     #mouse_move()
     controlsWindow.show()
-    controlsWindow.filter_loop.clicked.connect(start_game)
+    controlsWindow.puzzle_start.clicked.connect(lambda: start_game("puzzle"))
+    controlsWindow.slider_start.clicked.connect(lambda: start_game("slider"))
     #controlsWindow.point_counter.setText("Punkte")
     #controlsWindow.point_counter.show()
     # init = True
