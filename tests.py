@@ -449,17 +449,47 @@ def slider():
             elif event.type == pygame.MOUSEMOTION and moving == True:
 
                 if fertig == False:
-                    print("moving 2")
                     rect.move_ip(event.rel)
 
+                screen.fill(GRAY)
+
                 screen.blit(img, rect)
+
                 for key, value in act_pos_dict.items():
-                    screen.blit(value[0], value[1])
+                    if key == (x_wert, y_wert):
+                        continue
+                    else:
+                        screen.blit(value[0], value[1])
 
                 pygame.display.update()
 
             elif event.type == pygame.MOUSEBUTTONUP:
                 moving = False
+
+
+                drop_x = rect.left
+                drop_y = rect.top
+                # find x, y
+                x_neu = int(drop_x - full_image_x) // part_size
+                y_neu = int(drop_y - full_image_y) // part_size
+                print(f'x-neu: {x_neu} / y-neu: {y_neu}')
+                if (x_neu, y_neu) == (x_wert, y_wert):
+                    pass
+                else:
+                    #Neue Position im Dict eintragen
+                    act_pos_dict[(x_neu, y_neu)] = (act_pos_dict[(x_wert, y_wert)][0],(full_image_x + x_neu*part_size, full_image_y + y_neu*part_size))
+                    #Leergezogene Position löschen
+                    del act_pos_dict[(x_wert, y_wert)]
+
+                #Ausgabe der neuen Bildversion
+                screen.fill(GRAY)
+                for key, value in act_pos_dict.items():
+                    screen.blit(value[0], value[1])
+                    print(f'{key}')
+
+                pygame.display.update()
+
+
 
     return
 
