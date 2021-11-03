@@ -62,15 +62,9 @@ GRAY = (150, 150, 150)
 
 #w und h sind die Werte für Breite und Höhe des Spielfelds
 #x und y lokalisieren den game floor auf dem Gesamtbildschirm
-
 w_floor, h_floor = screen_width - screen_width // 4, screen_height - 30
 game_x = screen_width - w_floor
 game_y = screen_height - h_floor
-
-
-
-
-#backdrop = pygame.image.load(r"C:\Users\User\PycharmProjects\pictris\Grafiken\pictris_backdrop.png")
 
 part_size = 200
 alphawert = 255
@@ -106,22 +100,6 @@ def start(game):
 
     RED = (255, 0, 0)
     GRAY = (150, 150, 150)
-
-
-    # for event in pygame.event.get():
-    #     if event.type == pygame.QUIT:
-    #         sys.exit()
-    #
-    #     elif event.type == pygame.KEYDOWN:
-    #         if event.key == pygame.K_ESCAPE:
-    #             sys.exit()
-            # if event.key == pygame.K_BACKSPACE:
-            #     #running = False
-            #
-            #     if game == "puzzle":
-            #         puzzle()
-            #     elif game == "slider":
-            #         slider()
 
     make_game_floor(game)
 
@@ -404,16 +382,16 @@ def slider():
             rand_coord = (rand_pos_x, rand_pos_y)
 
             act_pos_dict[(rand_x, rand_y)] = (value[0], rand_coord, rand_order, value[3])
-            print(f'{key[0]}/{key[1]} Erzeugungs_Ordnung: {rand_order} / {rand_coord} Wert: {value[3]}')
+            #print(f'{key[0]}/{key[1]} Erzeugungs_Ordnung: {rand_order} / {rand_coord} Wert: {value[3]}')
             #screen.blit(value[0], rand_coord)
-        for key, value in dict(sorted(act_pos_dict.items(), key=lambda x: x[1][2])).items():
-            print(f'{key[0]}/{key[1]} Sortierte_Ordnung: {value[2]}, Wert: {value[3]}')
+        #for key, value in dict(sorted(act_pos_dict.items(), key=lambda x: x[1][2])).items():
+            #print(f'{key[0]}/{key[1]} Sortierte_Ordnung: {value[2]}, Wert: {value[3]}')
 
         #Paritäts-Check auf Lösbarkeit
         n1 = 0
         for key, value in dict(sorted(act_pos_dict.items(),key=lambda x: x[1][2])).items():
             # Wobei x[1] für Value steht (x[0] wäre der key) und der zweite Wert in der eckigen Klamer die Position in der Value-Liste bezeichnet
-            print(f'Ordnung: {value[2]}, Wert: {value[3]}')
+            #print(f'Ordnung: {value[2]}, Wert: {value[3]}')
             order = value[2]
             reference = value[3]
             count = 1
@@ -425,7 +403,7 @@ def slider():
                     n1 +=1
                     single_count += 1
                 count += 1
-            print(f'Wert: {value[3]} -> {single_count}')
+            #print(f'Wert: {value[3]} -> {single_count}')
 
 
         print(f'N1: {n1}')
@@ -433,27 +411,21 @@ def slider():
         parity = n + n1
         print(f'Parity: {parity}')
         if ((y_anz % 2) == 0 and (parity % 2) == 0) or ((y_anz % 2) != 0 and (parity % 2) != 0):
+            # print("unlösbar")
+            # unlösbar = True
             print("lösbar")
             unlösbar = False
         else:
+            # print("lösbar")
+            # unlösbar = False
             print("unlösbar")
             unlösbar = True
 
 
-
-
-
-
-
     for key, value in act_pos_dict.items():
-        print(f'Publikations_Ordnung: {value[2]} / {value[1]}, Wert: {value[3]}')
+        #print(f'Publikations_Ordnung: {value[2]} / {value[1]}, Wert: {value[3]}')
         screen.blit(value[0], value[1])
     blit_grid(grid, (255,0,0))
-
-    print(x_anz*y_anz)
-    for element in rand_values:
-        print(element)
-
 
 
     while running:
@@ -474,14 +446,14 @@ def slider():
                     init = True
                     return
             elif event.type == pygame.MOUSEBUTTONDOWN:
-                print(f'Mausposition: {event.pos}')
+                #print(f'Mausposition: {event.pos}')
                 #pass
                 # get mousposition
                 eventpos_x, eventpos_y = event.pos
                 # find x, y
                 x_wert = int(eventpos_x - full_image_x) // part_size
                 y_wert = int(eventpos_y - full_image_y) // part_size
-                print(f'Coord: {x_wert} / {y_wert}')
+                #print(f'Coord: {x_wert} / {y_wert}')
                 #Absturz bei Klick in leeres Feld verhindern
                 if (x_wert, y_wert) not in act_pos_dict.keys():
                     print("leeres Feld")
@@ -490,10 +462,10 @@ def slider():
                     img = act_pos_dict[(x_wert, y_wert)][0]
                     rect = img.get_rect()
                     rect.center = (full_image_x + x_wert*part_size + part_size//2), (full_image_y + y_wert*part_size + part_size//2)
-                    print(f'RECT_CENTER: {rect.center}')
+                    #print(f'RECT_CENTER: {rect.center}')
                     if rect.collidepoint(event.pos):
                         moving = True
-                        print("moving")
+                        #print("moving")
 
             elif event.type == pygame.MOUSEMOTION and moving == True:
 
@@ -522,7 +494,7 @@ def slider():
                 # find x, y
                 x_neu = int(drop_x - full_image_x) // part_size
                 y_neu = int(drop_y - full_image_y) // part_size
-                print(f'x-neu: {x_neu} / y-neu: {y_neu}')
+                #print(f'x-neu: {x_neu} / y-neu: {y_neu}')
                 # Nur auf angrenzende leere Felder ablegen
                 if (x_neu, y_neu) in act_pos_dict.keys():
                     pass
@@ -537,8 +509,9 @@ def slider():
                 elif (abs(x_neu - x_wert) + abs(y_neu - y_wert)) > 1:
                     pass
                 else:
-                    #Neue Position im Dict eintragen
-                    act_pos_dict[(x_neu, y_neu)] = (act_pos_dict[(x_wert, y_wert)][0],(full_image_x + x_neu*part_size, full_image_y + y_neu*part_size))
+                    #Neue Position und Feldordnungswert im Dict eintragen
+                    feldordnungswert = y_neu*x_anz + x_neu
+                    act_pos_dict[(x_neu, y_neu)] = (act_pos_dict[(x_wert, y_wert)][0],(full_image_x + x_neu*part_size, full_image_y + y_neu*part_size), feldordnungswert, act_pos_dict[(x_wert, y_wert)][3])
                     #Leergezogene Position löschen
                     del act_pos_dict[(x_wert, y_wert)]
 
@@ -547,6 +520,18 @@ def slider():
                 for key, value in act_pos_dict.items():
                     screen.blit(value[0], value[1])
                     #print(f'{key}')
+
+                i = 1
+                for key, value in dict(sorted(act_pos_dict.items(), key=lambda x: x[1][2])).items():
+                    print(f'<index: {i} Wert: {value[3]}')
+                    if value[3] == i:
+                        if i == x_anz*y_anz - 1:
+                            pygame.display.flip()
+                            success(6)
+                            return
+                        i +=1
+                    else:
+                        break
 
                 blit_grid(grid, (255, 0, 0))
                 pygame.display.update()
@@ -626,8 +611,8 @@ def blit_grid(grid, color):
 def success(anz):
     global partslist
 
-    for element in partslist:
-        screen.blit(element[0], element[1])
+    # for element in partslist:
+    #     screen.blit(element[0], element[1])
     for n in range(0, anz):
         for i in range(0, 25):
             blit_grid(grid, (255, 255, 255))
