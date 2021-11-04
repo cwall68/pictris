@@ -34,10 +34,32 @@ class Controls(QtWidgets.QMainWindow):
             ":!checked{font-size: 10px}"
         )
 
-        self.slider_start = QPushButton("Slider", self)
-        self.slider_start.setGeometry(170, 430, 130, 20)
-        self.slider_start.setCheckable(True)
-        self.slider_start.setStyleSheet(
+        self.slider9_start = QPushButton("Slider 9", self)
+        self.slider9_start.setGeometry(170, 430, 130, 20)
+        self.slider9_start.setCheckable(True)
+        self.slider9_start.setStyleSheet(
+            ":checked{background: solid lightblue}"
+            ":checked{border: 2px solid red}"
+            ":!checked{background-color: rgb(255,255,255)}"
+            ":!checked{border: 2px solid lightblue}"
+            ":!checked{font-size: 10px}"
+        )
+
+        self.slider15_start = QPushButton("Slider 15", self)
+        self.slider15_start.setGeometry(170, 480, 130, 20)
+        self.slider15_start.setCheckable(True)
+        self.slider15_start.setStyleSheet(
+            ":checked{background: solid lightblue}"
+            ":checked{border: 2px solid red}"
+            ":!checked{background-color: rgb(255,255,255)}"
+            ":!checked{border: 2px solid lightblue}"
+            ":!checked{font-size: 10px}"
+        )
+
+        self.sliderpix_start = QPushButton("Slider pix", self)
+        self.sliderpix_start.setGeometry(170, 530, 130, 20)
+        self.sliderpix_start.setCheckable(True)
+        self.sliderpix_start.setStyleSheet(
             ":checked{background: solid lightblue}"
             ":checked{border: 2px solid red}"
             ":!checked{background-color: rgb(255,255,255)}"
@@ -101,16 +123,31 @@ def start(game):
     RED = (255, 0, 0)
     GRAY = (150, 150, 150)
 
+    #make_game_floor(game)
+
+    if game == "puzzle" or game == "slider":
+        if init == True:
+            #spielbild = r"D:\Pictures\Bilderserien\Alphabet\26 zeichen\26work\26_finfin-1.jpg"
+            spielbild = find_pic()
+            # if game == "puzzle":
+            #     part_anz = part_anz_init
+            # else:
+            #     part_anz = 5
+            part_anz = part_anz_init
+            game_rounds = 0
+        else:
+            game_rounds += 1
+            part_anz = part_anz + game_rounds
+    elif game == "slider 9":
+        spielbild = r"C:\Users\User\Desktop\pictris\Zahlen ungerade.jpg"
+        part_anz = 3
+        game = "slider"
+    elif game == "slider 15":
+        spielbild = r"C:\Users\User\Desktop\pictris\Zahlen gerade.jpg"
+        part_anz = 4
+        game = "slider"
+
     make_game_floor(game)
-
-    if init == True:
-        spielbild = find_pic()
-        part_anz = part_anz_init
-        game_rounds = 0
-    else:
-        game_rounds += 1
-
-    part_anz = part_anz + game_rounds
 
     image = resize(spielbild)
     width, height = image.size
@@ -177,7 +214,7 @@ def make_game_floor(game):
     game_y = screen_height - h_floor
 
     os.environ['SDL_VIDEO_WINDOW_POS'] = '%d,%d' % (game_x, game_y)
-    os.environ['SDL_WINDOW_ALWAYS_ON_TOP'] = '%s' % ('SDL_VIDEO_WINDOW')
+    #os.environ['SDL_WINDOW_ALWAYS_ON_TOP'] = '%s' % ('SDL_VIDEO_WINDOW')
 
     screen = pygame.display.set_mode(size=(w_floor, h_floor))
     pygame.display.set_caption(game)
@@ -344,6 +381,7 @@ def slider():
     global full_image_y
     global x_anz
     global y_anz
+    global part_anz
 
     moving = False
     fertig = False
@@ -667,7 +705,9 @@ if __name__ == '__main__':
 
     controlsWindow.show()
     controlsWindow.puzzle_start.clicked.connect(lambda: start_game("puzzle"))
-    controlsWindow.slider_start.clicked.connect(lambda: start_game("slider"))
+    controlsWindow.slider9_start.clicked.connect(lambda: start_game("slider 9"))
+    controlsWindow.slider15_start.clicked.connect(lambda: start_game("slider 15"))
+    controlsWindow.sliderpix_start.clicked.connect(lambda: start_game("slider"))
 
     # init = True
     # while True:
