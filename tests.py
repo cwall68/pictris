@@ -67,11 +67,13 @@ class Controls(QtWidgets.QMainWindow):
             ":!checked{font-size: 10px}"
         )
 
+        self.pic_label = QtWidgets.QLabel()
+
         self.point_counter = QtWidgets.QLabel(self)
         self.point_counter.setGeometry(QtCore.QRect(170, 40, 47, 13))
 
 screen_width, screen_height= pyautogui.size()
-print(f'Width: {screen_width} / Height: {screen_height}')
+#print(f'Width: {screen_width} / Height: {screen_height}')
 controlsWindow = Controls()
 controlsWindow.setGeometry(0, 0, screen_width, screen_height)
 
@@ -113,7 +115,7 @@ def start(game):
     global h_floor
     global screen
     global screen_width
-    global screen_heigh
+    global screen_height
     global full_image_x
     global full_image_y
     global font
@@ -122,8 +124,6 @@ def start(game):
 
     RED = (255, 0, 0)
     GRAY = (150, 150, 150)
-
-    #make_game_floor(game)
 
     if game == "puzzle" or game == "slider":
         if init == True:
@@ -147,9 +147,8 @@ def start(game):
         part_anz = 4
         game = "slider"
 
-    make_game_floor(game)
-
     image = resize(spielbild)
+
     width, height = image.size
     pic = pygame.image.load(r"C:\Users\User\Desktop\tmp_resize.JPG")
 
@@ -163,6 +162,13 @@ def start(game):
         while width // part_size < 2:
             part_anz += 1
             part_size = height // part_anz
+
+    control_pic = QtGui.QPixmap(r"C:\Users\User\Desktop\tmp_resize.JPG")
+    controlsWindow.pic_label.setGeometry(screen_width - width - offset_y, screen_height - height - offset_y, width, height)
+    controlsWindow.pic_label.setPixmap(control_pic)
+    controlsWindow.pic_label.show()
+
+    make_game_floor(game)
 
     full_image_x = (w_floor - width) / 2
     full_image_y = h_floor - height - offset_y
@@ -314,8 +320,8 @@ def puzzle():
             elif event.type == pygame.MOUSEBUTTONUP:
                 zugzahl += 1
 
-                print(f'X: {rect.left} Ziel-X = {(x + (w_floor - width) / 2)}')
-                print(f'Y: {rect.top}')
+                #print(f'X: {rect.left} Ziel-X = {(x + (w_floor - width) / 2)}')
+                #print(f'Y: {rect.top}')
                 drop_x = rect.left
                 ziel_x = int(x+pic_pos_x)
                 drop_y = rect.top
@@ -325,7 +331,7 @@ def puzzle():
                     partslist.append(part)
                     randlist.append((x, y))
                     counter += 1
-                    print(f'Zugzahl: {zugzahl} / Counter: {counter}')
+                    #print(f'Zugzahl: {zugzahl} / Counter: {counter}')
 
                     for i in range(0,30):
                         blit_grid(grid, (255,255,255))
@@ -586,9 +592,10 @@ def slider():
 
 
 def pic_parts(x,y,game):
+    global w_floor
 
     pic = pygame.image.load(r"C:\Users\User\Desktop\tmp_resize.JPG")
-    w, h = screen_width, screen_height
+    w, h = screen_width - (screen_width - w_floor), screen_height
     screen = pygame.display.set_mode((w, h))
     screen.blit(pic, (0,0))
 
@@ -640,8 +647,8 @@ def make_grid(x_init, y_init, x_anz, y_anz, part_size):
     for y_start in range(0, y_anz+1):
         grid[("v",(0, y_start))] = [(x_init, (y_init + (y_start * part_size))) , ((x_init + (x_anz)*part_size), (y_init + (y_start * part_size)) )]
 
-    for key, value in grid.items():
-        print(f'{key}: {value[0]} / {value[1]}')
+    #for key, value in grid.items():
+        #print(f'{key}: {value[0]} / {value[1]}')
 
     return(grid)
 
