@@ -69,13 +69,13 @@ game_y = screen_height - h_floor
 part_size = 200
 alphawert = 255
 tolerance = 25
-part_anz_init = 3
+part_anz_init = 4
 game_rounds = 0
 offset_y = 50
-fade_factor = 1.2
+fade_factor = 1.4
 
 
-game_dir = r"C:\Users\User\Desktop\pictris"
+game_dir = r"D:\Pictures\Bilderserien\Jahre"
 
 def start(game):
     global spielbild
@@ -269,6 +269,11 @@ def puzzle():
                 if rect.collidepoint(event.pos):
                     moving = True
 
+
+            elif event.type == pygame.MOUSEMOTION and moving == True:
+                if fertig == False:
+                    rect.move_ip(event.rel)
+
             elif event.type == pygame.MOUSEBUTTONUP:
                 zugzahl += 1
 
@@ -294,6 +299,8 @@ def puzzle():
                         init = False
                         text_surface = pygame.font.Font.render(font, f'Punkte: {counter}', True, (55, 55, 55))
                         screen.blit(text_surface, dest=(50, 50))
+                        for element in partslist:
+                            screen.blit(element[0], element[1])
                         pygame.display.flip()
                         success(6)
                         return
@@ -317,9 +324,6 @@ def puzzle():
                 if alphawert <= 0:
                     alphawert = 0
 
-            elif event.type == pygame.MOUSEMOTION and moving == True:
-                if fertig == False:
-                    rect.move_ip(event.rel)
 
 
         screen.blit(img, rect)
@@ -410,7 +414,7 @@ def slider():
         n = y_anz
         parity = n + n1
         print(f'Parity: {parity}')
-        if ((y_anz % 2) == 0 and (parity % 2) == 0) or ((y_anz % 2) != 0 and (parity % 2) != 0):
+        if ((y_anz % 2) == 0 and (parity % 2) != 0) or ((y_anz % 2) != 0 and (parity % 2) != 0):
             # print("unlösbar")
             # unlösbar = True
             print("lösbar")
@@ -488,13 +492,13 @@ def slider():
             elif event.type == pygame.MOUSEBUTTONUP:
                 moving = False
 
+                #wo wurde das Teil abgelegt
+                drop_x, drop_y = rect.center
 
-                drop_x = rect.left
-                drop_y = rect.top
                 # find x, y
                 x_neu = int(drop_x - full_image_x) // part_size
                 y_neu = int(drop_y - full_image_y) // part_size
-                #print(f'x-neu: {x_neu} / y-neu: {y_neu}')
+
                 # Nur auf angrenzende leere Felder ablegen
                 if (x_neu, y_neu) in act_pos_dict.keys():
                     pass
@@ -519,17 +523,19 @@ def slider():
                 screen.fill(GRAY)
                 for key, value in act_pos_dict.items():
                     screen.blit(value[0], value[1])
-                    #print(f'{key}')
 
+                #Check ob Spiel abgeschlossen
                 i = 1
                 for key, value in dict(sorted(act_pos_dict.items(), key=lambda x: x[1][2])).items():
                     print(f'<index: {i} Wert: {value[3]}')
                     if value[3] == i:
-                        if i == x_anz*y_anz - 1:
+                        #Check alle Werte in der richtigen Reihenfolge und Feld unten rechts leer
+                        if i == (x_anz*y_anz - 1) and ((x_anz-1, y_anz-1) not in act_pos_dict.keys()):
                             pygame.display.flip()
                             success(6)
                             return
-                        i +=1
+                        else:
+                            i +=1
                     else:
                         break
 
