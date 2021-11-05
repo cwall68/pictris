@@ -27,7 +27,7 @@ class Controls(QtWidgets.QMainWindow):
         # self.setGeometry(30, 50, self.breite, self.hoehe)
         self.setWindowTitle('Pictris Controls')
 
-        self.puzzle_start = QPushButton("Puzzle", self)
+        self.puzzle_start = QPushButton("Puzzle Pix", self)
         self.puzzle_start.setGeometry(170, 230, 130, 20)
         self.puzzle_start.setCheckable(True)
         self.puzzle_start.setStyleSheet(
@@ -93,7 +93,7 @@ class Controls(QtWidgets.QMainWindow):
             ":!checked{font-size: 10px}"
         )
 
-        self.sliderpix_start = QPushButton("Slider pix", self)
+        self.sliderpix_start = QPushButton("Slider Pix", self)
         self.sliderpix_start.setGeometry(170, 580, 130, 20)
         self.sliderpix_start.setCheckable(True)
         self.sliderpix_start.setStyleSheet(
