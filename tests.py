@@ -11,6 +11,10 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QIcon, QPixmap, QMouseEvent
 from PyQt5.QtWidgets import *
 
+import ctypes
+from ctypes import wintypes
+
+
 app = QtWidgets.QApplication(sys.argv)
 
 
@@ -67,7 +71,7 @@ class Controls(QtWidgets.QMainWindow):
             ":!checked{font-size: 10px}"
         )
 
-        self.pic_label = QtWidgets.QLabel()
+        self.pic_control = QtWidgets.QLabel(self)
 
         self.point_counter = QtWidgets.QLabel(self)
         self.point_counter.setGeometry(QtCore.QRect(170, 40, 47, 13))
@@ -164,9 +168,9 @@ def start(game):
             part_size = height // part_anz
 
     control_pic = QtGui.QPixmap(r"C:\Users\User\Desktop\tmp_resize.JPG")
-    controlsWindow.pic_label.setGeometry(screen_width - width - offset_y, screen_height - height - offset_y, width, height)
-    controlsWindow.pic_label.setPixmap(control_pic)
-    controlsWindow.pic_label.show()
+    controlsWindow.pic_control.setGeometry(screen_width - width - offset_y, screen_height - height - offset_y, width, height)
+    controlsWindow.pic_control.setPixmap(control_pic)
+    controlsWindow.pic_control.show()
 
     make_game_floor(game)
 
@@ -219,10 +223,18 @@ def make_game_floor(game):
     game_x = screen_width - w_floor
     game_y = screen_height - h_floor
 
-    os.environ['SDL_VIDEO_WINDOW_POS'] = '%d,%d' % (game_x, game_y)
+    #os.environ['SDL_VIDEO_WINDOW_POS'] = '%d,%d' % (game_x, game_y)
     #os.environ['SDL_WINDOW_ALWAYS_ON_TOP'] = '%s' % ('SDL_VIDEO_WINDOW')
 
     screen = pygame.display.set_mode(size=(w_floor, h_floor))
+    #sorgt dafür, dass das pygame Fenster immer on Top ist (Parameter -1)
+    hwnd = pygame.display.get_wm_info()['window']
+    user32 = ctypes.WinDLL("user32")
+    user32.SetWindowPos.restype = wintypes.HWND
+    user32.SetWindowPos.argtypes = [wintypes.HWND, wintypes.HWND, wintypes.INT, wintypes.INT, wintypes.INT,
+                                    wintypes.INT, wintypes.UINT]
+    user32.SetWindowPos(hwnd, -1, game_x, 0, w_floor, h_floor, 0x0001)
+
     pygame.display.set_caption(game)
 
 def puzzle():
@@ -283,13 +295,13 @@ def puzzle():
     moving = False
     randlist = []
     zugzahl = 0
+    font = pygame.font.Font(pygame.font.get_default_font(), 36)
 
     while running:
 
         full_img.set_alpha(alphawert)
         screen.fill(GRAY)
         screen.blit(full_img, (pic_pos_x,pic_pos_y))
-        font = pygame.font.Font(pygame.font.get_default_font(), 36)
 
         for element in partslist:
             screen.blit(element[0], element[1])
@@ -389,8 +401,11 @@ def slider():
     global y_anz
     global part_anz
 
+    font = pygame.font.Font(pygame.font.get_default_font(), 36)
+
     moving = False
     fertig = False
+    counter = 0
 
     #Dictonary hat als Key die x,y Position im Grid und als Value das Image i
     # und dessen Koordinaten auf dem Spielfeld
@@ -458,16 +473,28 @@ def slider():
         n = y_anz
         parity = n + n1
         print(f'Parity: {parity}')
-        if ((y_anz % 2) == 0 and (parity % 2) != 0) or ((y_anz % 2) != 0 and (parity % 2) != 0):
-            # print("unlösbar")
-            # unlösbar = True
-            print("lösbar")
-            unlösbar = False
+        if x_anz == 3 and y_anz == 4:
+            if ((y_anz % 2) == 0 and (parity % 2) != 0) or ((y_anz % 2) != 0 and (parity % 2) != 0):
+                print("unlösbar")
+                unlösbar = True
+                # print("lösbar")
+                # unlösbar = False
+            else:
+                print("lösbar")
+                unlösbar = False
+                # print("unlösbar")
+                # unlösbar = True
         else:
-            # print("lösbar")
-            # unlösbar = False
-            print("unlösbar")
-            unlösbar = True
+            if ((y_anz % 2) == 0 and (parity % 2) != 0) or ((y_anz % 2) != 0 and (parity % 2) != 0):
+                # print("unlösbar")
+                # unlösbar = True
+                print("lösbar")
+                unlösbar = False
+            else:
+                # print("lösbar")
+                # unlösbar = False
+                print("unlösbar")
+                unlösbar = True
 
 
     for key, value in act_pos_dict.items():
@@ -562,6 +589,7 @@ def slider():
                     act_pos_dict[(x_neu, y_neu)] = (act_pos_dict[(x_wert, y_wert)][0],(full_image_x + x_neu*part_size, full_image_y + y_neu*part_size), feldordnungswert, act_pos_dict[(x_wert, y_wert)][3])
                     #Leergezogene Position löschen
                     del act_pos_dict[(x_wert, y_wert)]
+                    counter += 1
 
                 #Ausgabe der neuen Bildversion
                 screen.fill(GRAY)
@@ -575,6 +603,8 @@ def slider():
                     if value[3] == i:
                         #Check alle Werte in der richtigen Reihenfolge und Feld unten rechts leer
                         if i == (x_anz*y_anz - 1) and ((x_anz-1, y_anz-1) not in act_pos_dict.keys()):
+                            text_surface = pygame.font.Font.render(font, f'Züge: {counter}', True, (55, 55, 55))
+                            screen.blit(text_surface, dest=(50, 50))
                             pygame.display.flip()
                             success(6)
                             return
@@ -582,6 +612,9 @@ def slider():
                             i +=1
                     else:
                         break
+
+                text_surface = pygame.font.Font.render(font, f'Züge: {counter}', True, (55, 55, 55))
+                screen.blit(text_surface, dest=(50, 50))
 
                 blit_grid(grid, (255, 0, 0))
                 pygame.display.update()
