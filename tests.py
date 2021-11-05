@@ -28,9 +28,31 @@ class Controls(QtWidgets.QMainWindow):
         self.setWindowTitle('Pictris Controls')
 
         self.puzzle_start = QPushButton("Puzzle", self)
-        self.puzzle_start.setGeometry(170, 330, 130, 20)
+        self.puzzle_start.setGeometry(170, 230, 130, 20)
         self.puzzle_start.setCheckable(True)
         self.puzzle_start.setStyleSheet(
+            ":checked{background: solid red}"
+            ":checked{border: 2px solid lightblue}"
+            ":!checked{background-color: rgb(255,255,255)}"
+            ":!checked{border: 2px solid red}"
+            ":!checked{font-size: 10px}"
+        )
+
+        self.puzzle15_start = QPushButton("Puzzle 15", self)
+        self.puzzle15_start.setGeometry(170, 280, 130, 20)
+        self.puzzle15_start.setCheckable(True)
+        self.puzzle15_start.setStyleSheet(
+            ":checked{background: solid red}"
+            ":checked{border: 2px solid lightblue}"
+            ":!checked{background-color: rgb(255,255,255)}"
+            ":!checked{border: 2px solid red}"
+            ":!checked{font-size: 10px}"
+        )
+
+        self.puzzleABC_start = QPushButton("Puzzle ABC", self)
+        self.puzzleABC_start.setGeometry(170, 330, 130, 20)
+        self.puzzleABC_start.setCheckable(True)
+        self.puzzleABC_start.setStyleSheet(
             ":checked{background: solid red}"
             ":checked{border: 2px solid lightblue}"
             ":!checked{background-color: rgb(255,255,255)}"
@@ -60,8 +82,19 @@ class Controls(QtWidgets.QMainWindow):
             ":!checked{font-size: 10px}"
         )
 
+        self.sliderABC_start = QPushButton("Slider ABC", self)
+        self.sliderABC_start.setGeometry(170, 530, 130, 20)
+        self.sliderABC_start.setCheckable(True)
+        self.sliderABC_start.setStyleSheet(
+            ":checked{background: solid lightblue}"
+            ":checked{border: 2px solid red}"
+            ":!checked{background-color: rgb(255,255,255)}"
+            ":!checked{border: 2px solid lightblue}"
+            ":!checked{font-size: 10px}"
+        )
+
         self.sliderpix_start = QPushButton("Slider pix", self)
-        self.sliderpix_start.setGeometry(170, 530, 130, 20)
+        self.sliderpix_start.setGeometry(170, 580, 130, 20)
         self.sliderpix_start.setCheckable(True)
         self.sliderpix_start.setStyleSheet(
             ":checked{background: solid lightblue}"
@@ -129,6 +162,7 @@ def start(game):
     RED = (255, 0, 0)
     GRAY = (150, 150, 150)
 
+
     if game == "puzzle" or game == "slider":
         if init == True:
             #spielbild = r"D:\Pictures\Bilderserien\Alphabet\26 zeichen\26work\26_finfin-1.jpg"
@@ -142,6 +176,15 @@ def start(game):
         else:
             game_rounds += 1
             part_anz = part_anz + game_rounds
+
+    elif game == "puzzle 15":
+        spielbild = r"C:\Users\User\Desktop\pictris\Zahlen gerade.jpg"
+        part_anz = 4
+        game = "puzzle"
+    elif game == "puzzle ABC":
+        spielbild = r"C:\Users\User\Desktop\pictris\ABC Puzzle.jpg"
+        part_anz = 5
+        game = "puzzle"
     elif game == "slider 9":
         spielbild = r"C:\Users\User\Desktop\pictris\Zahlen ungerade.jpg"
         part_anz = 3
@@ -149,6 +192,10 @@ def start(game):
     elif game == "slider 15":
         spielbild = r"C:\Users\User\Desktop\pictris\Zahlen gerade.jpg"
         part_anz = 4
+        game = "slider"
+    elif game == "slider ABC":
+        spielbild = r"C:\Users\User\Desktop\pictris\ABC Puzzle.jpg"
+        part_anz = 5
         game = "slider"
 
     image = resize(spielbild)
@@ -200,6 +247,30 @@ def start(game):
         slider()
 
     return
+
+def uncheck(game):
+
+    controlsWindow.puzzle_start.setChecked(False)
+    controlsWindow.puzzle15_start.setChecked(False)
+    controlsWindow.puzzleABC_start.setChecked(False)
+    controlsWindow.sliderpix_start.setChecked(False)
+    controlsWindow.slider9_start.setChecked(False)
+    controlsWindow.slider15_start.setChecked(False)
+    controlsWindow.sliderABC_start.setChecked(False)
+    if game == "puzzle":
+        controlsWindow.puzzle_start.setChecked(True)
+    elif game == "puzzle 15":
+        controlsWindow.puzzle15_start.setChecked(True)
+    elif game == "puzzle ABC":
+        controlsWindow.puzzleABC_start.setChecked(True)
+    elif game == "slider":
+        controlsWindow.sliderpix_start.setChecked(True)
+    elif game == "slider ABC":
+        controlsWindow.sliderABC_start.setChecked(True)
+    elif game == "slider 9":
+        controlsWindow.slider9_start.setChecked(True)
+    elif game == "slider 15":
+        controlsWindow.slider15_start.setChecked(True)
 
 
 def resize(file):
@@ -405,6 +476,7 @@ def slider():
 
     moving = False
     fertig = False
+    #Zugzahl
     counter = 0
 
     #Dictonary hat als Key die x,y Position im Grid und als Value das Image i
@@ -445,13 +517,9 @@ def slider():
             rand_coord = (rand_pos_x, rand_pos_y)
 
             act_pos_dict[(rand_x, rand_y)] = (value[0], rand_coord, rand_order, value[3])
-            #print(f'{key[0]}/{key[1]} Erzeugungs_Ordnung: {rand_order} / {rand_coord} Wert: {value[3]}')
-            #screen.blit(value[0], rand_coord)
-        #for key, value in dict(sorted(act_pos_dict.items(), key=lambda x: x[1][2])).items():
-            #print(f'{key[0]}/{key[1]} Sortierte_Ordnung: {value[2]}, Wert: {value[3]}')
 
         #Paritäts-Check auf Lösbarkeit
-        n1 = 0
+        n2 = 0
         for key, value in dict(sorted(act_pos_dict.items(),key=lambda x: x[1][2])).items():
             # Wobei x[1] für Value steht (x[0] wäre der key) und der zweite Wert in der eckigen Klamer die Position in der Value-Liste bezeichnet
             #print(f'Ordnung: {value[2]}, Wert: {value[3]}')
@@ -463,18 +531,18 @@ def slider():
                 if count >= order-1:
                     break
                 if value[3] > reference:
-                    n1 +=1
+                    n2 +=1
                     single_count += 1
                 count += 1
             #print(f'Wert: {value[3]} -> {single_count}')
 
-
-        print(f'N1: {n1}')
-        n = y_anz
-        parity = n + n1
+        n1 = y_anz
+        parity = n1 + n2
+        print(f'N1: {n1} N2: {n2}')
         print(f'Parity: {parity}')
-        if x_anz == 3 and y_anz == 4:
-            if ((y_anz % 2) == 0 and (parity % 2) != 0) or ((y_anz % 2) != 0 and (parity % 2) != 0):
+
+        if (x_anz == 3 and y_anz == 4):
+            if ((n1 % 2) == 0 and (parity % 2) != 0) or ((n1 % 2) != 0 and (parity % 2) != 0):
                 print("unlösbar")
                 unlösbar = True
                 # print("lösbar")
@@ -485,7 +553,7 @@ def slider():
                 # print("unlösbar")
                 # unlösbar = True
         else:
-            if ((y_anz % 2) == 0 and (parity % 2) != 0) or ((y_anz % 2) != 0 and (parity % 2) != 0):
+            if ((n1 % 2) == 0 and (parity % 2) != 0) or ((n1 % 2) != 0 and (parity % 2) != 0):
                 # print("unlösbar")
                 # unlösbar = True
                 print("lösbar")
@@ -501,6 +569,9 @@ def slider():
         #print(f'Publikations_Ordnung: {value[2]} / {value[1]}, Wert: {value[3]}')
         screen.blit(value[0], value[1])
     blit_grid(grid, (255,0,0))
+    text_surface = pygame.font.Font.render(font, f'Züge: {counter}', True, (55, 55, 55))
+    screen.blit(text_surface, dest=(50, 50))
+    pygame.display.flip()
 
 
     while running:
@@ -521,9 +592,7 @@ def slider():
                     init = True
                     return
             elif event.type == pygame.MOUSEBUTTONDOWN:
-                #print(f'Mausposition: {event.pos}')
-                #pass
-                # get mousposition
+
                 eventpos_x, eventpos_y = event.pos
                 # find x, y
                 x_wert = int(eventpos_x - full_image_x) // part_size
@@ -731,6 +800,8 @@ def find_pic():
 def start_game(game):
     global init
 
+    uncheck(game)
+
     pygame.init()
     clock = pygame.time.Clock()
 
@@ -745,8 +816,11 @@ if __name__ == '__main__':
 
     controlsWindow.show()
     controlsWindow.puzzle_start.clicked.connect(lambda: start_game("puzzle"))
+    controlsWindow.puzzle15_start.clicked.connect(lambda: start_game("puzzle 15"))
+    controlsWindow.puzzleABC_start.clicked.connect(lambda: start_game("puzzle ABC"))
     controlsWindow.slider9_start.clicked.connect(lambda: start_game("slider 9"))
     controlsWindow.slider15_start.clicked.connect(lambda: start_game("slider 15"))
+    controlsWindow.sliderABC_start.clicked.connect(lambda: start_game("slider ABC"))
     controlsWindow.sliderpix_start.clicked.connect(lambda: start_game("slider"))
 
     # init = True
