@@ -28,7 +28,7 @@ class Controls(QtWidgets.QMainWindow):
         self.setWindowTitle('Pictris Controls')
 
         self.puzzle_start = QPushButton("Puzzle Pix", self)
-        self.puzzle_start.setGeometry(170, 230, 130, 20)
+        self.puzzle_start.setGeometry(170, 330, 130, 20)
         self.puzzle_start.setCheckable(True)
         self.puzzle_start.setStyleSheet(
             ":checked{background: solid red}"
@@ -39,7 +39,7 @@ class Controls(QtWidgets.QMainWindow):
         )
 
         self.puzzle15_start = QPushButton("Puzzle 15", self)
-        self.puzzle15_start.setGeometry(170, 280, 130, 20)
+        self.puzzle15_start.setGeometry(170, 230, 130, 20)
         self.puzzle15_start.setCheckable(True)
         self.puzzle15_start.setStyleSheet(
             ":checked{background: solid red}"
@@ -50,7 +50,7 @@ class Controls(QtWidgets.QMainWindow):
         )
 
         self.puzzleABC_start = QPushButton("Puzzle ABC", self)
-        self.puzzleABC_start.setGeometry(170, 330, 130, 20)
+        self.puzzleABC_start.setGeometry(170, 280, 130, 20)
         self.puzzleABC_start.setCheckable(True)
         self.puzzleABC_start.setStyleSheet(
             ":checked{background: solid red}"
@@ -141,6 +141,7 @@ game_dir = r"D:\Pictures\Bilderserien\Jahre"
 def start(game):
     global spielbild
     global alphawert
+    global fade_factor
     global part_size
     global part_anz
     global game_rounds
@@ -180,10 +181,12 @@ def start(game):
     elif game == "puzzle 15":
         spielbild = r"C:\Users\User\Desktop\pictris\Zahlen gerade.jpg"
         part_anz = 4
+        fade_factor = 1.1
         game = "puzzle"
     elif game == "puzzle ABC":
         spielbild = r"C:\Users\User\Desktop\pictris\ABC Puzzle.jpg"
         part_anz = 5
+        fade_factor = 1.1
         game = "puzzle"
     elif game == "slider 9":
         spielbild = r"C:\Users\User\Desktop\pictris\Zahlen ungerade.jpg"
@@ -491,23 +494,25 @@ def slider():
     full_partsdict = make_full_partsdict(x_anz, y_anz, "slider")
     grid = make_grid(full_image_x, full_image_y, x_anz, y_anz, part_size)
 
-    unlösbar = True
-    while unlösbar == True:
+    lösbar = False
+    while lösbar == False:
         rand_values = []
+        # Aus den Bildteilen ein Puzzle machen
         for key, value in full_partsdict.items():
-            # print(f'Ordnung: {value[2]}, Wert: {value[3]}')
+            #letztes Feld leer lassen
             if key == (x_anz-1,y_anz-1):
                 continue
             rand_x = random.randint(0, x_anz-1)
             rand_y = random.randint(0, y_anz-1)
             randpos = [rand_x, rand_y]
+
             #Vermeidung von Koordinaten-Dopplern
             while randpos in rand_values or randpos == [0, 0]:
                 rand_x = random.randint(0, x_anz-1)
                 rand_y = random.randint(0, y_anz-1)
                 randpos = [rand_x, rand_y]
+
             #Ordnungsnummer des Zufallsquadrats
-            #rand_order = rand_x+1 + (rand_y) * x_anz
             rand_order = rand_y * x_anz + rand_x + 1
             rand_values.append(randpos)
 
@@ -518,52 +523,7 @@ def slider():
 
             act_pos_dict[(rand_x, rand_y)] = (value[0], rand_coord, rand_order, value[3])
 
-        #Paritäts-Check auf Lösbarkeit
-        n2 = 0
-        for key, value in dict(sorted(act_pos_dict.items(),key=lambda x: x[1][2])).items():
-            # Wobei x[1] für Value steht (x[0] wäre der key) und der zweite Wert in der eckigen Klamer die Position in der Value-Liste bezeichnet
-            #print(f'Ordnung: {value[2]}, Wert: {value[3]}')
-            order = value[2]
-            reference = value[3]
-            count = 1
-            single_count = 0
-            for key, value in dict(sorted(act_pos_dict.items(), key=lambda x: x[1][2])).items():
-                if count >= order-1:
-                    break
-                if value[3] > reference:
-                    n2 +=1
-                    single_count += 1
-                count += 1
-            #print(f'Wert: {value[3]} -> {single_count}')
-
-        n1 = y_anz
-        parity = n1 + n2
-        print(f'N1: {n1} N2: {n2}')
-        print(f'Parity: {parity}')
-
-        if (x_anz == 3 and y_anz == 4):
-            if ((n1 % 2) == 0 and (parity % 2) != 0) or ((n1 % 2) != 0 and (parity % 2) != 0):
-                print("unlösbar")
-                unlösbar = True
-                # print("lösbar")
-                # unlösbar = False
-            else:
-                print("lösbar")
-                unlösbar = False
-                # print("unlösbar")
-                # unlösbar = True
-        else:
-            if ((n1 % 2) == 0 and (parity % 2) != 0) or ((n1 % 2) != 0 and (parity % 2) != 0):
-                # print("unlösbar")
-                # unlösbar = True
-                print("lösbar")
-                unlösbar = False
-            else:
-                # print("lösbar")
-                # unlösbar = False
-                print("unlösbar")
-                unlösbar = True
-
+        lösbar = check_solvability(act_pos_dict, x_anz, y_anz)
 
     for key, value in act_pos_dict.items():
         #print(f'Publikations_Ordnung: {value[2]} / {value[1]}, Wert: {value[3]}')
@@ -688,9 +648,51 @@ def slider():
                 blit_grid(grid, (255, 0, 0))
                 pygame.display.update()
 
-
-
     return
+
+def check_solvability(act_pos_dict, x_anz, y_anz):
+
+    n2 = 0
+    for key, value in dict(sorted(act_pos_dict.items(), key=lambda x: x[1][2])).items():
+        # Wobei x[1] für Value steht (x[0] wäre der key) und der zweite Wert in der eckigen Klamer die Position in der Value-Liste bezeichnet
+        # print(f'Ordnung: {value[2]}, Wert: {value[3]}')
+        order = value[2]
+        reference = value[3]
+        count = 1
+        #single_count = 0
+        for key, value in dict(sorted(act_pos_dict.items(), key=lambda x: x[1][2])).items():
+            if count >= order - 1:
+                break
+            if value[3] > reference:
+                n2 += 1
+                #single_count += 1
+            count += 1
+
+    #Ausgangspunkt Leerfeld auf 0/0 und Durcheinander = n2
+    parity_start = 1 + n2
+    #Ziel: Leerfeld im letzten Feld, n2 = 0
+    n1_goal = y_anz
+    parity_goal = n1_goal
+    print(f'N2: {n2}')
+    print(f'Parity-Ziel: {parity_goal}')
+    print(f'Parity-Start: {parity_start}')
+
+    #if (x_anz == 3 and y_anz == 4):
+    if ((parity_start % 2) == 0 and (parity_goal % 2) == 0) or ((parity_start % 2) != 0 and (parity_goal % 2) != 0):
+        lösbar = True
+        if (x_anz == 3 and y_anz == 4):
+            lösbar = False
+    else:
+        lösbar = False
+        if (x_anz == 3 and y_anz == 4):
+            lösbar = True
+
+    if lösbar:
+        print("lösbar")
+    else:
+        print("unlösbar")
+
+    return(lösbar)
 
 
 def pic_parts(x,y,game):
