@@ -181,12 +181,12 @@ def start(game):
     elif game == "puzzle 15":
         spielbild = r"C:\Users\User\Desktop\pictris\Zahlen gerade.jpg"
         part_anz = 4
-        fade_factor = 1.1
+        fade_factor = 1.4
         game = "puzzle"
     elif game == "puzzle ABC":
         spielbild = r"C:\Users\User\Desktop\pictris\ABC Puzzle.jpg"
         part_anz = 5
-        fade_factor = 1.1
+        fade_factor = 1.4
         game = "puzzle"
     elif game == "slider 9":
         spielbild = r"C:\Users\User\Desktop\pictris\Zahlen ungerade.jpg"
@@ -242,12 +242,32 @@ def start(game):
             pygame.display.update()
         move = False
 
-
-    if game == "puzzle":
+    if game_rounds > 0 and game == "puzzle":
         puzzle()
-    elif game == "slider":
-        #time.sleep(5)
-        slider()
+        return
+
+    while True:
+
+        for event in pygame.event.get():
+
+            if event.type == pygame.QUIT:
+                sys.exit()
+
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                pass
+            elif event.type == pygame.MOUSEBUTTONUP:
+                if game == "puzzle":
+                    puzzle()
+                    return
+                elif game == "slider":
+                    slider()
+                    return
+
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    sys.exit()
+                if event.key == pygame.K_SPACE:
+                    return
 
     return
 
@@ -352,7 +372,7 @@ def puzzle():
 
     anz_w = width // part_size
     anz_h = height // part_size
-    fade = int((alphawert // (anz_h * anz_w))**fade_factor)
+    fade = int((alphawert // (anz_h * anz_w))*fade_factor)
     print(f'Breite: {anz_w} Pieces, Höhe: {anz_h} Pieces')
     full_img = pygame.image.load(r"C:\Users\User\Desktop\tmp_resize.JPG")
     full_img.convert()
@@ -533,7 +553,6 @@ def slider():
     screen.blit(text_surface, dest=(50, 50))
     pygame.display.flip()
 
-
     while running:
 
         pygame.display.flip()
@@ -680,11 +699,11 @@ def check_solvability(act_pos_dict, x_anz, y_anz):
     #if (x_anz == 3 and y_anz == 4):
     if ((parity_start % 2) == 0 and (parity_goal % 2) == 0) or ((parity_start % 2) != 0 and (parity_goal % 2) != 0):
         lösbar = True
-        if (x_anz == 3 and y_anz == 4):
+        if (x_anz % 2) != 0 and (y_anz % 2) == 0:
             lösbar = False
     else:
         lösbar = False
-        if (x_anz == 3 and y_anz == 4):
+        if (x_anz % 2) != 0 and (y_anz % 2) == 0:
             lösbar = True
 
     if lösbar:
@@ -796,9 +815,10 @@ def find_pic():
 
     # print(f'Files: {file_count}')
 
-    daily_pic = random.randint(1, file_count)
-    daily_pic_file = full_pic_dict[daily_pic]
-    return(daily_pic_file)
+    select_pic = random.randint(1, file_count)
+    select_pic_file = full_pic_dict[select_pic]
+    #daily_pic_file = r"C:\Users\User\Desktop\pictris\IMG_4434.jpeg"
+    return(select_pic_file)
 def start_game(game):
     global init
 
