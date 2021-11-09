@@ -123,12 +123,6 @@ clock = pygame.time.Clock()
 GRAY = (150, 150, 150)
 RED = (255, 0, 0)
 
-#w und h sind die Werte für Breite und Höhe des Spielfelds
-#x und y lokalisieren den game floor auf dem Gesamtbildschirm
-w_floor, h_floor = screen_width - screen_width // 4, screen_height - 30
-game_x = screen_width - w_floor
-game_y = screen_height - h_floor
-
 #Mindestzahl an Teilen auf der längeren Bildkante
 part_anz_init = 4
 #Zähler für die Verkleinerung der Puzzleteile bei Bildpuzzle
@@ -138,19 +132,22 @@ offset_y = 50
 #Fading-Ausgangswert
 alphawert_init = 255
 #Steuerung der Geschwindigkeit des Hintergrundbildverschwindens bei Puzzle und Pictris
-fade_factor = 1.6
+fade_factor = 1.61
+
+#w und h sind die Werte für Breite und Höhe des Spielfelds
+#x und y lokalisieren den game floor auf dem Gesamtbildschirm
+w_floor, h_floor = screen_width - screen_width // 4, screen_height - 30
+game_x = screen_width - w_floor
+game_y = screen_height - h_floor - offset_y
 
 game_dir = r"D:\Pictures\Bilderserien\Jahre"
 
 def make_game_floor(game):
     global w_floor
     global h_floor
+    global game_x
+    global game_y
     global screen
-    global screen_width
-    global screen_heigh
-
-    game_x = screen_width - w_floor
-    game_y = screen_height - h_floor
 
     #os.environ['SDL_VIDEO_WINDOW_POS'] = '%d,%d' % (game_x, game_y)
     #os.environ['SDL_WINDOW_ALWAYS_ON_TOP'] = '%s' % ('SDL_VIDEO_WINDOW')
@@ -172,7 +169,6 @@ make_game_floor("Willkommen")
 
 def start(game):
     global spielbild
-    #global alphawert
     global fade_factor
     global part_size
     global part_anz
@@ -206,12 +202,12 @@ def start(game):
     elif game == "puzzle 15":
         spielbild = r"C:\Users\User\Desktop\pictris\Zahlen gerade.jpg"
         part_anz = 4
-        fade_factor = 1.4
+        fade_factor = 1.845
         game = "puzzle"
     elif game == "puzzle ABC":
         spielbild = r"C:\Users\User\Desktop\pictris\ABC Puzzle.jpg"
         part_anz = 5
-        fade_factor = 1.4
+        fade_factor = 2.23
         game = "puzzle"
     elif game == "slider 9":
         spielbild = r"C:\Users\User\Desktop\pictris\Zahlen ungerade.jpg"
@@ -231,6 +227,14 @@ def start(game):
     width, height = image.size
     part_size = find_part_size(width, height, part_anz)
 
+    #Bestimmung der Position des Gesamtspielbildes
+    full_image_x = (w_floor - width) / 2
+    full_image_y = h_floor - height - offset_y
+
+    #Berechnung der horizontalen und vertikalen Teilezahl
+    x_anz = width // part_size
+    y_anz = height // part_size
+
     pic = pygame.image.load(r"C:\Users\User\Desktop\tmp_resize.JPG")
 
     make_game_floor(game)
@@ -239,15 +243,6 @@ def start(game):
     controlsWindow.pic_control.setGeometry(screen_width - width - offset_y, screen_height - height - offset_y, width, height)
     controlsWindow.pic_control.setPixmap(control_pic)
     controlsWindow.pic_control.show()
-
-    # make_game_floor(game)
-
-    #Bestimmung der Position des Gesamtbildes
-    full_image_x = (w_floor - width) / 2
-    full_image_y = h_floor - height - offset_y
-    #Berechnung der horizontalen und vertikalen Teilezahl
-    x_anz = width // part_size
-    y_anz = height // part_size
 
     grid = make_grid(full_image_x, full_image_y, x_anz, y_anz, part_size)
     full_partsdict = make_full_partsdict(x_anz, y_anz, game)
@@ -340,29 +335,6 @@ def resize(file):
 
     return(image)
 
-# def make_game_floor(game):
-#     global w_floor
-#     global h_floor
-#     global screen
-#     global screen_width
-#     global screen_heigh
-#
-#     game_x = screen_width - w_floor
-#     game_y = screen_height - h_floor
-#
-#     #os.environ['SDL_VIDEO_WINDOW_POS'] = '%d,%d' % (game_x, game_y)
-#     #os.environ['SDL_WINDOW_ALWAYS_ON_TOP'] = '%s' % ('SDL_VIDEO_WINDOW')
-#
-#     screen = pygame.display.set_mode(size=(w_floor, h_floor))
-#     #sorgt dafür, dass das pygame Fenster immer on Top ist (Parameter -1)
-#     hwnd = pygame.display.get_wm_info()['window']
-#     user32 = ctypes.WinDLL("user32")
-#     user32.SetWindowPos.restype = wintypes.HWND
-#     user32.SetWindowPos.argtypes = [wintypes.HWND, wintypes.HWND, wintypes.INT, wintypes.INT, wintypes.INT,
-#                                     wintypes.INT, wintypes.UINT]
-#     user32.SetWindowPos(hwnd, -1, game_x, 0, w_floor, h_floor, 0x0001)
-#
-#     pygame.display.set_caption(game)
 
 def puzzle(full_partsdict, grid):
     global spielbild
@@ -384,9 +356,6 @@ def puzzle(full_partsdict, grid):
 
     act_partsdict = {}
 
-    anz_w = x_anz
-    anz_h = y_anz
-
     parts_list = []
 
     fertig = False
@@ -394,7 +363,6 @@ def puzzle(full_partsdict, grid):
     if init == True:
         counter = 0
 
-    # alphawert_init = 255
     alpha_step = alphawert_init // (x_anz*y_anz)
     alphawert = alphawert_init
 
@@ -404,8 +372,6 @@ def puzzle(full_partsdict, grid):
 
     font = pygame.font.Font(pygame.font.get_default_font(), 36)
 
-
-    running = True
     fertig = False
 
     act_partsdict = make_act_partsdict(x_anz, y_anz,"puzzle")
@@ -428,7 +394,7 @@ def puzzle(full_partsdict, grid):
     pygame.display.flip()
 
     running = True
-    fade = 0.77
+    #fade = 0.77
     while running:
         screen.fill(GRAY)
 
@@ -485,7 +451,7 @@ def puzzle(full_partsdict, grid):
                         blit_grid(grid, (255,255,255))
                         pygame.display.flip()
 
-                    if len(parts_list) == (anz_h * anz_w):
+                    if len(parts_list) == (y_anz * x_anz):
                         fertig = True
                         init = False
                         text_surface = pygame.font.Font.render(font, f'Punkte: {counter}', True, (55, 55, 55))
@@ -499,12 +465,12 @@ def puzzle(full_partsdict, grid):
                     counter -= 1
 
                 if fertig == False:
-                    x = random. randint(0,anz_w-1)
-                    y = random. randint(0,anz_h-1)
+                    x = random. randint(0,x_anz-1)
+                    y = random. randint(0,y_anz-1)
 
                     while (x,y) in parts_list:
-                        x = random.randint(0, anz_w-1)
-                        y = random.randint(0, anz_h-1)
+                        x = random.randint(0, x_anz-1)
+                        y = random.randint(0, y_anz-1)
 
                     img = act_partsdict[x, y][0]
 
@@ -513,9 +479,9 @@ def puzzle(full_partsdict, grid):
                 moving = False
 
                 # Ausblenden des Hintergrunds (erst schneller, dann langsam
-                abzug = 10*(alpha_step**(fade/zugzahl))
+                abzug = (alpha_step* 1/zugzahl)**fade_factor
                 alphawert = alphawert - abzug
-                print(f'Step: {alpha_step} Abzug: {abzug}')
+                print(f'Step: {alpha_step} Abzug: {abzug} Alphawert: {alphawert}')
                 if alphawert <= 0:
                     alphawert = 0
 
