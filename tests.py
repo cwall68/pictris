@@ -109,18 +109,19 @@ class Controls(QtWidgets.QMainWindow):
         self.point_counter = QtWidgets.QLabel(self)
         self.point_counter.setGeometry(QtCore.QRect(170, 40, 47, 13))
 
+#Feststellung der aktuellen Bildschirmgröße
 screen_width, screen_height= pyautogui.size()
-#print(f'Width: {screen_width} / Height: {screen_height}')
+
+#Anlegen des Fensters mit den Auswhl- und Kontrollfeldern für das Spiel
 controlsWindow = Controls()
 controlsWindow.setGeometry(0, 0, screen_width, screen_height)
 
-#pygame.init()
-
+pygame.init()
 FPS = 60
+clock = pygame.time.Clock()
+
 GRAY = (150, 150, 150)
 RED = (255, 0, 0)
-
-#clock = pygame.time.Clock()
 
 #w und h sind die Werte für Breite und Höhe des Spielfelds
 #x und y lokalisieren den game floor auf dem Gesamtbildschirm
@@ -128,14 +129,16 @@ w_floor, h_floor = screen_width - screen_width // 4, screen_height - 30
 game_x = screen_width - w_floor
 game_y = screen_height - h_floor
 
-part_size = 200
-alphawert = 255
-tolerance = 25
+#Mindestzahl an Teilen auf der längeren Bildkante
 part_anz_init = 4
+#Zähler für die Verkleinerung der Puzzleteile bei Bildpuzzle
 game_rounds = 0
+#Bildabstand vom unteren Rand
 offset_y = 50
+#Fading-Ausgangswert
+alphawert_init = 255
+#Steuerung der Geschwindigkeit des Hintergrundbildverschwindens bei Puzzle und Pictris
 fade_factor = 1.4
-
 
 game_dir = r"D:\Pictures\Bilderserien\Jahre"
 
@@ -161,9 +164,6 @@ def start(game):
     global font
     global x_anz
     global y_anz
-
-    # RED = (255, 0, 0)
-    # GRAY = (150, 150, 150)
 
 
     if game == "puzzle" or game == "slider":
@@ -198,22 +198,26 @@ def start(game):
         part_anz = 5
         game = "slider"
 
+    #Hier wird das oben bestimmte Spielbild in das Spieformat gebracht und in diesem Format als tmp Pic abgelegt
     image = resize(spielbild)
     width, height = image.size
     part_size = find_part_size(width, height, part_anz)
 
     pic = pygame.image.load(r"C:\Users\User\Desktop\tmp_resize.JPG")
 
+    make_game_floor(game)
+
     control_pic = QtGui.QPixmap(r"C:\Users\User\Desktop\tmp_resize.JPG")
     controlsWindow.pic_control.setGeometry(screen_width - width - offset_y, screen_height - height - offset_y, width, height)
     controlsWindow.pic_control.setPixmap(control_pic)
     controlsWindow.pic_control.show()
 
-    make_game_floor(game)
+    # make_game_floor(game)
 
+    #Bestimmung der Position des Gesamtbildes
     full_image_x = (w_floor - width) / 2
     full_image_y = h_floor - height - offset_y
-
+    #Berechnung der horizontalen und vertikalen Teilezahl
     x_anz = width // part_size
     y_anz = height // part_size
 
@@ -235,9 +239,7 @@ def start(game):
         return
 
     while True:
-
         for event in pygame.event.get():
-
             if event.type == pygame.QUIT:
                 sys.exit()
 
@@ -245,7 +247,6 @@ def start(game):
                 pass
             elif event.type == pygame.MOUSEBUTTONUP:
                 if game == "puzzle":
-                    #show_fullparts(full_partsdict)
                     puzzle(full_partsdict, grid)
                     return
                 elif game == "slider":
@@ -337,7 +338,7 @@ def make_game_floor(game):
 
 def puzzle(full_partsdict, grid):
     global spielbild
-    global alphawert
+    global alphawert_init
     global game_rounds
     global fade
     global w_floor
@@ -365,7 +366,7 @@ def puzzle(full_partsdict, grid):
     if init == True:
         counter = 0
 
-    alphawert_init = 255
+    # alphawert_init = 255
     alpha_step = alphawert_init // (x_anz*y_anz)
     alphawert = alphawert_init
 
@@ -401,13 +402,13 @@ def puzzle(full_partsdict, grid):
     running = True
     fade = 0.77
     while running:
-
         screen.fill(GRAY)
 
+        #Ausgabe langsam verblassender Hintergrund
         for key, value in full_partsdict.items():
             value[0].set_alpha(alphawert)
             screen.blit(value[0], value[1])
-
+        #Ausgabe korrekter Puzzelteile
         for key, value in act_partsdict.items():
             if key in parts_list:
                 value[0].set_alpha(255)
@@ -482,14 +483,13 @@ def puzzle(full_partsdict, grid):
                     rect = img.get_rect()
                     rect.center = w_floor // 2, pic_pos_y // 2
                 moving = False
-                # fade = 0.77
+
+                # Ausblenden des Hintergrunds (erst schneller, dann langsam
                 abzug = 10*(alpha_step**(fade/zugzahl))
                 alphawert = alphawert - abzug
                 print(f'Step: {alpha_step} Abzug: {abzug}')
                 if alphawert <= 0:
                     alphawert = 0
-
-
 
         screen.blit(img, rect)
 
@@ -501,6 +501,7 @@ def puzzle(full_partsdict, grid):
         blit_grid(grid, RED)
         pygame.display.update()
 
+#Kopiert das Vollbild-Dictionary auf das Arbeits-Dictionary
 def copy_full_partsdict(full_partsdict):
     act_partsdict = {}
 
@@ -532,11 +533,7 @@ def slider(full_partsdict, grid):
     # Dictonary hat als Key die x,y Werte aus full_partsdict und als Value das Image und dessen aktuelle Koordinaten auf dem Spielfeld
     act_pos_dict = {}
 
-
     running = True
-
-    #full_partsdict = make_full_partsdict(x_anz, y_anz, "slider")
-    #grid = make_grid(full_image_x, full_image_y, x_anz, y_anz, part_size)
 
     lösbar = False
     while lösbar == False:
@@ -584,10 +581,8 @@ def slider(full_partsdict, grid):
         pygame.display.flip()
 
         for event in pygame.event.get():
-
             if event.type == pygame.QUIT:
                 sys.exit()
-
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
                     sys.exit()
@@ -596,8 +591,8 @@ def slider(full_partsdict, grid):
                     counter = 0
                     init = True
                     return
-            elif event.type == pygame.MOUSEBUTTONDOWN:
 
+            elif event.type == pygame.MOUSEBUTTONDOWN:
                 eventpos_x, eventpos_y = event.pos
                 # find x, y
                 x_wert = int(eventpos_x - full_image_x) // part_size
@@ -614,15 +609,12 @@ def slider(full_partsdict, grid):
                     #print(f'RECT_CENTER: {rect.center}')
                     if rect.collidepoint(event.pos):
                         moving = True
-                        #print("moving")
 
             elif event.type == pygame.MOUSEMOTION and moving == True:
-
                 if fertig == False:
                     rect.move_ip(event.rel)
 
                 screen.fill(GRAY)
-
                 screen.blit(img, rect)
 
                 for key, value in act_pos_dict.items():
@@ -885,18 +877,12 @@ def start_game(game):
 
     uncheck(game)
 
-    pygame.init()
-    clock = pygame.time.Clock()
-
     init = True
     while True:
         start(game)
 
 
 if __name__ == '__main__':
-    #spielbild = r"C:\Users\User\Desktop\Algarve 75\Algarve 75 740.JPEG"
-    # spielbild = find_pic()
-
     controlsWindow.show()
     controlsWindow.puzzle_start.clicked.connect(lambda: start_game("puzzle"))
     controlsWindow.puzzle15_start.clicked.connect(lambda: start_game("puzzle 15"))
@@ -906,13 +892,7 @@ if __name__ == '__main__':
     controlsWindow.sliderABC_start.clicked.connect(lambda: start_game("slider ABC"))
     controlsWindow.sliderpix_start.clicked.connect(lambda: start_game("slider"))
 
-    # init = True
-    # while True:
-    #     start()
-
-    #pic_parts()
-
-
+#pygame.quit()
 sys.exit(app.exec())
 pygame.quit()
 
