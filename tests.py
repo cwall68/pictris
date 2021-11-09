@@ -4,7 +4,7 @@ import os
 import pyautogui
 from PIL import Image
 import random
-import time
+
 
 from PyQt5 import QtCore, QtGui,QtWidgets
 from PyQt5.QtCore import Qt
@@ -138,9 +138,37 @@ offset_y = 50
 #Fading-Ausgangswert
 alphawert_init = 255
 #Steuerung der Geschwindigkeit des Hintergrundbildverschwindens bei Puzzle und Pictris
-fade_factor = 1.4
+fade_factor = 1.6
 
 game_dir = r"D:\Pictures\Bilderserien\Jahre"
+
+def make_game_floor(game):
+    global w_floor
+    global h_floor
+    global screen
+    global screen_width
+    global screen_heigh
+
+    game_x = screen_width - w_floor
+    game_y = screen_height - h_floor
+
+    #os.environ['SDL_VIDEO_WINDOW_POS'] = '%d,%d' % (game_x, game_y)
+    #os.environ['SDL_WINDOW_ALWAYS_ON_TOP'] = '%s' % ('SDL_VIDEO_WINDOW')
+
+    screen = pygame.display.set_mode(size=(w_floor, h_floor))
+    screen.fill(GRAY)
+    #sorgt dafür, dass das pygame Fenster immer on Top ist (Parameter -1)
+    hwnd = pygame.display.get_wm_info()['window']
+    user32 = ctypes.WinDLL("user32")
+    user32.SetWindowPos.restype = wintypes.HWND
+    user32.SetWindowPos.argtypes = [wintypes.HWND, wintypes.HWND, wintypes.INT, wintypes.INT, wintypes.INT,
+                                    wintypes.INT, wintypes.UINT]
+    user32.SetWindowPos(hwnd, -1, game_x, 0, w_floor, h_floor, 0x0001)
+
+    pygame.display.set_caption(game)
+    pygame.display.flip()
+
+make_game_floor("Willkommen")
 
 def start(game):
     global spielbild
@@ -312,29 +340,29 @@ def resize(file):
 
     return(image)
 
-def make_game_floor(game):
-    global w_floor
-    global h_floor
-    global screen
-    global screen_width
-    global screen_heigh
-
-    game_x = screen_width - w_floor
-    game_y = screen_height - h_floor
-
-    #os.environ['SDL_VIDEO_WINDOW_POS'] = '%d,%d' % (game_x, game_y)
-    #os.environ['SDL_WINDOW_ALWAYS_ON_TOP'] = '%s' % ('SDL_VIDEO_WINDOW')
-
-    screen = pygame.display.set_mode(size=(w_floor, h_floor))
-    #sorgt dafür, dass das pygame Fenster immer on Top ist (Parameter -1)
-    hwnd = pygame.display.get_wm_info()['window']
-    user32 = ctypes.WinDLL("user32")
-    user32.SetWindowPos.restype = wintypes.HWND
-    user32.SetWindowPos.argtypes = [wintypes.HWND, wintypes.HWND, wintypes.INT, wintypes.INT, wintypes.INT,
-                                    wintypes.INT, wintypes.UINT]
-    user32.SetWindowPos(hwnd, -1, game_x, 0, w_floor, h_floor, 0x0001)
-
-    pygame.display.set_caption(game)
+# def make_game_floor(game):
+#     global w_floor
+#     global h_floor
+#     global screen
+#     global screen_width
+#     global screen_heigh
+#
+#     game_x = screen_width - w_floor
+#     game_y = screen_height - h_floor
+#
+#     #os.environ['SDL_VIDEO_WINDOW_POS'] = '%d,%d' % (game_x, game_y)
+#     #os.environ['SDL_WINDOW_ALWAYS_ON_TOP'] = '%s' % ('SDL_VIDEO_WINDOW')
+#
+#     screen = pygame.display.set_mode(size=(w_floor, h_floor))
+#     #sorgt dafür, dass das pygame Fenster immer on Top ist (Parameter -1)
+#     hwnd = pygame.display.get_wm_info()['window']
+#     user32 = ctypes.WinDLL("user32")
+#     user32.SetWindowPos.restype = wintypes.HWND
+#     user32.SetWindowPos.argtypes = [wintypes.HWND, wintypes.HWND, wintypes.INT, wintypes.INT, wintypes.INT,
+#                                     wintypes.INT, wintypes.UINT]
+#     user32.SetWindowPos(hwnd, -1, game_x, 0, w_floor, h_floor, 0x0001)
+#
+#     pygame.display.set_caption(game)
 
 def puzzle(full_partsdict, grid):
     global spielbild
@@ -844,8 +872,6 @@ def success(anz):
 
     #sucht nach Zufall ein Bild aus dem Spiuelbildverzeichnis
 def find_pic():
-    import os
-
     global game_dir
 
     full_pic_dict = {}
@@ -890,7 +916,7 @@ if __name__ == '__main__':
     controlsWindow.slider9_start.clicked.connect(lambda: start_game("slider 9"))
     controlsWindow.slider15_start.clicked.connect(lambda: start_game("slider 15"))
     controlsWindow.sliderABC_start.clicked.connect(lambda: start_game("slider ABC"))
-    controlsWindow.sliderpix_start.clicked.connect(lambda: start_game("slider"))
+    controlsWindow.sliderpix_start.released.connect(lambda: start_game("slider"))
 
 #pygame.quit()
 sys.exit(app.exec())
