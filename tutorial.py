@@ -19,8 +19,8 @@ def grab(x, y, w, h):
     return screenshot
 
 
-def blit(part, x, y):
-    screen.blit(part, (x, y))
+# def blit(part, x, y):
+#     screen.blit(part, (x, y))
 
 
 

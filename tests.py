@@ -118,6 +118,7 @@ controlsWindow.setGeometry(0, 0, screen_width, screen_height)
 
 FPS = 60
 GRAY = (150, 150, 150)
+RED = (255, 0, 0)
 
 #clock = pygame.time.Clock()
 
@@ -140,7 +141,7 @@ game_dir = r"D:\Pictures\Bilderserien\Jahre"
 
 def start(game):
     global spielbild
-    global alphawert
+    #global alphawert
     global fade_factor
     global part_size
     global part_anz
@@ -149,6 +150,7 @@ def start(game):
     global grid
     global offset_y
     global GRAY
+    global RED
     global w_floor
     global h_floor
     global screen
@@ -160,18 +162,13 @@ def start(game):
     global x_anz
     global y_anz
 
-    RED = (255, 0, 0)
-    GRAY = (150, 150, 150)
+    # RED = (255, 0, 0)
+    # GRAY = (150, 150, 150)
 
 
     if game == "puzzle" or game == "slider":
         if init == True:
-            #spielbild = r"D:\Pictures\Bilderserien\Alphabet\26 zeichen\26work\26_finfin-1.jpg"
             spielbild = find_pic()
-            # if game == "puzzle":
-            #     part_anz = part_anz_init
-            # else:
-            #     part_anz = 5
             part_anz = part_anz_init
             game_rounds = 0
         else:
@@ -202,20 +199,10 @@ def start(game):
         game = "slider"
 
     image = resize(spielbild)
-
     width, height = image.size
-    pic = pygame.image.load(r"C:\Users\User\Desktop\tmp_resize.JPG")
+    part_size = find_part_size(width, height, part_anz)
 
-    if width > height:
-        part_size = width // part_anz
-        while height // part_size < 2:
-            part_anz += 1
-            part_size = width // part_anz
-    else:
-        part_size = height // part_anz
-        while width // part_size < 2:
-            part_anz += 1
-            part_size = height // part_anz
+    pic = pygame.image.load(r"C:\Users\User\Desktop\tmp_resize.JPG")
 
     control_pic = QtGui.QPixmap(r"C:\Users\User\Desktop\tmp_resize.JPG")
     controlsWindow.pic_control.setGeometry(screen_width - width - offset_y, screen_height - height - offset_y, width, height)
@@ -226,24 +213,25 @@ def start(game):
 
     full_image_x = (w_floor - width) / 2
     full_image_y = h_floor - height - offset_y
-    pic_pos_x = full_image_x
 
     x_anz = width // part_size
     y_anz = height // part_size
 
     grid = make_grid(full_image_x, full_image_y, x_anz, y_anz, part_size)
+    full_partsdict = make_full_partsdict(x_anz, y_anz, game)
 
+    #Hier wird das Spielbild in Position gesenkt
+    pic_pos_x = full_image_x
     move = True
     while move == True:
         for pic_pos_y in range (0,full_image_y):
-            #screen.blit(backdrop,(0,0))
             screen.fill(GRAY)
             screen.blit(pic, (pic_pos_x, pic_pos_y))
             pygame.display.update()
         move = False
 
     if game_rounds > 0 and game == "puzzle":
-        puzzle()
+        puzzle(full_partsdict, grid)
         return
 
     while True:
@@ -257,10 +245,11 @@ def start(game):
                 pass
             elif event.type == pygame.MOUSEBUTTONUP:
                 if game == "puzzle":
-                    puzzle()
+                    #show_fullparts(full_partsdict)
+                    puzzle(full_partsdict, grid)
                     return
                 elif game == "slider":
-                    slider()
+                    slider(full_partsdict, grid)
                     return
 
             elif event.type == pygame.KEYDOWN:
@@ -270,6 +259,21 @@ def start(game):
                     return
 
     return
+
+def find_part_size(width, height, part_anz):
+
+    if width > height:
+        part_size = width // part_anz
+        while height // part_size < 2:
+            part_anz += 1
+            part_size = width // part_anz
+    else:
+        part_size = height // part_anz
+        while width // part_size < 2:
+            part_anz += 1
+            part_size = height // part_anz
+
+    return(part_size)
 
 def uncheck(game):
 
@@ -331,74 +335,83 @@ def make_game_floor(game):
 
     pygame.display.set_caption(game)
 
-def puzzle():
+def puzzle(full_partsdict, grid):
     global spielbild
     global alphawert
     global game_rounds
     global fade
     global w_floor
     global h_floor
+    global x_anz
+    global y_anz
     global init
     global fade_factor
     global partslist
     global GRAY
+    global RED
     global counter
     global fertig
     global font
 
-    partslist = []
+    act_partsdict = {}
+
+    anz_w = x_anz
+    anz_h = y_anz
+
+    parts_list = []
+
     fertig = False
 
     if init == True:
         counter = 0
-        alphawert = 255
 
-    RED = (255, 0, 0)
-    #GRAY = (150, 150, 150)
+    alphawert_init = 255
+    alpha_step = alphawert_init // (x_anz*y_anz)
+    alphawert = alphawert_init
 
-    alphawert = 255
-    #pygame.init()
+    moving = False
+
+    zugzahl = 0
+
+    font = pygame.font.Font(pygame.font.get_default_font(), 36)
+
 
     running = True
     fertig = False
 
-    image = resize(spielbild)
-    width, height = image.size
+    act_partsdict = make_act_partsdict(x_anz, y_anz,"puzzle")
 
-    full_image_x = (w_floor - width) / 2
-    full_image_y = h_floor - height - offset_y
-    pic_pos_x = full_image_x
-    pic_pos_y = full_image_y
+    #Bestimmung der Koordinaten der oberen linken Ecke des Spielbilds
+    pic_pos_x = full_partsdict[0, 0][1][0]
+    pic_pos_y = full_partsdict[0,0][1][1]
 
-    anz_w = width // part_size
-    anz_h = height // part_size
-    fade = int((alphawert // (anz_h * anz_w))*fade_factor)
-    print(f'Breite: {anz_w} Pieces, Höhe: {anz_h} Pieces')
-    full_img = pygame.image.load(r"C:\Users\User\Desktop\tmp_resize.JPG")
-    full_img.convert()
-    #full_image = pygame.Surface((int(width), int(height)))
-    full_img.set_alpha(alphawert)
-
-    x = part_size * random.randint(0, anz_w-1)
-    y = part_size * random.randint(0, anz_h-1)
-
-    img = pic_parts(x,y, "puzzle")
-    part = [img, (x,y)]
+    screen.fill(GRAY)
+    x = random.randint(0, x_anz-1)
+    y = random.randint(0, y_anz-1)
+    img = act_partsdict[x,y][0]
+    img.set_alpha(255)
     rect = img.get_rect()
     rect.center = w_floor // 2, pic_pos_y // 2
-    moving = False
-    randlist = []
-    zugzahl = 0
-    font = pygame.font.Font(pygame.font.get_default_font(), 36)
 
+    for key, value in full_partsdict.items():
+        screen.blit(value[0], value[1])
+
+    pygame.display.flip()
+
+    running = True
+    fade = 0.77
     while running:
 
-        full_img.set_alpha(alphawert)
         screen.fill(GRAY)
-        screen.blit(full_img, (pic_pos_x,pic_pos_y))
 
-        for element in partslist:
-            screen.blit(element[0], element[1])
+        for key, value in full_partsdict.items():
+            value[0].set_alpha(alphawert)
+            screen.blit(value[0], value[1])
+
+        for key, value in act_partsdict.items():
+            if key in parts_list:
+                value[0].set_alpha(255)
+                screen.blit(value[0], value[1])
 
         for event in pygame.event.get():
 
@@ -426,30 +439,30 @@ def puzzle():
             elif event.type == pygame.MOUSEBUTTONUP:
                 zugzahl += 1
 
-                #print(f'X: {rect.left} Ziel-X = {(x + (w_floor - width) / 2)}')
-                #print(f'Y: {rect.top}')
-                drop_x = rect.left
-                ziel_x = int(x+pic_pos_x)
-                drop_y = rect.top
-                ziel_y = int(y + pic_pos_y)
-                if drop_x <= ziel_x + tolerance and drop_x >= ziel_x - tolerance and drop_y <= ziel_y + tolerance and drop_y >= ziel_y - tolerance:
-                    part = [img, (int(x+pic_pos_x), int(y + pic_pos_y))]
-                    partslist.append(part)
-                    randlist.append((x, y))
+                # wo wurde das Teil abgelegt
+                drop_x, drop_y = rect.center
+
+                # find Ablage x, y
+                x_neu = int(drop_x - pic_pos_x) // part_size
+                y_neu = int(drop_y - pic_pos_y) // part_size
+
+                if act_partsdict[x,y][3] == full_partsdict[x_neu, y_neu][3]:
+                    coord_neu = x_neu, y_neu
+                    parts_list.append(coord_neu)
+
                     counter += 1
-                    #print(f'Zugzahl: {zugzahl} / Counter: {counter}')
 
                     for i in range(0,30):
                         blit_grid(grid, (255,255,255))
                         pygame.display.flip()
 
-                    if len(randlist) == (anz_h * anz_w):
+                    if len(parts_list) == (anz_h * anz_w):
                         fertig = True
                         init = False
                         text_surface = pygame.font.Font.render(font, f'Punkte: {counter}', True, (55, 55, 55))
                         screen.blit(text_surface, dest=(50, 50))
-                        for element in partslist:
-                            screen.blit(element[0], element[1])
+                        for key, value in act_partsdict.items():
+                            screen.blit(value[0], value[1])
                         pygame.display.flip()
                         success(6)
                         return
@@ -457,19 +470,22 @@ def puzzle():
                     counter -= 1
 
                 if fertig == False:
-                    x = part_size * random. randint(0,anz_w-1)
-                    y = part_size * random. randint(0,anz_h-1)
-                    while (x,y) in randlist:
-                        x = part_size * random.randint(0, anz_w-1)
-                        y = part_size * random.randint(0, anz_h-1)
+                    x = random. randint(0,anz_w-1)
+                    y = random. randint(0,anz_h-1)
 
-                    img = pic_parts(x, y, "puzzle")
+                    while (x,y) in parts_list:
+                        x = random.randint(0, anz_w-1)
+                        y = random.randint(0, anz_h-1)
+
+                    img = act_partsdict[x, y][0]
 
                     rect = img.get_rect()
                     rect.center = w_floor // 2, pic_pos_y // 2
                 moving = False
-
-                alphawert -= fade
+                # fade = 0.77
+                abzug = 10*(alpha_step**(fade/zugzahl))
+                alphawert = alphawert - abzug
+                print(f'Step: {alpha_step} Abzug: {abzug}')
                 if alphawert <= 0:
                     alphawert = 0
 
@@ -485,8 +501,16 @@ def puzzle():
         blit_grid(grid, RED)
         pygame.display.update()
 
+def copy_full_partsdict(full_partsdict):
+    act_partsdict = {}
 
-def slider():
+    for key, value in full_partsdict.items():
+        act_partsdict[key] = full_partsdict[key]
+
+    return(act_partsdict)
+
+
+def slider(full_partsdict, grid):
     global w_floor
     global h_floor
     global full_image_x
@@ -504,15 +528,15 @@ def slider():
 
     #Dictonary hat als Key die x,y Position im Grid und als Value das Image i
     # und dessen Koordinaten auf dem Spielfeld
-    full_partsdict = {}
+    #full_partsdict = {}
     # Dictonary hat als Key die x,y Werte aus full_partsdict und als Value das Image und dessen aktuelle Koordinaten auf dem Spielfeld
     act_pos_dict = {}
 
 
     running = True
 
-    full_partsdict = make_full_partsdict(x_anz, y_anz, "slider")
-    grid = make_grid(full_image_x, full_image_y, x_anz, y_anz, part_size)
+    #full_partsdict = make_full_partsdict(x_anz, y_anz, "slider")
+    #grid = make_grid(full_image_x, full_image_y, x_anz, y_anz, part_size)
 
     lösbar = False
     while lösbar == False:
@@ -522,6 +546,7 @@ def slider():
             #letztes Feld leer lassen
             if key == (x_anz-1,y_anz-1):
                 continue
+
             rand_x = random.randint(0, x_anz-1)
             rand_y = random.randint(0, y_anz-1)
             randpos = [rand_x, rand_y]
@@ -544,7 +569,8 @@ def slider():
             act_pos_dict[(rand_x, rand_y)] = (value[0], rand_coord, rand_order, value[3])
 
         lösbar = check_solvability(act_pos_dict, x_anz, y_anz)
-
+    print(len(act_pos_dict))
+    screen.fill(GRAY)
     for key, value in act_pos_dict.items():
         #print(f'Publikations_Ordnung: {value[2]} / {value[1]}, Wert: {value[3]}')
         screen.blit(value[0], value[1])
@@ -714,25 +740,6 @@ def check_solvability(act_pos_dict, x_anz, y_anz):
     return(lösbar)
 
 
-def pic_parts(x,y,game):
-    global w_floor
-
-    pic = pygame.image.load(r"C:\Users\User\Desktop\tmp_resize.JPG")
-    w, h = screen_width - (screen_width - w_floor), screen_height
-    screen = pygame.display.set_mode((w, h))
-    screen.blit(pic, (0,0))
-
-    if game == "puzzle":
-        rect = pygame.Rect(x, y, part_size, part_size)
-    if game == "slider":
-        rect = pygame.Rect(x*part_size, y*part_size, part_size, part_size)
-    sub = screen.subsurface(rect)
-    screenshot = pygame.Surface((part_size, part_size))
-    screenshot.blit(sub, (0, 0))
-    part = screenshot
-    screen.fill(GRAY)
-
-    return(part)
 
 def make_full_partsdict(anz_x, anz_y,game):
     global full_image_x
@@ -755,10 +762,57 @@ def make_full_partsdict(anz_x, anz_y,game):
 
     return(full_partsdict)
 
+def make_act_partsdict(anz_x, anz_y,game):
+    global full_image_x
+    global full_image_y
+    global part_size
+
+    full_partsdict = {}
+
+    order = 1
+    value = 1
+    for y in range(0, anz_y):
+        for x in range(0,anz_x):
+            #part = pic_parts(x,y)
+            part_pos_x = full_image_x + x * part_size
+            part_pos_y = full_image_y + y * part_size
+            list_element = make_list_element(x,y, part_pos_x, part_pos_y, order, value, game)
+            full_partsdict[(x,y)] = (list_element)
+            order += 1
+            value += 1
+
+    return(full_partsdict)
+
 def make_list_element(x,y, part_pos_x, part_pos_y, order, value, game):
-    part = pic_parts(x, y,game)
+    part = make_pic_part(x, y, game)
     list_element = [part, (part_pos_x, part_pos_y), order, value]
     return(list_element)
+
+
+def make_pic_part(x, y, game):
+    global w_floor
+    global screen_height
+    global part_size
+
+    pic = pygame.image.load(r"C:\Users\User\Desktop\tmp_resize.JPG")
+    w, h = w_floor, screen_height
+    screen = pygame.display.set_mode((w, h))
+    screen.blit(pic, (0,0))
+
+    # if game == "puzzle":
+    #     rect = pygame.Rect(x, y, part_size, part_size)
+    # if game == "slider":
+    #     rect = pygame.Rect(x*part_size, y*part_size, part_size, part_size)
+    #rect = pygame.Rect(x, y, part_size, part_size)
+    rect = pygame.Rect(x * part_size, y * part_size, part_size, part_size)
+
+    sub = screen.subsurface(rect)
+    screenshot = pygame.Surface((part_size, part_size))
+    screenshot.blit(sub, (0, 0))
+    part = screenshot
+    screen.fill(GRAY)
+
+    return(part)
 
 
 def make_grid(x_init, y_init, x_anz, y_anz, part_size):
@@ -819,6 +873,13 @@ def find_pic():
     select_pic_file = full_pic_dict[select_pic]
     #daily_pic_file = r"C:\Users\User\Desktop\pictris\IMG_4434.jpeg"
     return(select_pic_file)
+
+def show_fullparts(full_partsdict):
+    for key, value in full_partsdict.items():
+        print(f'Publikations_Ordnung: {key} / {value[1]}, Wert: {value[3]}')
+        screen.blit(value[0], value[1])
+    pygame.display.flip()
+
 def start_game(game):
     global init
 
