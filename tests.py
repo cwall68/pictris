@@ -130,9 +130,9 @@ game_rounds = 0
 #Bildabstand vom unteren Rand
 offset_y = 50
 #Fading-Ausgangswert
-alphawert_init = 255
+alphawert_init = 200
 #Steuerung der Geschwindigkeit des Hintergrundbildverschwindens bei Puzzle und Pictris
-fade_factor = 1.61
+fade_factor = 0.2
 
 #w und h sind die Werte für Breite und Höhe des Spielfelds
 #x und y lokalisieren den game floor auf dem Gesamtbildschirm
@@ -202,12 +202,12 @@ def start(game):
     elif game == "puzzle 15":
         spielbild = r"C:\Users\User\Desktop\pictris\Zahlen gerade.jpg"
         part_anz = 4
-        fade_factor = 1.845
+        fade_factor = 0.1
         game = "puzzle"
     elif game == "puzzle ABC":
         spielbild = r"C:\Users\User\Desktop\pictris\ABC Puzzle.jpg"
         part_anz = 5
-        fade_factor = 2.23
+        fade_factor = 0.1
         game = "puzzle"
     elif game == "slider 9":
         spielbild = r"C:\Users\User\Desktop\pictris\Zahlen ungerade.jpg"
@@ -479,11 +479,13 @@ def puzzle(full_partsdict, grid):
                 moving = False
 
                 # Ausblenden des Hintergrunds (erst schneller, dann langsam
-                abzug = (alpha_step* 1/zugzahl)**fade_factor
-                alphawert = alphawert - abzug
-                print(f'Step: {alpha_step} Abzug: {abzug} Alphawert: {alphawert}')
+                #abzug = game_rounds*alpha_step + (alpha_step)**(fade_factor/zugzahl)
+                anz = x_anz*y_anz
+                abzug = (alphawert_init / ((anz - (anz*fade_factor))**0.5) * (zugzahl**0.5))
+                alphawert = alphawert_init - abzug
                 if alphawert <= 0:
                     alphawert = 0
+                print(f'Step: {alpha_step} Abzug: {abzug} Alphawert: {alphawert}')
 
         screen.blit(img, rect)
 
