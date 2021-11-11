@@ -124,13 +124,13 @@ GRAY = (150, 150, 150)
 RED = (255, 0, 0)
 
 #Mindestzahl an Teilen auf der längeren Bildkante
-part_anz_init = 4
+part_anz_init = 3
 #Zähler für die Verkleinerung der Puzzleteile bei Bildpuzzle
 game_rounds = 0
 #Bildabstand vom unteren Rand
 offset_y = 50
 #Fading-Ausgangswert
-alphawert_init = 200
+alphawert_init = 175
 #Steuerung der Geschwindigkeit des Hintergrundbildverschwindens bei Puzzle und Pictris
 fade_factor = 0.2
 
@@ -140,7 +140,7 @@ w_floor, h_floor = screen_width - screen_width // 4, screen_height - 30
 game_x = screen_width - w_floor
 game_y = screen_height - h_floor - offset_y
 
-game_dir = r"D:\Pictures\Bilderserien\Jahre"
+game_dir = r"C:\Users\User\Desktop\best of puzzles"
 
 def make_game_floor(game):
     global w_floor
@@ -363,7 +363,7 @@ def puzzle(full_partsdict, grid):
     if init == True:
         counter = 0
 
-    alpha_step = alphawert_init // (x_anz*y_anz)
+    #alpha_step = alphawert_init // (x_anz*y_anz)
     alphawert = alphawert_init
 
     moving = False
@@ -388,9 +388,6 @@ def puzzle(full_partsdict, grid):
     rect = img.get_rect()
     rect.center = w_floor // 2, pic_pos_y // 2
 
-    for key, value in full_partsdict.items():
-        screen.blit(value[0], value[1])
-
     pygame.display.flip()
 
     running = True
@@ -400,8 +397,12 @@ def puzzle(full_partsdict, grid):
 
         #Ausgabe langsam verblassender Hintergrund
         for key, value in full_partsdict.items():
-            value[0].set_alpha(alphawert)
-            screen.blit(value[0], value[1])
+            if zugzahl == 0:
+                value[0].set_alpha(255)
+                screen.blit(value[0], value[1])
+            else:
+                value[0].set_alpha(alphawert)
+                screen.blit(value[0], value[1])
         #Ausgabe korrekter Puzzelteile
         for key, value in act_partsdict.items():
             if key in parts_list:
@@ -425,6 +426,7 @@ def puzzle(full_partsdict, grid):
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 if rect.collidepoint(event.pos):
                     moving = True
+                    print("Buttondown angenommen")
 
 
             elif event.type == pygame.MOUSEMOTION and moving == True:
@@ -440,52 +442,55 @@ def puzzle(full_partsdict, grid):
                 # find Ablage x, y
                 x_neu = int(drop_x - pic_pos_x) // part_size
                 y_neu = int(drop_y - pic_pos_y) // part_size
-
-                if act_partsdict[x,y][3] == full_partsdict[x_neu, y_neu][3]:
-                    coord_neu = x_neu, y_neu
-                    parts_list.append(coord_neu)
-
-                    counter += 1
-
-                    for i in range(0,30):
-                        blit_grid(grid, (255,255,255))
-                        pygame.display.flip()
-
-                    if len(parts_list) == (y_anz * x_anz):
-                        fertig = True
-                        init = False
-                        text_surface = pygame.font.Font.render(font, f'Punkte: {counter}', True, (55, 55, 55))
-                        screen.blit(text_surface, dest=(50, 50))
-                        for key, value in act_partsdict.items():
-                            screen.blit(value[0], value[1])
-                        pygame.display.flip()
-                        success(6)
-                        return
+                print(f'{x_neu} / {y_neu}')
+                if (x_neu < 0 or x_neu > x_anz-1) or (y_neu < 0 or y_neu > y_anz-1):
+                    pass
                 else:
-                    counter -= 1
+                    if act_partsdict[x,y][3] == full_partsdict[x_neu, y_neu][3]:
+                        coord_neu = x_neu, y_neu
+                        parts_list.append(coord_neu)
 
-                if fertig == False:
-                    x = random. randint(0,x_anz-1)
-                    y = random. randint(0,y_anz-1)
+                        counter += 1
 
-                    while (x,y) in parts_list:
-                        x = random.randint(0, x_anz-1)
-                        y = random.randint(0, y_anz-1)
+                        for i in range(0,30):
+                            blit_grid(grid, (255,255,255))
+                            pygame.display.flip()
 
-                    img = act_partsdict[x, y][0]
+                        if len(parts_list) == (y_anz * x_anz):
+                            fertig = True
+                            init = False
+                            text_surface = pygame.font.Font.render(font, f'Punkte: {counter}', True, (55, 55, 55))
+                            screen.blit(text_surface, dest=(50, 50))
+                            for key, value in act_partsdict.items():
+                                screen.blit(value[0], value[1])
+                            pygame.display.flip()
+                            success(6)
+                            return
+                    else:
+                        counter -= 1
 
-                    rect = img.get_rect()
-                    rect.center = w_floor // 2, pic_pos_y // 2
-                moving = False
+                    if fertig == False:
+                        x = random. randint(0,x_anz-1)
+                        y = random. randint(0,y_anz-1)
 
-                # Ausblenden des Hintergrunds (erst schneller, dann langsam
-                #abzug = game_rounds*alpha_step + (alpha_step)**(fade_factor/zugzahl)
-                anz = x_anz*y_anz
-                abzug = (alphawert_init / ((anz - (anz*fade_factor))**0.5) * (zugzahl**0.5))
-                alphawert = alphawert_init - abzug
-                if alphawert <= 0:
-                    alphawert = 0
-                print(f'Step: {alpha_step} Abzug: {abzug} Alphawert: {alphawert}')
+                        while (x,y) in parts_list:
+                            x = random.randint(0, x_anz-1)
+                            y = random.randint(0, y_anz-1)
+
+                        img = act_partsdict[x, y][0]
+
+                        rect = img.get_rect()
+                        rect.center = w_floor // 2, pic_pos_y // 2
+                    moving = False
+
+                    # Ausblenden des Hintergrunds (erst schneller, dann langsam
+                    #abzug = game_rounds*alpha_step + (alpha_step)**(fade_factor/zugzahl)
+                    anz = x_anz*y_anz
+                    abzug = (alphawert_init / ((anz - (anz*fade_factor))**0.5) * (zugzahl**0.5))
+                    alphawert = alphawert_init - abzug
+                    if alphawert <= 8:
+                        alphawert = 8
+                    print(f'Abzug: {abzug} Alphawert: {alphawert}')
 
         screen.blit(img, rect)
 
@@ -857,7 +862,7 @@ def find_pic():
 
     select_pic = random.randint(1, file_count)
     select_pic_file = full_pic_dict[select_pic]
-    #daily_pic_file = r"C:\Users\User\Desktop\pictris\IMG_4434.jpeg"
+    #select_pic_file = r"C:\Users\User\Downloads\IMG_4462.jpeg"
     return(select_pic_file)
 
 def show_fullparts(full_partsdict):
