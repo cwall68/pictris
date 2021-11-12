@@ -28,7 +28,7 @@ class Controls(QtWidgets.QMainWindow):
         self.setWindowTitle('Pictris Controls')
 
         self.puzzle_start = QPushButton("Puzzle Pix", self)
-        self.puzzle_start.setGeometry(170, 330, 130, 20)
+        self.puzzle_start.setGeometry(170, 330, 130, 40)
         self.puzzle_start.setCheckable(True)
         self.puzzle_start.setStyleSheet(
             ":checked{background: solid red}"
@@ -39,7 +39,7 @@ class Controls(QtWidgets.QMainWindow):
         )
 
         self.puzzle15_start = QPushButton("Puzzle 15", self)
-        self.puzzle15_start.setGeometry(170, 230, 130, 20)
+        self.puzzle15_start.setGeometry(170, 230, 130, 40)
         self.puzzle15_start.setCheckable(True)
         self.puzzle15_start.setStyleSheet(
             ":checked{background: solid red}"
@@ -50,7 +50,7 @@ class Controls(QtWidgets.QMainWindow):
         )
 
         self.puzzleABC_start = QPushButton("Puzzle ABC", self)
-        self.puzzleABC_start.setGeometry(170, 280, 130, 20)
+        self.puzzleABC_start.setGeometry(170, 280, 130, 40)
         self.puzzleABC_start.setCheckable(True)
         self.puzzleABC_start.setStyleSheet(
             ":checked{background: solid red}"
@@ -61,7 +61,7 @@ class Controls(QtWidgets.QMainWindow):
         )
 
         self.slider9_start = QPushButton("Slider 9", self)
-        self.slider9_start.setGeometry(170, 430, 130, 20)
+        self.slider9_start.setGeometry(170, 430, 130, 40)
         self.slider9_start.setCheckable(True)
         self.slider9_start.setStyleSheet(
             ":checked{background: solid lightblue}"
@@ -72,7 +72,7 @@ class Controls(QtWidgets.QMainWindow):
         )
 
         self.slider15_start = QPushButton("Slider 15", self)
-        self.slider15_start.setGeometry(170, 480, 130, 20)
+        self.slider15_start.setGeometry(170, 480, 130, 40)
         self.slider15_start.setCheckable(True)
         self.slider15_start.setStyleSheet(
             ":checked{background: solid lightblue}"
@@ -83,7 +83,7 @@ class Controls(QtWidgets.QMainWindow):
         )
 
         self.sliderABC_start = QPushButton("Slider ABC", self)
-        self.sliderABC_start.setGeometry(170, 530, 130, 20)
+        self.sliderABC_start.setGeometry(170, 530, 130, 40)
         self.sliderABC_start.setCheckable(True)
         self.sliderABC_start.setStyleSheet(
             ":checked{background: solid lightblue}"
@@ -94,7 +94,7 @@ class Controls(QtWidgets.QMainWindow):
         )
 
         self.sliderpix_start = QPushButton("Slider Pix", self)
-        self.sliderpix_start.setGeometry(170, 580, 130, 20)
+        self.sliderpix_start.setGeometry(170, 580, 130, 40)
         self.sliderpix_start.setCheckable(True)
         self.sliderpix_start.setStyleSheet(
             ":checked{background: solid lightblue}"
@@ -124,7 +124,7 @@ GRAY = (150, 150, 150)
 RED = (255, 0, 0)
 
 #Mindestzahl an Teilen auf der längeren Bildkante
-part_anz_init = 3
+part_anz_init = 4
 #Zähler für die Verkleinerung der Puzzleteile bei Bildpuzzle
 game_rounds = 0
 #Bildabstand vom unteren Rand
@@ -633,23 +633,26 @@ def slider(full_partsdict, grid):
                 #wo wurde das Teil abgelegt
                 drop_x, drop_y = rect.center
 
-                # find x, y
+                # finde x, y
                 x_neu = int(drop_x - full_image_x) // part_size
                 y_neu = int(drop_y - full_image_y) // part_size
 
-                # Nur auf angrenzende leere Felder ablegen
+                # Nicht außerhalb des Feldes ablegen
                 if (x_neu, y_neu) in act_pos_dict.keys():
                     pass
                 elif x_neu < 0 or x_neu > x_anz:
                     pass
                 elif y_neu < 0 or y_neu > y_anz:
                     pass
-                elif abs(x_neu - x_wert) > 1:
-                    pass
-                elif abs(y_neu - y_wert) > 1:
-                    pass
-                elif (abs(x_neu - x_wert) + abs(y_neu - y_wert)) > 1:
-                    pass
+
+                # Nur auf angrenzende leere Felder ablegen
+                # elif abs(x_neu - x_wert) > 1:
+                #     pass
+                # elif abs(y_neu - y_wert) > 1:
+                #     pass
+                # elif (abs(x_neu - x_wert) + abs(y_neu - y_wert)) > 1:
+                #     pass
+
                 else:
                     #Neue Position und Feldordnungswert im Dict eintragen
                     feldordnungswert = y_neu*x_anz + x_neu
