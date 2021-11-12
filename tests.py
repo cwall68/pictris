@@ -521,6 +521,10 @@ def slider(full_partsdict, grid):
     global y_anz
     global part_anz
 
+    sender = controlsWindow.sender()
+    spiel = sender.text()
+    print(f'Spiel: {spiel}')
+
     font = pygame.font.Font(pygame.font.get_default_font(), 36)
 
     moving = False
@@ -570,12 +574,12 @@ def slider(full_partsdict, grid):
     print(len(act_pos_dict))
     screen.fill(GRAY)
     for key, value in act_pos_dict.items():
-        #print(f'Publikations_Ordnung: {value[2]} / {value[1]}, Wert: {value[3]}')
         screen.blit(value[0], value[1])
     blit_grid(grid, (255,0,0))
     text_surface = pygame.font.Font.render(font, f'Züge: {counter}', True, (55, 55, 55))
     screen.blit(text_surface, dest=(50, 50))
     pygame.display.flip()
+
 
     while running:
 
@@ -644,14 +648,15 @@ def slider(full_partsdict, grid):
                     pass
                 elif y_neu < 0 or y_neu > y_anz:
                     pass
-
-                # Nur auf angrenzende leere Felder ablegen
-                # elif abs(x_neu - x_wert) > 1:
-                #     pass
-                # elif abs(y_neu - y_wert) > 1:
-                #     pass
-                # elif (abs(x_neu - x_wert) + abs(y_neu - y_wert)) > 1:
-                #     pass
+                #elif spiel != "Slider Pix":
+                #Nur auf angrenzende leere Felder ablegen
+                #spiel != "Slider Pix" or
+                elif abs(x_neu - x_wert) > 1 and not ((spiel == "Slider ABC") or (spiel == "Slider Pix")):
+                    pass
+                elif abs(y_neu - y_wert) > 1 and not ((spiel == "Slider ABC") or (spiel == "Slider Pix")):
+                    pass
+                elif (abs(x_neu - x_wert) + abs(y_neu - y_wert)) > 1 and not ((spiel == "Slider ABC") or (spiel == "Slider Pix")):
+                    pass
 
                 else:
                     #Neue Position und Feldordnungswert im Dict eintragen
