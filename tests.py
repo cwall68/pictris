@@ -644,9 +644,9 @@ def slider(full_partsdict, grid):
                 # Nicht außerhalb des Feldes ablegen
                 if (x_neu, y_neu) in act_pos_dict.keys():
                     pass
-                elif x_neu < 0 or x_neu > x_anz:
+                elif x_neu < 0 or x_neu >= x_anz:
                     pass
-                elif y_neu < 0 or y_neu > y_anz:
+                elif y_neu < 0 or y_neu >= y_anz:
                     pass
                 #elif spiel != "Slider Pix":
                 #Nur auf angrenzende leere Felder ablegen
