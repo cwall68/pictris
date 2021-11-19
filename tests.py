@@ -4,6 +4,7 @@ import os
 import pyautogui
 from PIL import Image
 import random
+import copy
 
 
 from PyQt5 import QtCore, QtGui,QtWidgets
@@ -165,7 +166,7 @@ def make_game_floor(game):
     pygame.display.set_caption(game)
     pygame.display.flip()
 
-make_game_floor("Willkommen")
+#make_game_floor("Willkommen")
 
 def start(game):
     global spielbild
@@ -188,7 +189,6 @@ def start(game):
     global font
     global x_anz
     global y_anz
-
 
     if game == "puzzle" or game == "slider":
         if init == True:
@@ -225,7 +225,7 @@ def start(game):
     #Hier wird das oben bestimmte Spielbild in das Spieformat gebracht und in diesem Format als tmp Pic abgelegt
     image = resize(spielbild)
     width, height = image.size
-    part_size = find_part_size(width, height, part_anz)
+    part_size, part_anz = find_part_size(width, height, part_anz)
 
     #Bestimmung der Position des Gesamtspielbildes
     full_image_x = (w_floor - width) / 2
@@ -282,22 +282,21 @@ def start(game):
                 if event.key == pygame.K_SPACE:
                     return
 
-    return
 
 def find_part_size(width, height, part_anz):
 
     if width > height:
         part_size = width // part_anz
-        while height // part_size < 2:
+        while height // part_size < 3:
             part_anz += 1
             part_size = width // part_anz
     else:
         part_size = height // part_anz
-        while width // part_size < 2:
+        while width // part_size < 3:
             part_anz += 1
             part_size = height // part_anz
 
-    return(part_size)
+    return(part_size, part_anz)
 
 def uncheck(game):
 
@@ -511,7 +510,8 @@ def copy_full_partsdict(full_partsdict):
 
     return(act_partsdict)
 
-
+replay = False
+replay_dict = {}
 def slider(full_partsdict, grid):
     global w_floor
     global h_floor
@@ -520,6 +520,10 @@ def slider(full_partsdict, grid):
     global x_anz
     global y_anz
     global part_anz
+    global replay
+    global replay_dict
+
+    #replay_dict = {}
 
     sender = controlsWindow.sender()
     spiel = sender.text()
@@ -540,38 +544,46 @@ def slider(full_partsdict, grid):
 
     running = True
 
-    lösbar = False
-    while lösbar == False:
-        rand_values = []
-        # Aus den Bildteilen ein Puzzle machen
-        for key, value in full_partsdict.items():
-            #letztes Feld leer lassen
-            if key == (x_anz-1,y_anz-1):
-                continue
+    if replay == False:
+        replay_dict = {}
+        lösbar = False
+        while lösbar == False:
+            rand_values = []
+            # Aus den Bildteilen ein Puzzle machen
+            for key, value in full_partsdict.items():
+                #letztes Feld leer lassen
+                if key == (x_anz-1,y_anz-1):
+                    continue
 
-            rand_x = random.randint(0, x_anz-1)
-            rand_y = random.randint(0, y_anz-1)
-            randpos = [rand_x, rand_y]
-
-            #Vermeidung von Koordinaten-Dopplern
-            while randpos in rand_values or randpos == [0, 0]:
                 rand_x = random.randint(0, x_anz-1)
                 rand_y = random.randint(0, y_anz-1)
                 randpos = [rand_x, rand_y]
 
-            #Ordnungsnummer des Zufallsquadrats
-            rand_order = rand_y * x_anz + rand_x + 1
-            rand_values.append(randpos)
+                #Vermeidung von Koordinaten-Dopplern
+                while randpos in rand_values or randpos == [0, 0]:
+                    rand_x = random.randint(0, x_anz-1)
+                    rand_y = random.randint(0, y_anz-1)
+                    randpos = [rand_x, rand_y]
 
-            rand_pos_x = full_image_x + rand_x * part_size
-            rand_pos_y = full_image_y + rand_y * part_size
+                #Ordnungsnummer des Zufallsquadrats
+                rand_order = rand_y * x_anz + rand_x + 1
+                rand_values.append(randpos)
 
-            rand_coord = (rand_pos_x, rand_pos_y)
+                rand_pos_x = full_image_x + rand_x * part_size
+                rand_pos_y = full_image_y + rand_y * part_size
 
-            act_pos_dict[(rand_x, rand_y)] = (value[0], rand_coord, rand_order, value[3])
+                rand_coord = (rand_pos_x, rand_pos_y)
 
-        lösbar = check_solvability(act_pos_dict, x_anz, y_anz)
-    print(len(act_pos_dict))
+                act_pos_dict[(rand_x, rand_y)] = (value[0], rand_coord, rand_order, value[3])
+                replay_dict[(rand_x, rand_y)] = (value[0], rand_coord, rand_order, value[3])
+
+            lösbar = check_solvability(act_pos_dict, x_anz, y_anz)
+
+    else:
+        act_pos_dict = replay_dict.copy()
+        print(f'Replay {replay}')
+
+
     screen.fill(GRAY)
     for key, value in act_pos_dict.items():
         screen.blit(value[0], value[1])
@@ -595,6 +607,7 @@ def slider(full_partsdict, grid):
                     game_rounds = 0
                     counter = 0
                     init = True
+                    replay = False
                     return
 
             elif event.type == pygame.MOUSEBUTTONDOWN:
@@ -641,16 +654,15 @@ def slider(full_partsdict, grid):
                 x_neu = int(drop_x - full_image_x) // part_size
                 y_neu = int(drop_y - full_image_y) // part_size
 
-                # Nicht außerhalb des Feldes ablegen
+                # Nicht auf besetzte Felder ablegen
                 if (x_neu, y_neu) in act_pos_dict.keys():
                     pass
+                # Nicht außerhalb des Spielfelds ablegen
                 elif x_neu < 0 or x_neu >= x_anz:
                     pass
                 elif y_neu < 0 or y_neu >= y_anz:
                     pass
-                #elif spiel != "Slider Pix":
-                #Nur auf angrenzende leere Felder ablegen
-                #spiel != "Slider Pix" or
+                #Nur auf angrenzendes leeres Feld ablegen
                 elif abs(x_neu - x_wert) > 1 and not ((spiel == "Slider ABC") or (spiel == "Slider Pix")):
                     pass
                 elif abs(y_neu - y_wert) > 1 and not ((spiel == "Slider ABC") or (spiel == "Slider Pix")):
@@ -682,6 +694,7 @@ def slider(full_partsdict, grid):
                             screen.blit(text_surface, dest=(50, 50))
                             pygame.display.flip()
                             success(6)
+                            replay = True
                             return
                         else:
                             i +=1
