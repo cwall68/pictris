@@ -189,15 +189,17 @@ def start(game):
     global font
     global x_anz
     global y_anz
+    global replay
 
     if game == "puzzle" or game == "slider":
-        if init == True:
+        if init == True and replay == False:
             spielbild = find_pic()
             part_anz = part_anz_init
             game_rounds = 0
         else:
-            game_rounds += 1
-            part_anz = part_anz + game_rounds
+            if game == "puzzle":
+                game_rounds += 1
+                part_anz = part_anz + game_rounds
 
     elif game == "puzzle 15":
         spielbild = r"C:\Users\User\Desktop\pictris\Zahlen gerade.jpg"
@@ -352,6 +354,7 @@ def puzzle(full_partsdict, grid):
     global counter
     global fertig
     global font
+    global replay
 
     act_partsdict = {}
 
@@ -373,7 +376,7 @@ def puzzle(full_partsdict, grid):
 
     fertig = False
 
-    act_partsdict = make_act_partsdict(x_anz, y_anz,"puzzle")
+    act_partsdict = make_full_partsdict(x_anz, y_anz,"puzzle")
 
     #Bestimmung der Koordinaten der oberen linken Ecke des Spielbilds
     pic_pos_x = full_partsdict[0, 0][1][0]
@@ -420,6 +423,7 @@ def puzzle(full_partsdict, grid):
                     game_rounds = 0
                     counter = 0
                     init = True
+                    replay = False
                     return
 
             elif event.type == pygame.MOUSEBUTTONDOWN:
@@ -511,7 +515,9 @@ def copy_full_partsdict(full_partsdict):
     return(act_partsdict)
 
 replay = False
+#Dictionary bewahrt die Zufallskonfiguration des Spielfelds um dieses in gleicher Form wieder spielen zu können
 replay_dict = {}
+
 def slider(full_partsdict, grid):
     global w_floor
     global h_floor
@@ -522,8 +528,6 @@ def slider(full_partsdict, grid):
     global part_anz
     global replay
     global replay_dict
-
-    #replay_dict = {}
 
     sender = controlsWindow.sender()
     spiel = sender.text()
@@ -536,9 +540,6 @@ def slider(full_partsdict, grid):
     #Zugzahl
     counter = 0
 
-    #Dictonary hat als Key die x,y Position im Grid und als Value das Image i
-    # und dessen Koordinaten auf dem Spielfeld
-    #full_partsdict = {}
     # Dictonary hat als Key die x,y Werte aus full_partsdict und als Value das Image und dessen aktuelle Koordinaten auf dem Spielfeld
     act_pos_dict = {}
 
@@ -618,13 +619,13 @@ def slider(full_partsdict, grid):
                 #print(f'Coord: {x_wert} / {y_wert}')
                 #Absturz bei Klick in leeres Feld verhindern
                 if (x_wert, y_wert) not in act_pos_dict.keys():
-                    print("leeres Feld")
+                    pass
                 else:
                     # img rect zuweisen aus dict_actualPosition
                     img = act_pos_dict[(x_wert, y_wert)][0]
                     rect = img.get_rect()
                     rect.center = (full_image_x + x_wert*part_size + part_size//2), (full_image_y + y_wert*part_size + part_size//2)
-                    #print(f'RECT_CENTER: {rect.center}')
+
                     if rect.collidepoint(event.pos):
                         moving = True
 
@@ -709,11 +710,13 @@ def slider(full_partsdict, grid):
 
     return
 
+# Hier wird nach dem "Parity-Verfahren" (siehe Wikipedia zu 15-Puzzle) die Lösbarkeit der Teile-Verteilung geprüft
 def check_solvability(act_pos_dict, x_anz, y_anz):
 
     n2 = 0
     for key, value in dict(sorted(act_pos_dict.items(), key=lambda x: x[1][2])).items():
         # Wobei x[1] für Value steht (x[0] wäre der key) und der zweite Wert in der eckigen Klamer die Position in der Value-Liste bezeichnet
+        # hier wird demgemäß nach Ordnungsposition sortiert
         # print(f'Ordnung: {value[2]}, Wert: {value[3]}')
         order = value[2]
         reference = value[3]
@@ -739,10 +742,12 @@ def check_solvability(act_pos_dict, x_anz, y_anz):
     #if (x_anz == 3 and y_anz == 4):
     if ((parity_start % 2) == 0 and (parity_goal % 2) == 0) or ((parity_start % 2) != 0 and (parity_goal % 2) != 0):
         lösbar = True
+        #Sonderlocke bei nicht-quadratischen Spielfeldern
         if (x_anz % 2) != 0 and (y_anz % 2) == 0:
             lösbar = False
     else:
         lösbar = False
+        # Sonderlocke bei nicht-quadratischen Spielfeldern
         if (x_anz % 2) != 0 and (y_anz % 2) == 0:
             lösbar = True
 
@@ -754,7 +759,7 @@ def check_solvability(act_pos_dict, x_anz, y_anz):
     return(lösbar)
 
 
-
+#erzeugt ein Dictionary aller Teile mit x,y Koordinaten im Grid als Key und [Teilchen, (part_pos_x, part_pos_y), Position in Reihenfolge im Grid, Wert] als Value
 def make_full_partsdict(anz_x, anz_y,game):
     global full_image_x
     global full_image_y
@@ -776,26 +781,26 @@ def make_full_partsdict(anz_x, anz_y,game):
 
     return(full_partsdict)
 
-def make_act_partsdict(anz_x, anz_y,game):
-    global full_image_x
-    global full_image_y
-    global part_size
-
-    full_partsdict = {}
-
-    order = 1
-    value = 1
-    for y in range(0, anz_y):
-        for x in range(0,anz_x):
-            #part = pic_parts(x,y)
-            part_pos_x = full_image_x + x * part_size
-            part_pos_y = full_image_y + y * part_size
-            list_element = make_list_element(x,y, part_pos_x, part_pos_y, order, value, game)
-            full_partsdict[(x,y)] = (list_element)
-            order += 1
-            value += 1
-
-    return(full_partsdict)
+# def make_act_partsdict(anz_x, anz_y,game):
+#     global full_image_x
+#     global full_image_y
+#     global part_size
+#
+#     full_partsdict = {}
+#
+#     order = 1
+#     value = 1
+#     for y in range(0, anz_y):
+#         for x in range(0,anz_x):
+#             #part = pic_parts(x,y)
+#             part_pos_x = full_image_x + x * part_size
+#             part_pos_y = full_image_y + y * part_size
+#             list_element = make_list_element(x,y, part_pos_x, part_pos_y, order, value, game)
+#             full_partsdict[(x,y)] = (list_element)
+#             order += 1
+#             value += 1
+#
+#     return(full_partsdict)
 
 def make_list_element(x,y, part_pos_x, part_pos_y, order, value, game):
     part = make_pic_part(x, y, game)
@@ -894,10 +899,12 @@ def show_fullparts(full_partsdict):
 
 def start_game(game):
     global init
+    global replay
 
     uncheck(game)
 
     init = True
+    replay = False
     while True:
         start(game)
 
