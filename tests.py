@@ -4,7 +4,7 @@ import os
 import pyautogui
 from PIL import Image
 import random
-import copy
+import math
 
 
 from PyQt5 import QtCore, QtGui,QtWidgets
@@ -32,10 +32,10 @@ class Controls(QtWidgets.QMainWindow):
         self.puzzle_start.setGeometry(170, 330, 130, 40)
         self.puzzle_start.setCheckable(True)
         self.puzzle_start.setStyleSheet(
-            ":checked{background: solid red}"
-            ":checked{border: 2px solid lightblue}"
+            ":checked{background: solid lightgreen}"
+            ":checked{border: 2px solid red}"
             ":!checked{background-color: rgb(255,255,255)}"
-            ":!checked{border: 2px solid red}"
+            ":!checked{border: 2px solid lightgreen}"
             ":!checked{font-size: 10px}"
         )
 
@@ -43,10 +43,10 @@ class Controls(QtWidgets.QMainWindow):
         self.puzzle15_start.setGeometry(170, 230, 130, 40)
         self.puzzle15_start.setCheckable(True)
         self.puzzle15_start.setStyleSheet(
-            ":checked{background: solid red}"
-            ":checked{border: 2px solid lightblue}"
+            ":checked{background: solid lightgreen}"
+            ":checked{border: 2px solid red}"
             ":!checked{background-color: rgb(255,255,255)}"
-            ":!checked{border: 2px solid red}"
+            ":!checked{border: 2px solid lightgreen}"
             ":!checked{font-size: 10px}"
         )
 
@@ -54,10 +54,10 @@ class Controls(QtWidgets.QMainWindow):
         self.puzzleABC_start.setGeometry(170, 280, 130, 40)
         self.puzzleABC_start.setCheckable(True)
         self.puzzleABC_start.setStyleSheet(
-            ":checked{background: solid red}"
-            ":checked{border: 2px solid lightblue}"
+            ":checked{background: solid lightgreen}"
+            ":checked{border: 2px solid red}"
             ":!checked{background-color: rgb(255,255,255)}"
-            ":!checked{border: 2px solid red}"
+            ":!checked{border: 2px solid lightgreen}"
             ":!checked{font-size: 10px}"
         )
 
@@ -102,6 +102,17 @@ class Controls(QtWidgets.QMainWindow):
             ":checked{border: 2px solid red}"
             ":!checked{background-color: rgb(255,255,255)}"
             ":!checked{border: 2px solid lightblue}"
+            ":!checked{font-size: 10px}"
+        )
+
+        self.pictris_start = QPushButton("Pictris", self)
+        self.pictris_start.setGeometry(170, 680, 130, 40)
+        self.pictris_start.setCheckable(True)
+        self.pictris_start.setStyleSheet(
+            ":checked{background: solid yellow}"
+            ":checked{border: 2px solid red}"
+            ":!checked{background-color: rgb(255,255,255)}"
+            ":!checked{border: 2px solid yellow}"
             ":!checked{font-size: 10px}"
         )
 
@@ -191,7 +202,7 @@ def start(game):
     global y_anz
     global replay
 
-    if game == "puzzle" or game == "slider":
+    if game == "puzzle" or game == "slider" or game == "pictris":
         if init == True and replay == False:
             spielbild = find_pic()
             part_anz = part_anz_init
@@ -277,6 +288,9 @@ def start(game):
                 elif game == "slider":
                     slider(full_partsdict, grid)
                     return
+                elif game == "pictris":
+                    pictris(full_partsdict, grid)
+                    return
 
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
@@ -309,6 +323,7 @@ def uncheck(game):
     controlsWindow.slider9_start.setChecked(False)
     controlsWindow.slider15_start.setChecked(False)
     controlsWindow.sliderABC_start.setChecked(False)
+    controlsWindow.pictris_start.setChecked(False)
     if game == "puzzle":
         controlsWindow.puzzle_start.setChecked(True)
     elif game == "puzzle 15":
@@ -323,6 +338,8 @@ def uncheck(game):
         controlsWindow.slider9_start.setChecked(True)
     elif game == "slider 15":
         controlsWindow.slider15_start.setChecked(True)
+    elif game == "pictris":
+        controlsWindow.pictris_start.setChecked(True)
 
 
 def resize(file):
@@ -360,6 +377,8 @@ def puzzle(full_partsdict, grid):
 
     parts_list = []
 
+    if fertig == True:
+        start_game("pictris")
     fertig = False
 
     if init == True:
@@ -429,7 +448,7 @@ def puzzle(full_partsdict, grid):
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 if rect.collidepoint(event.pos):
                     moving = True
-                    print("Buttondown angenommen")
+                    #print("Buttondown angenommen")
 
 
             elif event.type == pygame.MOUSEMOTION and moving == True:
@@ -495,6 +514,259 @@ def puzzle(full_partsdict, grid):
                         alphawert = 8
                     print(f'Abzug: {abzug} Alphawert: {alphawert}')
 
+        screen.blit(img, rect)
+
+        text_surface = pygame.font.Font.render(font, f'Punkte: {counter}', True, (55, 55, 55))
+        screen.blit(text_surface, dest=(50, 50))
+
+        pygame.draw.rect(screen, RED, rect, 1)
+
+        blit_grid(grid, RED)
+        pygame.display.update()
+
+
+def part_fall(img, full_partsdict, x, y, act_partsdict, alphawert):
+    global x_anz
+    global part_size
+    global full_image_x
+    global full_image_y
+
+
+    # Hier wird das Spielteil gesenkt
+    start_pos_x = w_floor // 2 - part_size // 2
+    start_pos_Y = (full_image_y // 2) - int(part_size / 2)
+
+    #Präzisierung der Position bei mittigem Startpunkt
+    if (x_anz % 2) != 0:
+        start_pos_x = full_image_x + (x_anz // 2) * part_size
+
+    pic_pos_x = start_pos_x
+    max_pos_y = full_partsdict[x_anz-1, y_anz-1][1][1]
+
+    move = True
+    while move == True:
+        for pic_pos_y in range(start_pos_Y, max_pos_y+1):
+            stop = False
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    sys.exit()
+                elif event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_ESCAPE:
+                        sys.exit()
+                    if event.key == pygame.K_UP:
+                        pic_pos_y = max_pos_y
+                        stop = True
+                    if event.key == pygame.K_RIGHT:
+                        pic_pos_x = full_image_x + math.floor((pic_pos_x + part_size - full_image_x) / part_size) * part_size
+                    if event.key == pygame.K_LEFT:
+                        pic_pos_x = full_image_x + math.ceil((pic_pos_x - part_size - full_image_x) / part_size) * part_size
+
+            screen.fill(GRAY)
+            for key, value in full_partsdict.items():
+                value[0].set_alpha(alphawert)
+                screen.blit(value[0], value[1])
+
+                if (pic_pos_x, pic_pos_y) == value[1]:
+                    if value[3] == full_partsdict[x,y][3]:
+                        act_partsdict[x,y] = full_partsdict[x,y]
+                        stop = True
+                        print("korrekter Platz")
+                        if len(act_partsdict) == len(full_partsdict):
+                            success(6)
+                            act_partsdict.clear()
+                            fertig = True
+                        #break
+            for key, value in act_partsdict.items():
+                # if key in parts_list:
+                value[0].set_alpha(255)
+                screen.blit(value[0], value[1])
+            img.set_alpha(255)
+            screen.blit(img, (pic_pos_x, pic_pos_y))
+            blit_grid(grid, RED)
+            pygame.display.update()
+            if stop:
+                break
+
+        move = False
+
+    return(act_partsdict)
+
+def pictris(full_partsdict, grid):
+    global spielbild
+    global alphawert_init
+    global game_rounds
+    global fade
+    global w_floor
+    global h_floor
+    global x_anz
+    global y_anz
+    global init
+    global fade_factor
+    global partslist
+    global GRAY
+    global RED
+    global counter
+    global fertig
+    global font
+    global replay
+
+    act_partsdict = {}
+
+    parts_list = []
+
+    fertig = False
+
+    if init == True:
+        counter = 0
+
+    # alpha_step = alphawert_init // (x_anz*y_anz)
+    alphawert = alphawert_init
+
+    moving = False
+
+    zugzahl = 0
+
+    font = pygame.font.Font(pygame.font.get_default_font(), 36)
+
+    fertig = False
+
+    #act_partsdict = make_full_partsdict(x_anz, y_anz, "pictris")
+
+    # Bestimmung der Koordinaten der oberen linken Ecke des Spielbilds
+    pic_pos_x = full_partsdict[0, 0][1][0]
+    pic_pos_y = full_partsdict[0, 0][1][1]
+
+    screen.fill(GRAY)
+    x = random.randint(0, x_anz - 1)
+    y = random.randint(0, y_anz - 1)
+    img = full_partsdict[x, y][0]
+    img.set_alpha(255)
+    rect = img.get_rect()
+    rect.center = w_floor // 2, pic_pos_y // 2
+
+    #pygame.display.flip()
+
+    running = True
+    # fade = 0.77
+    while running:
+        screen.fill(GRAY)
+
+        # Ausgabe langsam verblassender Hintergrund
+        for key, value in full_partsdict.items():
+            if zugzahl == 0:
+                value[0].set_alpha(255)
+                screen.blit(value[0], value[1])
+            else:
+                alphawert = 75
+                value[0].set_alpha(alphawert)
+                screen.blit(value[0], value[1])
+        # Ausgabe korrekt plazierter Teile
+        for key, value in act_partsdict.items():
+            #if key in parts_list:
+            value[0].set_alpha(255)
+            screen.blit(value[0], value[1])
+
+        for event in pygame.event.get():
+
+            if event.type == pygame.QUIT:
+                sys.exit()
+
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    sys.exit()
+                if event.key == pygame.K_SPACE:
+                    game_rounds = 0
+                    counter = 0
+                    init = True
+                    replay = False
+                    return
+                if event.key == pygame.K_DOWN:
+                    act_partsdict = part_fall(img, full_partsdict, x, y, act_partsdict, alphawert)
+                    x = random.randint(0, x_anz - 1)
+                    y = random.randint(0, y_anz - 1)
+                    while (x,y) in act_partsdict.keys():
+                        x = random.randint(0, x_anz - 1)
+                        y = random.randint(0, y_anz - 1)
+                    img = full_partsdict[x, y][0]
+                    img.set_alpha(255)
+                    rect = img.get_rect()
+                    rect.center = w_floor // 2, pic_pos_y // 2
+
+
+                    pygame.display.flip()
+                    zugzahl += 1
+
+
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                if rect.collidepoint(event.pos):
+                    moving = True
+                    # print("Buttondown angenommen")
+
+
+            elif event.type == pygame.MOUSEMOTION and moving == True:
+                if fertig == False:
+                    rect.move_ip(event.rel)
+
+            elif event.type == pygame.MOUSEBUTTONUP:
+                zugzahl += 1
+
+                # wo wurde das Teil abgelegt
+                drop_x, drop_y = rect.center
+
+                # find Ablage x, y
+                x_neu = int(drop_x - pic_pos_x) // part_size
+                y_neu = int(drop_y - pic_pos_y) // part_size
+                print(f'{x_neu} / {y_neu}')
+                if (x_neu < 0 or x_neu > x_anz - 1) or (y_neu < 0 or y_neu > y_anz - 1):
+                    pass
+                else:
+                    if act_partsdict[x, y][3] == full_partsdict[x_neu, y_neu][3]:
+                        coord_neu = x_neu, y_neu
+                        parts_list.append(coord_neu)
+
+                        counter += 1
+
+                        for i in range(0, 30):
+                            blit_grid(grid, (255, 255, 255))
+                            pygame.display.flip()
+
+                        if len(parts_list) == (y_anz * x_anz):
+                            fertig = True
+                            init = False
+                            text_surface = pygame.font.Font.render(font, f'Punkte: {counter}', True, (55, 55, 55))
+                            screen.blit(text_surface, dest=(50, 50))
+                            for key, value in act_partsdict.items():
+                                screen.blit(value[0], value[1])
+                            pygame.display.flip()
+                            success(6)
+                            return
+                    else:
+                        counter -= 1
+
+                    if fertig == False:
+                        x = random.randint(0, x_anz - 1)
+                        y = random.randint(0, y_anz - 1)
+
+                        while (x, y) in parts_list:
+                            x = random.randint(0, x_anz - 1)
+                            y = random.randint(0, y_anz - 1)
+
+                        img = act_partsdict[x, y][0]
+
+                        rect = img.get_rect()
+                        rect.center = w_floor // 2, pic_pos_y // 2
+                    moving = False
+
+                    # Ausblenden des Hintergrunds (erst schneller, dann langsam
+                    # abzug = game_rounds*alpha_step + (alpha_step)**(fade_factor/zugzahl)
+                    anz = x_anz * y_anz
+                    abzug = (alphawert_init / ((anz - (anz * fade_factor)) ** 0.5) * (zugzahl ** 0.5))
+                    alphawert = alphawert_init - abzug
+                    if alphawert <= 8:
+                        alphawert = 8
+                    print(f'Abzug: {abzug} Alphawert: {alphawert}')
+
+        img.set_alpha(255)
         screen.blit(img, rect)
 
         text_surface = pygame.font.Font.render(font, f'Punkte: {counter}', True, (55, 55, 55))
@@ -730,8 +1002,9 @@ def check_solvability(act_pos_dict, x_anz, y_anz):
                 #single_count += 1
             count += 1
 
-    #Ausgangspunkt Leerfeld auf 0/0 und Durcheinander = n2
-    parity_start = 1 + n2
+    #Ausgangspunkt Leerfeld in Zeile 1 auf 0/0 und Durcheinander = n2
+    n1_start = 1
+    parity_start = n1_start + n2
     #Ziel: Leerfeld im letzten Feld, n2 = 0
     n1_goal = y_anz
     parity_goal = n1_goal
@@ -759,7 +1032,7 @@ def check_solvability(act_pos_dict, x_anz, y_anz):
     return(lösbar)
 
 
-#erzeugt ein Dictionary aller Teile mit x,y Koordinaten im Grid als Key und [Teilchen, (part_pos_x, part_pos_y), Position in Reihenfolge im Grid, Wert] als Value
+#erzeugt ein Dictionary aller Teile mit x,y Koordinaten im Grid als Key und [surface, (part_pos_x, part_pos_y), Position in Reihenfolge im Grid, Wert] als Value
 def make_full_partsdict(anz_x, anz_y,game):
     global full_image_x
     global full_image_y
@@ -781,26 +1054,6 @@ def make_full_partsdict(anz_x, anz_y,game):
 
     return(full_partsdict)
 
-# def make_act_partsdict(anz_x, anz_y,game):
-#     global full_image_x
-#     global full_image_y
-#     global part_size
-#
-#     full_partsdict = {}
-#
-#     order = 1
-#     value = 1
-#     for y in range(0, anz_y):
-#         for x in range(0,anz_x):
-#             #part = pic_parts(x,y)
-#             part_pos_x = full_image_x + x * part_size
-#             part_pos_y = full_image_y + y * part_size
-#             list_element = make_list_element(x,y, part_pos_x, part_pos_y, order, value, game)
-#             full_partsdict[(x,y)] = (list_element)
-#             order += 1
-#             value += 1
-#
-#     return(full_partsdict)
 
 def make_list_element(x,y, part_pos_x, part_pos_y, order, value, game):
     part = make_pic_part(x, y, game)
@@ -818,11 +1071,6 @@ def make_pic_part(x, y, game):
     screen = pygame.display.set_mode((w, h))
     screen.blit(pic, (0,0))
 
-    # if game == "puzzle":
-    #     rect = pygame.Rect(x, y, part_size, part_size)
-    # if game == "slider":
-    #     rect = pygame.Rect(x*part_size, y*part_size, part_size, part_size)
-    #rect = pygame.Rect(x, y, part_size, part_size)
     rect = pygame.Rect(x * part_size, y * part_size, part_size, part_size)
 
     sub = screen.subsurface(rect)
@@ -893,7 +1141,7 @@ def find_pic():
 
 def show_fullparts(full_partsdict):
     for key, value in full_partsdict.items():
-        print(f'Publikations_Ordnung: {key} / {value[1]}, Wert: {value[3]}')
+        #print(f'Publikations_Ordnung: {key} / {value[1]}, Wert: {value[3]}')
         screen.blit(value[0], value[1])
     pygame.display.flip()
 
@@ -918,6 +1166,7 @@ if __name__ == '__main__':
     controlsWindow.slider15_start.clicked.connect(lambda: start_game("slider 15"))
     controlsWindow.sliderABC_start.clicked.connect(lambda: start_game("slider ABC"))
     controlsWindow.sliderpix_start.released.connect(lambda: start_game("slider"))
+    controlsWindow.pictris_start.released.connect(lambda: start_game("pictris"))
 
 #pygame.quit()
 sys.exit(app.exec())
