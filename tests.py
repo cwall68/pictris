@@ -208,7 +208,7 @@ def start(game):
             part_anz = part_anz_init
             game_rounds = 0
         else:
-            if game == "puzzle":
+            if game == "puzzle" or game == "pictris":
                 game_rounds += 1
                 part_anz = part_anz + game_rounds
 
@@ -274,6 +274,10 @@ def start(game):
         puzzle(full_partsdict, grid)
         return
 
+    if game == "pictris":
+        pictris(full_partsdict, grid)
+        return
+
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -288,9 +292,9 @@ def start(game):
                 elif game == "slider":
                     slider(full_partsdict, grid)
                     return
-                elif game == "pictris":
-                    pictris(full_partsdict, grid)
-                    return
+                # elif game == "pictris":
+                #     pictris(full_partsdict, grid)
+                #     return
 
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
@@ -377,8 +381,6 @@ def puzzle(full_partsdict, grid):
 
     parts_list = []
 
-    if fertig == True:
-        start_game("pictris")
     fertig = False
 
     if init == True:
@@ -530,20 +532,20 @@ def part_fall(img, full_partsdict, x, y, act_partsdict, alphawert):
     global part_size
     global full_image_x
     global full_image_y
+    global game_rounds
+    global replay
 
+    fertig = False
 
     # Hier wird das Spielteil gesenkt
-    start_pos_x = w_floor // 2 - part_size // 2
+    start_pos_x = (full_image_x + int(x_anz*part_size/2 - part_size/2))
     start_pos_Y = (full_image_y // 2) - int(part_size / 2)
-
-    #Präzisierung der Position bei mittigem Startpunkt
-    if (x_anz % 2) != 0:
-        start_pos_x = full_image_x + (x_anz // 2) * part_size
 
     pic_pos_x = start_pos_x
     max_pos_y = full_partsdict[x_anz-1, y_anz-1][1][1]
 
     move = True
+
     while move == True:
         for pic_pos_y in range(start_pos_Y, max_pos_y+1):
             stop = False
@@ -553,28 +555,72 @@ def part_fall(img, full_partsdict, x, y, act_partsdict, alphawert):
                 elif event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE:
                         sys.exit()
-                    if event.key == pygame.K_UP:
-                        pic_pos_y = max_pos_y
+                    if event.key == pygame.K_SPACE:
+                        replay = True
+                        game_rounds = -1
                         stop = True
+                        fertig = True
+
                     if event.key == pygame.K_RIGHT:
+                        pic_pos_x_old = pic_pos_x
                         pic_pos_x = full_image_x + math.floor((pic_pos_x + part_size - full_image_x) / part_size) * part_size
+                        x_act = (pic_pos_x - full_image_x) / part_size
+                        y_act = math.floor((pic_pos_y - full_image_y) // part_size)
+                        if x_act > x_anz-1:
+                            pic_pos_x = pic_pos_x_old
+                        elif (x_act, y_act) in act_partsdict.keys() or(x_act, y_act+1) in act_partsdict.keys():
+                            pic_pos_x = pic_pos_x_old
                     if event.key == pygame.K_LEFT:
+                        pic_pos_x_old = pic_pos_x
                         pic_pos_x = full_image_x + math.ceil((pic_pos_x - part_size - full_image_x) / part_size) * part_size
+                        x_act = (pic_pos_x - full_image_x) / part_size
+                        y_act = math.floor((pic_pos_y - full_image_y) // part_size)
+                        if x_act < 0:
+                            pic_pos_x = pic_pos_x_old
+                        elif (x_act, y_act) in act_partsdict.keys() or(x_act, y_act+1) in act_partsdict.keys():
+                            pic_pos_x = pic_pos_x_old
+
+                    if event.key == pygame.K_UP:
+                        stop = True
+
+            if stop:
+                screen.fill(GRAY)
+                for key, value in full_partsdict.items():
+                    value[0].set_alpha(alphawert)
+                    screen.blit(value[0], value[1])
+
+                for key, value in act_partsdict.items():
+                    value[0].set_alpha(255)
+                    screen.blit(value[0], value[1])
+
+                pygame.display.update()
+
+                break
 
             screen.fill(GRAY)
             for key, value in full_partsdict.items():
                 value[0].set_alpha(alphawert)
                 screen.blit(value[0], value[1])
 
-                if (pic_pos_x, pic_pos_y) == value[1]:
-                    if value[3] == full_partsdict[x,y][3]:
-                        act_partsdict[x,y] = full_partsdict[x,y]
+                if ((pic_pos_y - full_image_y) % part_size) == 0:
+                    x_act = math.floor((pic_pos_x - full_image_x) / part_size)
+                    y_act = math.floor((pic_pos_y - full_image_y) // part_size)
+                    if (x_act, y_act+1) in act_partsdict.keys():
                         stop = True
-                        print("korrekter Platz")
-                        if len(act_partsdict) == len(full_partsdict):
-                            success(6)
-                            act_partsdict.clear()
-                            fertig = True
+
+                    if (pic_pos_x, pic_pos_y) == value[1]:
+                        if value[3] == full_partsdict[x, y][3]:
+                            act_partsdict[x, y] = full_partsdict[x, y]
+                            stop = True
+                            print("korrekter Platz")
+                            if len(act_partsdict) == len(full_partsdict):
+                                success(6)
+                                act_partsdict.clear()
+                                fertig = True
+                            else:
+                                success(1)
+
+
                         #break
             for key, value in act_partsdict.items():
                 # if key in parts_list:
@@ -589,7 +635,7 @@ def part_fall(img, full_partsdict, x, y, act_partsdict, alphawert):
 
         move = False
 
-    return(act_partsdict)
+    return(act_partsdict, fertig)
 
 def pictris(full_partsdict, grid):
     global spielbild
@@ -628,7 +674,6 @@ def pictris(full_partsdict, grid):
 
     font = pygame.font.Font(pygame.font.get_default_font(), 36)
 
-    fertig = False
 
     #act_partsdict = make_full_partsdict(x_anz, y_anz, "pictris")
 
@@ -642,12 +687,14 @@ def pictris(full_partsdict, grid):
     img = full_partsdict[x, y][0]
     img.set_alpha(255)
     rect = img.get_rect()
-    rect.center = w_floor // 2, pic_pos_y // 2
+
+    rect.center = (pic_pos_x + int(x_anz*part_size/2)), pic_pos_y // 2
+    #rect.center = w_floor // 2, pic_pos_y // 2
 
     #pygame.display.flip()
 
     running = True
-    # fade = 0.77
+
     while running:
         screen.fill(GRAY)
 
@@ -657,7 +704,7 @@ def pictris(full_partsdict, grid):
                 value[0].set_alpha(255)
                 screen.blit(value[0], value[1])
             else:
-                alphawert = 75
+                alphawert = 65
                 value[0].set_alpha(alphawert)
                 screen.blit(value[0], value[1])
         # Ausgabe korrekt plazierter Teile
@@ -665,6 +712,26 @@ def pictris(full_partsdict, grid):
             #if key in parts_list:
             value[0].set_alpha(255)
             screen.blit(value[0], value[1])
+
+        if zugzahl > 0:
+            pygame.time.delay(1000)
+            act_partsdict, fertig = part_fall(img, full_partsdict, x, y, act_partsdict, alphawert)
+            if fertig:
+                replay = True
+                init = False
+                return
+            x = random.randint(0, x_anz - 1)
+            y = random.randint(0, y_anz - 1)
+            while (x, y) in act_partsdict.keys():
+                x = random.randint(0, x_anz - 1)
+                y = random.randint(0, y_anz - 1)
+            img = full_partsdict[x, y][0]
+            img.set_alpha(255)
+            rect = img.get_rect()
+            rect.center = (pic_pos_x + int(x_anz * part_size / 2)), pic_pos_y // 2
+
+            pygame.display.flip()
+            zugzahl += 1
 
         for event in pygame.event.get():
 
@@ -674,14 +741,20 @@ def pictris(full_partsdict, grid):
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
                     sys.exit()
+
                 if event.key == pygame.K_SPACE:
                     game_rounds = 0
                     counter = 0
                     init = True
                     replay = False
                     return
+
                 if event.key == pygame.K_DOWN:
-                    act_partsdict = part_fall(img, full_partsdict, x, y, act_partsdict, alphawert)
+                    act_partsdict, fertig = part_fall(img, full_partsdict, x, y, act_partsdict, alphawert)
+                    if fertig:
+                        replay = True
+                        init = False
+                        return
                     x = random.randint(0, x_anz - 1)
                     y = random.randint(0, y_anz - 1)
                     while (x,y) in act_partsdict.keys():
@@ -690,81 +763,80 @@ def pictris(full_partsdict, grid):
                     img = full_partsdict[x, y][0]
                     img.set_alpha(255)
                     rect = img.get_rect()
-                    rect.center = w_floor // 2, pic_pos_y // 2
-
+                    rect.center = (pic_pos_x + int(x_anz*part_size/2)), pic_pos_y // 2
 
                     pygame.display.flip()
                     zugzahl += 1
 
 
-            elif event.type == pygame.MOUSEBUTTONDOWN:
-                if rect.collidepoint(event.pos):
-                    moving = True
-                    # print("Buttondown angenommen")
-
-
-            elif event.type == pygame.MOUSEMOTION and moving == True:
-                if fertig == False:
-                    rect.move_ip(event.rel)
-
-            elif event.type == pygame.MOUSEBUTTONUP:
-                zugzahl += 1
-
-                # wo wurde das Teil abgelegt
-                drop_x, drop_y = rect.center
-
-                # find Ablage x, y
-                x_neu = int(drop_x - pic_pos_x) // part_size
-                y_neu = int(drop_y - pic_pos_y) // part_size
-                print(f'{x_neu} / {y_neu}')
-                if (x_neu < 0 or x_neu > x_anz - 1) or (y_neu < 0 or y_neu > y_anz - 1):
-                    pass
-                else:
-                    if act_partsdict[x, y][3] == full_partsdict[x_neu, y_neu][3]:
-                        coord_neu = x_neu, y_neu
-                        parts_list.append(coord_neu)
-
-                        counter += 1
-
-                        for i in range(0, 30):
-                            blit_grid(grid, (255, 255, 255))
-                            pygame.display.flip()
-
-                        if len(parts_list) == (y_anz * x_anz):
-                            fertig = True
-                            init = False
-                            text_surface = pygame.font.Font.render(font, f'Punkte: {counter}', True, (55, 55, 55))
-                            screen.blit(text_surface, dest=(50, 50))
-                            for key, value in act_partsdict.items():
-                                screen.blit(value[0], value[1])
-                            pygame.display.flip()
-                            success(6)
-                            return
-                    else:
-                        counter -= 1
-
-                    if fertig == False:
-                        x = random.randint(0, x_anz - 1)
-                        y = random.randint(0, y_anz - 1)
-
-                        while (x, y) in parts_list:
-                            x = random.randint(0, x_anz - 1)
-                            y = random.randint(0, y_anz - 1)
-
-                        img = act_partsdict[x, y][0]
-
-                        rect = img.get_rect()
-                        rect.center = w_floor // 2, pic_pos_y // 2
-                    moving = False
-
-                    # Ausblenden des Hintergrunds (erst schneller, dann langsam
-                    # abzug = game_rounds*alpha_step + (alpha_step)**(fade_factor/zugzahl)
-                    anz = x_anz * y_anz
-                    abzug = (alphawert_init / ((anz - (anz * fade_factor)) ** 0.5) * (zugzahl ** 0.5))
-                    alphawert = alphawert_init - abzug
-                    if alphawert <= 8:
-                        alphawert = 8
-                    print(f'Abzug: {abzug} Alphawert: {alphawert}')
+            # elif event.type == pygame.MOUSEBUTTONDOWN:
+            #     if rect.collidepoint(event.pos):
+            #         moving = True
+            #         # print("Buttondown angenommen")
+            #
+            #
+            # elif event.type == pygame.MOUSEMOTION and moving == True:
+            #     if fertig == False:
+            #         rect.move_ip(event.rel)
+            #
+            # elif event.type == pygame.MOUSEBUTTONUP:
+            #     zugzahl += 1
+            #
+            #     # wo wurde das Teil abgelegt
+            #     drop_x, drop_y = rect.center
+            #
+            #     # find Ablage x, y
+            #     x_neu = int(drop_x - pic_pos_x) // part_size
+            #     y_neu = int(drop_y - pic_pos_y) // part_size
+            #     print(f'{x_neu} / {y_neu}')
+            #     if (x_neu < 0 or x_neu > x_anz - 1) or (y_neu < 0 or y_neu > y_anz - 1):
+            #         pass
+            #     else:
+            #         if act_partsdict[x, y][3] == full_partsdict[x_neu, y_neu][3]:
+            #             coord_neu = x_neu, y_neu
+            #             parts_list.append(coord_neu)
+            #
+            #             counter += 1
+            #
+            #             for i in range(0, 30):
+            #                 blit_grid(grid, (255, 255, 255))
+            #                 pygame.display.flip()
+            #
+            #             if len(parts_list) == (y_anz * x_anz):
+            #                 fertig = True
+            #                 init = False
+            #                 text_surface = pygame.font.Font.render(font, f'Punkte: {counter}', True, (55, 55, 55))
+            #                 screen.blit(text_surface, dest=(50, 50))
+            #                 for key, value in act_partsdict.items():
+            #                     screen.blit(value[0], value[1])
+            #                 pygame.display.flip()
+            #                 success(6)
+            #                 return
+            #         else:
+            #             counter -= 1
+            #
+            #         if fertig == False:
+            #             x = random.randint(0, x_anz - 1)
+            #             y = random.randint(0, y_anz - 1)
+            #
+            #             while (x, y) in parts_list:
+            #                 x = random.randint(0, x_anz - 1)
+            #                 y = random.randint(0, y_anz - 1)
+            #
+            #             img = act_partsdict[x, y][0]
+            #
+            #             rect = img.get_rect()
+            #             rect.center = w_floor // 2, pic_pos_y // 2
+            #         moving = False
+            #
+            #         # Ausblenden des Hintergrunds (erst schneller, dann langsam
+            #         # abzug = game_rounds*alpha_step + (alpha_step)**(fade_factor/zugzahl)
+            #         anz = x_anz * y_anz
+            #         abzug = (alphawert_init / ((anz - (anz * fade_factor)) ** 0.5) * (zugzahl ** 0.5))
+            #         alphawert = alphawert_init - abzug
+            #         if alphawert <= 8:
+            #             alphawert = 8
+            #         print(f'Abzug: {abzug} Alphawert: {alphawert}')
 
         img.set_alpha(255)
         screen.blit(img, rect)
