@@ -546,6 +546,8 @@ def part_fall(img, full_partsdict, x, y, act_partsdict, alphawert):
 
     move = True
 
+    x_change = 0
+
     while move == True:
         for pic_pos_y in range(start_pos_Y, max_pos_y+1):
             stop = False
@@ -562,6 +564,7 @@ def part_fall(img, full_partsdict, x, y, act_partsdict, alphawert):
                         fertig = True
 
                     if event.key == pygame.K_RIGHT:
+                        x_change += 1
                         pic_pos_x_old = pic_pos_x
                         pic_pos_x = full_image_x + math.floor((pic_pos_x + part_size - full_image_x) / part_size) * part_size
                         x_act = (pic_pos_x - full_image_x) / part_size
@@ -571,6 +574,7 @@ def part_fall(img, full_partsdict, x, y, act_partsdict, alphawert):
                         elif (x_act, y_act) in act_partsdict.keys() or(x_act, y_act+1) in act_partsdict.keys():
                             pic_pos_x = pic_pos_x_old
                     if event.key == pygame.K_LEFT:
+                        x_change += 1
                         pic_pos_x_old = pic_pos_x
                         pic_pos_x = full_image_x + math.ceil((pic_pos_x - part_size - full_image_x) / part_size) * part_size
                         x_act = (pic_pos_x - full_image_x) / part_size
@@ -597,16 +601,9 @@ def part_fall(img, full_partsdict, x, y, act_partsdict, alphawert):
 
                 break
 
-            screen.fill(GRAY)
-            for key, value in full_partsdict.items():
-                value[0].set_alpha(alphawert)
-                screen.blit(value[0], value[1])
 
+            for key, value in full_partsdict.items():
                 if ((pic_pos_y - full_image_y) % part_size) == 0:
-                    x_act = math.floor((pic_pos_x - full_image_x) / part_size)
-                    y_act = math.floor((pic_pos_y - full_image_y) // part_size)
-                    if (x_act, y_act+1) in act_partsdict.keys():
-                        stop = True
 
                     if (pic_pos_x, pic_pos_y) == value[1]:
                         if value[3] == full_partsdict[x, y][3]:
@@ -617,13 +614,24 @@ def part_fall(img, full_partsdict, x, y, act_partsdict, alphawert):
                                 success(6)
                                 act_partsdict.clear()
                                 fertig = True
+                                stop = True
                             else:
                                 success(1)
+                    else:
+                        x_act = math.floor((pic_pos_x - full_image_x) / part_size)
+                        y_act = math.floor((pic_pos_y - full_image_y) // part_size)
+                        if (x_anz % 2) != 0 or x_change != 0:
+                            if (x_act, y_act + 1) in act_partsdict.keys():
+                                stop = True
+                        else:
+                            if ((x_act, y_act + 1) in act_partsdict.keys() or (x_act + 1, y_act + 1) in act_partsdict.keys()):
+                                stop = True
 
-
-                        #break
+            screen.fill(GRAY)
+            for key, value in full_partsdict.items():
+                value[0].set_alpha(alphawert)
+                screen.blit(value[0], value[1])
             for key, value in act_partsdict.items():
-                # if key in parts_list:
                 value[0].set_alpha(255)
                 screen.blit(value[0], value[1])
             img.set_alpha(255)
@@ -704,7 +712,7 @@ def pictris(full_partsdict, grid):
                 value[0].set_alpha(255)
                 screen.blit(value[0], value[1])
             else:
-                alphawert = 65
+                alphawert = 55
                 value[0].set_alpha(alphawert)
                 screen.blit(value[0], value[1])
         # Ausgabe korrekt plazierter Teile
@@ -714,8 +722,24 @@ def pictris(full_partsdict, grid):
             screen.blit(value[0], value[1])
 
         if zugzahl > 0:
+            screen.fill(GRAY)
+            for key, value in full_partsdict.items():
+                value[0].set_alpha(alphawert)
+                screen.blit(value[0], value[1])
+            for key, value in act_partsdict.items():
+                value[0].set_alpha(255)
+                screen.blit(value[0], value[1])
+            img.set_alpha(255)
+            start_pos_x = (full_image_x + int(x_anz * part_size / 2 - part_size / 2))
+            start_pos_Y = (full_image_y // 2) - int(part_size / 2)
+            screen.blit(img, (start_pos_x, start_pos_Y))
+            blit_grid(grid, RED)
+            pygame.display.update()
+
             pygame.time.delay(1000)
+
             act_partsdict, fertig = part_fall(img, full_partsdict, x, y, act_partsdict, alphawert)
+
             if fertig:
                 replay = True
                 init = False
@@ -727,10 +751,11 @@ def pictris(full_partsdict, grid):
                 y = random.randint(0, y_anz - 1)
             img = full_partsdict[x, y][0]
             img.set_alpha(255)
-            rect = img.get_rect()
-            rect.center = (pic_pos_x + int(x_anz * part_size / 2)), pic_pos_y // 2
+            # rect = img.get_rect()
+            # rect.center = (pic_pos_x + int(x_anz * part_size / 2)), pic_pos_y // 2
 
             pygame.display.flip()
+
             zugzahl += 1
 
         for event in pygame.event.get():
@@ -762,8 +787,8 @@ def pictris(full_partsdict, grid):
                         y = random.randint(0, y_anz - 1)
                     img = full_partsdict[x, y][0]
                     img.set_alpha(255)
-                    rect = img.get_rect()
-                    rect.center = (pic_pos_x + int(x_anz*part_size/2)), pic_pos_y // 2
+                    # rect = img.get_rect()
+                    # rect.center = (pic_pos_x + int(x_anz*part_size/2)), pic_pos_y // 2
 
                     pygame.display.flip()
                     zugzahl += 1
