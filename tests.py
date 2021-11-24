@@ -292,9 +292,6 @@ def start(game):
                 elif game == "slider":
                     slider(full_partsdict, grid)
                     return
-                # elif game == "pictris":
-                #     pictris(full_partsdict, grid)
-                #     return
 
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
@@ -359,7 +356,6 @@ def resize(file):
 
 zugzahl = 0
 def puzzle(full_partsdict, grid):
-    global spielbild
     global alphawert_init
     global game_rounds
     global fade
@@ -401,8 +397,8 @@ def puzzle(full_partsdict, grid):
     act_partsdict = make_full_partsdict(x_anz, y_anz,"puzzle")
 
     #Bestimmung der Koordinaten der oberen linken Ecke des Spielbilds
-    pic_pos_x = full_partsdict[0, 0][1][0]
-    pic_pos_y = full_partsdict[0,0][1][1]
+    full_image_x= full_partsdict[0, 0][1][0]
+    full_image_y = full_partsdict[0,0][1][1]
 
     screen.fill(GRAY)
     x = random.randint(0, x_anz-1)
@@ -410,7 +406,7 @@ def puzzle(full_partsdict, grid):
     img = act_partsdict[x,y][0]
     img.set_alpha(255)
     rect = img.get_rect()
-    rect.center = w_floor // 2, pic_pos_y // 2
+    rect.center = w_floor // 2, full_image_y // 2
 
     pygame.display.flip()
 
@@ -465,8 +461,8 @@ def puzzle(full_partsdict, grid):
                 drop_x, drop_y = rect.center
 
                 # find Ablage x, y
-                x_neu = int(drop_x - pic_pos_x) // part_size
-                y_neu = int(drop_y - pic_pos_y) // part_size
+                x_neu = int(drop_x - full_image_x) // part_size
+                y_neu = int(drop_y - full_image_y) // part_size
                 print(f'{x_neu} / {y_neu}')
                 if (x_neu < 0 or x_neu > x_anz-1) or (y_neu < 0 or y_neu > y_anz-1):
                     pass
@@ -505,7 +501,7 @@ def puzzle(full_partsdict, grid):
                         img = act_partsdict[x, y][0]
 
                         rect = img.get_rect()
-                        rect.center = w_floor // 2, pic_pos_y // 2
+                        rect.center = w_floor // 2, full_image_y // 2
                     moving = False
 
                     # Ausblenden des Hintergrunds (erst schneller, dann langsam
@@ -590,31 +586,6 @@ def part_fall(img, full_partsdict, x, y, act_partsdict, alphawert):
 
                     if event.key == pygame.K_UP:
                         stop = True
-
-            #Check bei jedem vollen y-Wert
-            # if ((pic_pos_y - full_image_y) % part_size) == 0:
-            #
-            #     for key, value in full_partsdict.items():
-            #         if (pic_pos_x, pic_pos_y) == value[1]:
-            #             if value[3] == full_partsdict[x, y][3]:
-            #                 act_partsdict[x, y] = full_partsdict[x, y]
-            #                 stop = True
-            #                 fits += 1
-            #
-            #                 if len(act_partsdict) == len(full_partsdict):
-            #                     success(6)
-            #                     fertig = True
-            #                 else:
-            #                     success(1)
-            #         else:
-            #             x_act = math.floor((pic_pos_x - full_image_x) / part_size)
-            #             y_act = math.floor((pic_pos_y - full_image_y) // part_size)
-            #             if (x_anz % 2) != 0 or x_change != 0:
-            #                 if (x_act, y_act + 1) in act_partsdict.keys():
-            #                     stop = True
-            #             else:
-            #                 if ((x_act, y_act + 1) in act_partsdict.keys() or (x_act + 1, y_act + 1) in act_partsdict.keys()):
-            #                     stop = True
 
             # Check bei jedem vollen y-Wert
             if ((pic_pos_y - full_image_y) % part_size) == 0:
@@ -1196,8 +1167,8 @@ def find_pic():
     # print(f'Files: {file_count}')
 
     select_pic = random.randint(1, file_count)
-    select_pic_file = full_pic_dict[select_pic]
-    #select_pic_file = r"C:\Users\User\Downloads\IMG_4462.jpeg"
+    #select_pic_file = full_pic_dict[select_pic]
+    select_pic_file = r"C:\Users\User\Desktop\pictris\Zahlen gerade.jpg"
     return(select_pic_file)
 
 def show_fullparts(full_partsdict):
