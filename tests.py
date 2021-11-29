@@ -534,8 +534,12 @@ def part_fall(img, full_partsdict, x, y, act_partsdict, alphawert):
     global zugzahl
     global fits
     global punkte
+    global parts
 
     fertig = False
+    parts += 1
+
+    blit_field(full_partsdict, act_partsdict, alphawert)
 
     # Hier wird das Spielteil gesenkt
     start_pos_x = (full_image_x + int(x_anz*part_size/2 - part_size/2))
@@ -585,6 +589,11 @@ def part_fall(img, full_partsdict, x, y, act_partsdict, alphawert):
                             pic_pos_x = pic_pos_x_old
 
                     if event.key == pygame.K_UP:
+                        y_act = math.floor((pic_pos_y - full_image_y) // part_size)
+                        if y_act < 0:
+                            if zugzahl > 0:
+                                zugzahl -= 1
+
                         stop = True
 
             # Check bei jedem vollen y-Wert
@@ -597,18 +606,22 @@ def part_fall(img, full_partsdict, x, y, act_partsdict, alphawert):
                 if (x_anz % 2) != 0 or x_change != 0:
                     #Kollision oder unterer Rand erreicht?
                     if ((x_act, y_act + 1) in act_partsdict.keys()) or (y_act+1 == y_anz):
-                        #passt?
-                        if full_partsdict[x_act, y_act][3] == full_partsdict[x, y][3]:
-                            act_partsdict[x, y] = full_partsdict[x, y]
-                            stop = True
-                            fits += 1
+                        if y_act >= 0:
+                            #passt?
+                            if full_partsdict[x_act, y_act][3] == full_partsdict[x, y][3]:
+                                act_partsdict[x, y] = full_partsdict[x, y]
+                                stop = True
+                                fits += 1
 
-                            if len(act_partsdict) == len(full_partsdict):
-                                success(6)
-                                fertig = True
+                                if len(act_partsdict) == len(full_partsdict):
+                                    success(6)
+                                    fertig = True
+                                else:
+                                    success(1)
+
+                            #passt nicht, nur Kollision
                             else:
-                                success(1)
-                        #passt nicht, nur Kollision
+                                stop = True
                         else:
                             stop = True
                 #wenn Sprite mittig über Grid-Linie startet und mit der einen oder anderen Hälfte eine Kollision verursacht
@@ -625,7 +638,8 @@ def part_fall(img, full_partsdict, x, y, act_partsdict, alphawert):
             if zugzahl == 0:
                 punkte = 0
             if fertig:
-                punkte = math.ceil(fits*100/zugzahl)
+                punkte = math.ceil(fits*100/(zugzahl+parts/2)) * (x_anz*y_anz)/10
+
             text_surface = pygame.font.Font.render(font, f'Punkte: {punkte}', True, (55, 55, 55))
             screen.blit(text_surface, dest=(50, 50))
 
@@ -637,10 +651,15 @@ def part_fall(img, full_partsdict, x, y, act_partsdict, alphawert):
                 act_partsdict.clear()
                 pygame.time.delay(1000)
                 stop = True
+
             if stop:
                 if not fertig:
                     zugzahl += 1
-                    punkte = math.ceil(fits * 100 / zugzahl)
+                    punkte = math.ceil(fits*100/(zugzahl+parts/2)) * (x_anz*y_anz)/10
+                    text_surface = pygame.font.Font.render(font, f'Punkte: {punkte}', True, (55, 55, 55))
+                    screen.blit(text_surface, dest=(50, 50))
+
+                    pygame.display.update()
                 break
 
         move = False
@@ -677,6 +696,7 @@ def pictris(full_partsdict, grid):
     global zugzahl
     global fits
     global punkte
+    global parts
 
     act_partsdict = {}
 
@@ -687,6 +707,7 @@ def pictris(full_partsdict, grid):
     if init == True:
         counter = 0
         punkte = 0
+        parts = 0
 
     alphawert = alphawert_init
 
@@ -734,7 +755,7 @@ def pictris(full_partsdict, grid):
             blit_grid(grid, RED)
             pygame.display.update()
 
-            pygame.time.delay(1000)
+            pygame.time.delay(500)
 
             act_partsdict, fertig= part_fall(img, full_partsdict, x, y, act_partsdict, alphawert)
             if fertig:
@@ -769,6 +790,7 @@ def pictris(full_partsdict, grid):
                     zugzahl = 0
                     counter = 0
                     punkte = 0
+                    alphawert = 55
 
                     act_partsdict, fertig= part_fall(img, full_partsdict, x, y, act_partsdict, alphawert)
                     if fertig:
@@ -1167,8 +1189,8 @@ def find_pic():
     # print(f'Files: {file_count}')
 
     select_pic = random.randint(1, file_count)
-    #select_pic_file = full_pic_dict[select_pic]
-    select_pic_file = r"C:\Users\User\Desktop\pictris\Zahlen gerade.jpg"
+    select_pic_file = full_pic_dict[select_pic]
+    #select_pic_file = r"C:\Users\User\Desktop\Guadix.jpg"
     return(select_pic_file)
 
 def show_fullparts(full_partsdict):
