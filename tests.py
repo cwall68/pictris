@@ -537,6 +537,7 @@ def part_fall(img, full_partsdict, x, y, act_partsdict, alphawert):
     global replay
     global zugzahl
     global fits
+    global fails
     global punkte
     global parts
     global started
@@ -605,23 +606,58 @@ def part_fall(img, full_partsdict, x, y, act_partsdict, alphawert):
                         if (full_image_y - (pic_pos_y + part_size)) > 0:
                             zugzahl -= 1
                             print("rechtzeitig")
+                            #Check ob passende Kachel weggedrückt
+                            fits_old = fits
+                            act_partsdict_old = act_partsdict.copy()
+                            for x_check in range(0, x_anz):
+                                print(f'X-Koordinate: {x_check}')
+                                print(f'Fails Anfang Schleife: {fails}')
+                                pic_pos_x = full_image_x + x_check*part_size
+                                for pic_pos_y in range(full_image_y, (full_image_y + y_anz * part_size)):
+                                    # Check bei jedem vollen y-Wert
+                                    if ((pic_pos_y - full_image_y) % part_size) == 0:
+                                        stop, fertig, act_partsdict = place_check(x, y, pic_pos_x, pic_pos_y, x_change,
+                                                                                  full_partsdict, act_partsdict, alphawert)
 
-                        stop = True
+                                    if fits > fits_old:
+                                        break
+                                    else:
+                                        pic_pos_y += 1
+
+                                if fits > fits_old:
+                                    break
+                                else:
+                                    x_check += 1
+
+                            if fits > fits_old:
+                                fits = fits_old
+                                fails += 1
+                                act_partsdict = act_partsdict_old.copy()
+                                print(f'Das war zu schnell gedrückt. Fails: {fails}')
+
+                            stop = True
 
                     if event.key == pygame.K_DOWN:
                         for pic_pos_y in range(full_image_y, (full_image_y + y_anz*part_size)):
                             # Check bei jedem vollen y-Wert
+                            fits_old = fits
                             if ((pic_pos_y - full_image_y) % part_size) == 0:
                                 stop, fertig, act_partsdict = place_check(x, y, pic_pos_x, pic_pos_y, x_change, full_partsdict, act_partsdict, alphawert)
 
                                 if stop:
+                                    if fits == fits_old:
+                                        fails += 1
                                     break
                             pic_pos_y += 1
 
             # Check bei jedem vollen y-Wert
             if not stop:
                 if ((pic_pos_y - full_image_y) % part_size) == 0:
+                    fits_old = fits
                     stop, fertig, act_partsdict = place_check(x, y, pic_pos_x, pic_pos_y, x_change, full_partsdict, act_partsdict, alphawert)
+                    if stop:
+                        if fits == fits_old:
+                            fails += 1
 
             blit_field(full_partsdict, act_partsdict, alphawert)
 
@@ -631,7 +667,7 @@ def part_fall(img, full_partsdict, x, y, act_partsdict, alphawert):
 
             if fertig:
                 #punkte = math.ceil(fits*100/(zugzahl+parts/2)) * (x_anz*y_anz)/10
-                punkte = fits - zugzahl
+                punkte = fits - fails
                 #punkte = int((((fits - zugzahl) * 100 / (x_anz * y_anz)) / parts) * 10)
 
             text_surface = pygame.font.Font.render(font, f'Punkte: {punkte} von {x_anz * y_anz} aus {parts}', True, (55, 55, 55))
@@ -649,7 +685,7 @@ def part_fall(img, full_partsdict, x, y, act_partsdict, alphawert):
             if stop:
                 if not fertig:
                     #punkte = math.ceil(fits*100/(zugzahl+parts/2)) * (x_anz*y_anz)/10
-                    punkte = fits - zugzahl
+                    punkte = fits - fails
                     #punkte = int((((fits - zugzahl) * 100 / (x_anz * y_anz)) / parts) * 10)
 
                     print(f'Zugzahl: {zugzahl}, Fits: {fits}')
@@ -664,46 +700,48 @@ def part_fall(img, full_partsdict, x, y, act_partsdict, alphawert):
 
     return(act_partsdict, fertig)
 
+#prüft ob die Kachel kollidiert und wenn ja ob sie an passender Stelle liegt
 def place_check(x, y, pic_pos_x, pic_pos_y, x_change, full_partsdict, act_partsdict, alphawert):
     global zugzahl
     global fits
+    global fails
 
     stop = False
     fertig = False
 
     x_act = math.floor((pic_pos_x - full_image_x) / part_size)
-    y_act = math.floor((pic_pos_y - full_image_y) // part_size)
+    #x_act = (pic_pos_x - full_image_x) / part_size
+    y_act = math.floor((pic_pos_y - full_image_y) / part_size)
+    #y_act = (pic_pos_y - full_image_y) / part_size
 
     # Wenn Sprite auf Feld ausgerichtet oder durch Bewegung dazu eingenordet wurde (sonst passt eh nix)
     if (x_anz % 2) != 0 or x_change != 0:
         # Kollision oder unterer Rand erreicht?
         if ((x_act, y_act + 1) in act_partsdict.keys()) or (y_act + 1 == y_anz):
+            #Kollision mit oberster Reihe
             if y_act < 0:
                 stop = True
-            else:
-                # passt?
-                if full_partsdict[x_act, y_act][3] == full_partsdict[x, y][3]:
-                    act_partsdict[x, y] = full_partsdict[x, y]
-                    stop = True
-                    zugzahl -= 1
-                    fits += 1
+            # passt?
+            elif full_partsdict[x_act, y_act][3] == full_partsdict[x, y][3]:
+                act_partsdict[x, y] = full_partsdict[x, y]
+                stop = True
+                zugzahl -= 1
+                fits += 1
+                print(f'{x_act} / {y_act} und {x} / {y} passen')
 
-                    if len(act_partsdict) == len(full_partsdict):
-                        blit_field(full_partsdict, act_partsdict, alphawert)
-                        success(6)
-                        fertig = True
-                    else:
-                        blit_field(full_partsdict, act_partsdict, alphawert)
-                        success(1)
-
-                # passt nicht, nur Kollision
+                if len(act_partsdict) == len(full_partsdict):
+                    success(6)
+                    fertig = True
                 else:
-                    stop = True
+                    success(1)
+            # passt nicht, nur Kollision
+            else:
+                print(f'{x_act} / {y_act} und {x} / {y} passen nicht')
+                stop = True
 
 
     # wenn Sprite mittig über Grid-Linie startet und mit der einen oder anderen Hälfte eine Kollision verursacht
-    elif ((x_act, y_act + 1) in act_partsdict.keys() or (
-            x_act + 1, y_act + 1) in act_partsdict.keys()):
+    elif ((x_act, y_act + 1) in act_partsdict.keys() or (x_act + 1, y_act + 1) in act_partsdict.keys()):
         stop = True
 
     return(stop, fertig, act_partsdict)
@@ -738,6 +776,7 @@ def pictris(full_partsdict, grid):
     global replay
     global zugzahl
     global fits
+    global fails
     global punkte
     global parts
     global started
@@ -769,6 +808,7 @@ def pictris(full_partsdict, grid):
 
     #Init für korrekt eingepasste Teile
     fits = 0
+    fails = 0
 
     while running:
         if not started:
