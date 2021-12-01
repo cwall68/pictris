@@ -142,7 +142,7 @@ game_rounds = 0
 #Bildabstand vom unteren Rand
 offset_y = 50
 #Fading-Ausgangswert
-alphawert_init = 175
+alphawert_init = 255
 #Steuerung der Geschwindigkeit des Hintergrundbildverschwindens bei Puzzle und Pictris
 fade_factor = 0.2
 
@@ -201,6 +201,9 @@ def start(game):
     global x_anz
     global y_anz
     global replay
+    global started
+
+    started = False
 
     if game == "puzzle" or game == "slider" or game == "pictris":
         if init == True and replay == False:
@@ -526,6 +529,7 @@ def puzzle(full_partsdict, grid):
 
 def part_fall(img, full_partsdict, x, y, act_partsdict, alphawert):
     global x_anz
+    global y_anz
     global part_size
     global full_image_x
     global full_image_y
@@ -535,11 +539,18 @@ def part_fall(img, full_partsdict, x, y, act_partsdict, alphawert):
     global fits
     global punkte
     global parts
+    global started
 
+    started = True
     fertig = False
     parts += 1
+    zugzahl += 1
+
 
     blit_field(full_partsdict, act_partsdict, alphawert)
+    text_surface = pygame.font.Font.render(font, f'Punkte: {punkte} von {x_anz*y_anz}', True, (55, 55, 55))
+    screen.blit(text_surface, dest=(50, 50))
+    pygame.display.flip()
 
     # Hier wird das Spielteil gesenkt
     start_pos_x = (full_image_x + int(x_anz*part_size/2 - part_size/2))
@@ -566,6 +577,7 @@ def part_fall(img, full_partsdict, x, y, act_partsdict, alphawert):
                         game_rounds = -1
                         stop = True
                         fertig = True
+                        zugzahl = 0
 
                     if event.key == pygame.K_RIGHT:
                         x_change += 1
@@ -589,45 +601,27 @@ def part_fall(img, full_partsdict, x, y, act_partsdict, alphawert):
                             pic_pos_x = pic_pos_x_old
 
                     if event.key == pygame.K_UP:
-                        y_act = math.floor((pic_pos_y - full_image_y) // part_size)
-                        if y_act < 0:
-                            if zugzahl > 0:
-                                zugzahl -= 1
+                        #Wenn rechtzeitig vor Eintritt ins Spielfeld eliminiert zählt es nicht als Zug
+                        if (full_image_y - (pic_pos_y + part_size)) > 0:
+                            zugzahl -= 1
+                            print("rechtzeitig")
 
                         stop = True
 
+                    if event.key == pygame.K_DOWN:
+                        for pic_pos_y in range(full_image_y, (full_image_y + y_anz*part_size)):
+                            # Check bei jedem vollen y-Wert
+                            if ((pic_pos_y - full_image_y) % part_size) == 0:
+                                stop, fertig, act_partsdict = place_check(x, y, pic_pos_x, pic_pos_y, x_change, full_partsdict, act_partsdict, alphawert)
+
+                                if stop:
+                                    break
+                            pic_pos_y += 1
+
             # Check bei jedem vollen y-Wert
-            if ((pic_pos_y - full_image_y) % part_size) == 0:
-
-                x_act = math.floor((pic_pos_x - full_image_x) / part_size)
-                y_act = math.floor((pic_pos_y - full_image_y) // part_size)
-
-                #Wenn Sprite auf Feld ausgerichtet oder durch Bewegung dazu eingenordet wurde (sonst passt eh nix)
-                if (x_anz % 2) != 0 or x_change != 0:
-                    #Kollision oder unterer Rand erreicht?
-                    if ((x_act, y_act + 1) in act_partsdict.keys()) or (y_act+1 == y_anz):
-                        if y_act >= 0:
-                            #passt?
-                            if full_partsdict[x_act, y_act][3] == full_partsdict[x, y][3]:
-                                act_partsdict[x, y] = full_partsdict[x, y]
-                                stop = True
-                                fits += 1
-
-                                if len(act_partsdict) == len(full_partsdict):
-                                    success(6)
-                                    fertig = True
-                                else:
-                                    success(1)
-
-                            #passt nicht, nur Kollision
-                            else:
-                                stop = True
-                        else:
-                            stop = True
-                #wenn Sprite mittig über Grid-Linie startet und mit der einen oder anderen Hälfte eine Kollision verursacht
-                elif ((x_act, y_act + 1) in act_partsdict.keys() or (x_act + 1, y_act + 1) in act_partsdict.keys()):
-                    stop = True
-
+            if not stop:
+                if ((pic_pos_y - full_image_y) % part_size) == 0:
+                    stop, fertig, act_partsdict = place_check(x, y, pic_pos_x, pic_pos_y, x_change, full_partsdict, act_partsdict, alphawert)
 
             blit_field(full_partsdict, act_partsdict, alphawert)
 
@@ -635,12 +629,12 @@ def part_fall(img, full_partsdict, x, y, act_partsdict, alphawert):
             screen.blit(img, (pic_pos_x, pic_pos_y))
             blit_grid(grid, RED)
 
-            if zugzahl == 0:
-                punkte = 0
             if fertig:
-                punkte = math.ceil(fits*100/(zugzahl+parts/2)) * (x_anz*y_anz)/10
+                #punkte = math.ceil(fits*100/(zugzahl+parts/2)) * (x_anz*y_anz)/10
+                punkte = fits - zugzahl
+                #punkte = int((((fits - zugzahl) * 100 / (x_anz * y_anz)) / parts) * 10)
 
-            text_surface = pygame.font.Font.render(font, f'Punkte: {punkte}', True, (55, 55, 55))
+            text_surface = pygame.font.Font.render(font, f'Punkte: {punkte} von {x_anz * y_anz} aus {parts}', True, (55, 55, 55))
             screen.blit(text_surface, dest=(50, 50))
 
             pygame.display.update()
@@ -654,17 +648,66 @@ def part_fall(img, full_partsdict, x, y, act_partsdict, alphawert):
 
             if stop:
                 if not fertig:
-                    zugzahl += 1
-                    punkte = math.ceil(fits*100/(zugzahl+parts/2)) * (x_anz*y_anz)/10
-                    text_surface = pygame.font.Font.render(font, f'Punkte: {punkte}', True, (55, 55, 55))
-                    screen.blit(text_surface, dest=(50, 50))
+                    #punkte = math.ceil(fits*100/(zugzahl+parts/2)) * (x_anz*y_anz)/10
+                    punkte = fits - zugzahl
+                    #punkte = int((((fits - zugzahl) * 100 / (x_anz * y_anz)) / parts) * 10)
 
+                    print(f'Zugzahl: {zugzahl}, Fits: {fits}')
+                    text_surface = pygame.font.Font.render(font, f'Punkte: {punkte} von {x_anz * y_anz} aus {parts}', True,
+                                                           (55, 55, 55))
+                    screen.blit(text_surface, dest=(50, 50))
                     pygame.display.update()
+
                 break
 
         move = False
 
     return(act_partsdict, fertig)
+
+def place_check(x, y, pic_pos_x, pic_pos_y, x_change, full_partsdict, act_partsdict, alphawert):
+    global zugzahl
+    global fits
+
+    stop = False
+    fertig = False
+
+    x_act = math.floor((pic_pos_x - full_image_x) / part_size)
+    y_act = math.floor((pic_pos_y - full_image_y) // part_size)
+
+    # Wenn Sprite auf Feld ausgerichtet oder durch Bewegung dazu eingenordet wurde (sonst passt eh nix)
+    if (x_anz % 2) != 0 or x_change != 0:
+        # Kollision oder unterer Rand erreicht?
+        if ((x_act, y_act + 1) in act_partsdict.keys()) or (y_act + 1 == y_anz):
+            if y_act < 0:
+                stop = True
+            else:
+                # passt?
+                if full_partsdict[x_act, y_act][3] == full_partsdict[x, y][3]:
+                    act_partsdict[x, y] = full_partsdict[x, y]
+                    stop = True
+                    zugzahl -= 1
+                    fits += 1
+
+                    if len(act_partsdict) == len(full_partsdict):
+                        blit_field(full_partsdict, act_partsdict, alphawert)
+                        success(6)
+                        fertig = True
+                    else:
+                        blit_field(full_partsdict, act_partsdict, alphawert)
+                        success(1)
+
+                # passt nicht, nur Kollision
+                else:
+                    stop = True
+
+
+    # wenn Sprite mittig über Grid-Linie startet und mit der einen oder anderen Hälfte eine Kollision verursacht
+    elif ((x_act, y_act + 1) in act_partsdict.keys() or (
+            x_act + 1, y_act + 1) in act_partsdict.keys()):
+        stop = True
+
+    return(stop, fertig, act_partsdict)
+
 
 def blit_field(full_partsdict, act_partsdict, alphawert):
     screen.fill(GRAY)
@@ -697,10 +740,9 @@ def pictris(full_partsdict, grid):
     global fits
     global punkte
     global parts
+    global started
 
     act_partsdict = {}
-
-    parts_list = []
 
     fertig = False
 
@@ -709,15 +751,9 @@ def pictris(full_partsdict, grid):
         punkte = 0
         parts = 0
 
-    alphawert = alphawert_init
-
     moving = False
 
     font = pygame.font.Font(pygame.font.get_default_font(), 36)
-
-    # Bestimmung der Koordinaten der oberen linken Ecke des Spielbilds
-    pic_pos_x = full_partsdict[0, 0][1][0]
-    pic_pos_y = full_partsdict[0, 0][1][1]
 
     screen.fill(GRAY)
 
@@ -735,19 +771,15 @@ def pictris(full_partsdict, grid):
     fits = 0
 
     while running:
-        if zugzahl == 0:
-            alphawert = 255
+        if not started:
+            alphawert = alphawert_init
         else:
             alphawert = 55
 
         blit_field(full_partsdict, act_partsdict, alphawert)
 
-        if zugzahl > 0:
+        if started:
             blit_field(full_partsdict, act_partsdict, alphawert)
-
-            text_surface = pygame.font.Font.render(font, f'Punkte: {punkte}', True, (55, 55, 55))
-            screen.blit(text_surface, dest=(50, 50))
-
             img.set_alpha(255)
             start_pos_x = (full_image_x + int(x_anz * part_size / 2 - part_size / 2))
             start_pos_Y = (full_image_y // 2) - int(part_size / 2)
@@ -761,6 +793,7 @@ def pictris(full_partsdict, grid):
             if fertig:
                 replay = True
                 init = False
+                started = False
                 return
 
             x, y = make_randpos(act_partsdict)
@@ -784,9 +817,10 @@ def pictris(full_partsdict, grid):
                     counter = 0
                     init = True
                     replay = False
+                    started = False
                     return
 
-                if event.key == pygame.K_DOWN:
+                if event.key == pygame.K_RETURN:
                     zugzahl = 0
                     counter = 0
                     punkte = 0
@@ -795,7 +829,9 @@ def pictris(full_partsdict, grid):
                     act_partsdict, fertig= part_fall(img, full_partsdict, x, y, act_partsdict, alphawert)
                     if fertig:
                         replay = True
+                        started = False
                         init = False
+                        parts = 0
                         return
 
                     x, y = make_randpos(act_partsdict)
@@ -804,16 +840,6 @@ def pictris(full_partsdict, grid):
                     img.set_alpha(255)
 
                     pygame.display.flip()
-                    zugzahl += 1
-
-            #         # Ausblenden des Hintergrunds (erst schneller, dann langsam
-            #         # abzug = game_rounds*alpha_step + (alpha_step)**(fade_factor/zugzahl)
-            #         anz = x_anz * y_anz
-            #         abzug = (alphawert_init / ((anz - (anz * fade_factor)) ** 0.5) * (zugzahl ** 0.5))
-            #         alphawert = alphawert_init - abzug
-            #         if alphawert <= 8:
-            #             alphawert = 8
-            #         print(f'Abzug: {abzug} Alphawert: {alphawert}')
 
         img.set_alpha(255)
         screen.blit(img, (start_pos_x, start_pos_Y))
@@ -821,6 +847,7 @@ def pictris(full_partsdict, grid):
         blit_grid(grid, RED)
         pygame.display.update()
 
+# Sucht aus den noch unbenutzten Kacheln das nächste Angebot aus
 def make_randpos(act_partsdict):
 
     x = random.randint(0, x_anz - 1)
