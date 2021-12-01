@@ -145,6 +145,8 @@ offset_y = 50
 alphawert_init = 255
 #Steuerung der Geschwindigkeit des Hintergrundbildverschwindens bei Puzzle und Pictris
 fade_factor = 0.2
+#Kachel wartet bei Pictris vor dem Fall
+before_fall = 750
 
 #w und h sind die Werte für Breite und Höhe des Spielfelds
 #x und y lokalisieren den game floor auf dem Gesamtbildschirm
@@ -604,14 +606,10 @@ def part_fall(img, full_partsdict, x, y, act_partsdict, alphawert):
                     if event.key == pygame.K_UP:
                         #Wenn rechtzeitig vor Eintritt ins Spielfeld eliminiert zählt es nicht als Zug
                         if (full_image_y - (pic_pos_y + part_size)) > 0:
-                            zugzahl -= 1
-                            print("rechtzeitig")
                             #Check ob passende Kachel weggedrückt
                             fits_old = fits
                             act_partsdict_old = act_partsdict.copy()
                             for x_check in range(0, x_anz):
-                                print(f'X-Koordinate: {x_check}')
-                                print(f'Fails Anfang Schleife: {fails}')
                                 pic_pos_x = full_image_x + x_check*part_size
                                 for pic_pos_y in range(full_image_y, (full_image_y + y_anz * part_size)):
                                     # Check bei jedem vollen y-Wert
@@ -633,7 +631,6 @@ def part_fall(img, full_partsdict, x, y, act_partsdict, alphawert):
                                 fits = fits_old
                                 fails += 1
                                 act_partsdict = act_partsdict_old.copy()
-                                print(f'Das war zu schnell gedrückt. Fails: {fails}')
 
                             stop = True
 
@@ -656,6 +653,7 @@ def part_fall(img, full_partsdict, x, y, act_partsdict, alphawert):
                     fits_old = fits
                     stop, fertig, act_partsdict = place_check(x, y, pic_pos_x, pic_pos_y, x_change, full_partsdict, act_partsdict, alphawert)
                     if stop:
+                        #Abzug wg ohne Treffer durchgelaufen
                         if fits == fits_old:
                             fails += 1
 
@@ -666,9 +664,7 @@ def part_fall(img, full_partsdict, x, y, act_partsdict, alphawert):
             blit_grid(grid, RED)
 
             if fertig:
-                #punkte = math.ceil(fits*100/(zugzahl+parts/2)) * (x_anz*y_anz)/10
                 punkte = fits - fails
-                #punkte = int((((fits - zugzahl) * 100 / (x_anz * y_anz)) / parts) * 10)
 
             text_surface = pygame.font.Font.render(font, f'Punkte: {punkte} von {x_anz * y_anz} aus {parts}', True, (55, 55, 55))
             screen.blit(text_surface, dest=(50, 50))
@@ -684,11 +680,7 @@ def part_fall(img, full_partsdict, x, y, act_partsdict, alphawert):
 
             if stop:
                 if not fertig:
-                    #punkte = math.ceil(fits*100/(zugzahl+parts/2)) * (x_anz*y_anz)/10
                     punkte = fits - fails
-                    #punkte = int((((fits - zugzahl) * 100 / (x_anz * y_anz)) / parts) * 10)
-
-                    print(f'Zugzahl: {zugzahl}, Fits: {fits}')
                     text_surface = pygame.font.Font.render(font, f'Punkte: {punkte} von {x_anz * y_anz} aus {parts}', True,
                                                            (55, 55, 55))
                     screen.blit(text_surface, dest=(50, 50))
@@ -727,7 +719,6 @@ def place_check(x, y, pic_pos_x, pic_pos_y, x_change, full_partsdict, act_partsd
                 stop = True
                 zugzahl -= 1
                 fits += 1
-                print(f'{x_act} / {y_act} und {x} / {y} passen')
 
                 if len(act_partsdict) == len(full_partsdict):
                     success(6)
@@ -736,7 +727,6 @@ def place_check(x, y, pic_pos_x, pic_pos_y, x_change, full_partsdict, act_partsd
                     success(1)
             # passt nicht, nur Kollision
             else:
-                print(f'{x_act} / {y_act} und {x} / {y} passen nicht')
                 stop = True
 
 
@@ -780,6 +770,7 @@ def pictris(full_partsdict, grid):
     global punkte
     global parts
     global started
+    global before_fall
 
     act_partsdict = {}
 
@@ -806,9 +797,9 @@ def pictris(full_partsdict, grid):
 
     running = True
 
-    #Init für korrekt eingepasste Teile
-    fits = 0
-    fails = 0
+    # #Init für korrekt eingepasste Teile
+    # fits = 0
+    # fails = 0
 
     while running:
         if not started:
@@ -827,7 +818,7 @@ def pictris(full_partsdict, grid):
             blit_grid(grid, RED)
             pygame.display.update()
 
-            pygame.time.delay(500)
+            pygame.time.delay(before_fall)
 
             act_partsdict, fertig= part_fall(img, full_partsdict, x, y, act_partsdict, alphawert)
             if fertig:
@@ -865,6 +856,10 @@ def pictris(full_partsdict, grid):
                     counter = 0
                     punkte = 0
                     alphawert = 55
+                    parts = 0
+                    # Init für korrekt eingepasste Teile
+                    fits = 0
+                    fails = 0
 
                     act_partsdict, fertig= part_fall(img, full_partsdict, x, y, act_partsdict, alphawert)
                     if fertig:
