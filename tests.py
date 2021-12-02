@@ -610,17 +610,22 @@ def part_fall(img, full_partsdict, x, y, act_partsdict, alphawert):
                             fits_old = fits
                             act_partsdict_old = act_partsdict.copy()
                             for x_check in range(0, x_anz):
+
                                 pic_pos_x = full_image_x + x_check*part_size
-                                for pic_pos_y in range(full_image_y, (full_image_y + y_anz * part_size)):
-                                    # Check bei jedem vollen y-Wert
-                                    if ((pic_pos_y - full_image_y) % part_size) == 0:
-                                        stop, fertig, act_partsdict = place_check(x, y, pic_pos_x, pic_pos_y, x_change,
+                                for y_check in range(0,y_anz):
+                                    pic_pos_y = full_image_y + y_check*part_size
+                                    stop, fertig, act_partsdict = place_check(x, y, pic_pos_x, pic_pos_y, x_change,
                                                                                   full_partsdict, act_partsdict, alphawert)
 
                                     if fits > fits_old:
+                                        print("zu schnell gedrückt")
+                                        print(f'fits: {fits} / fits_old: {fits_old}')
+                                        print(f'x_check: {x_check} / y_check: {y_check}')
                                         break
                                     else:
-                                        pic_pos_y += 1
+                                        y_check += 1
+                                        print(f'fits: {fits} / fits_old: {fits_old}')
+                                        print(f'x_check: {x_check} / y_check: {y_check}')
 
                                 if fits > fits_old:
                                     break
@@ -706,33 +711,33 @@ def place_check(x, y, pic_pos_x, pic_pos_y, x_change, full_partsdict, act_partsd
     y_act = math.floor((pic_pos_y - full_image_y) / part_size)
     #y_act = (pic_pos_y - full_image_y) / part_size
 
-    # Wenn Sprite auf Feld ausgerichtet oder durch Bewegung dazu eingenordet wurde (sonst passt eh nix)
-    if (x_anz % 2) != 0 or x_change != 0:
-        # Kollision oder unterer Rand erreicht?
-        if ((x_act, y_act + 1) in act_partsdict.keys()) or (y_act + 1 == y_anz):
-            #Kollision mit oberster Reihe
-            if y_act < 0:
-                stop = True
-            # passt?
-            elif full_partsdict[x_act, y_act][3] == full_partsdict[x, y][3]:
-                act_partsdict[x, y] = full_partsdict[x, y]
-                stop = True
-                zugzahl -= 1
-                fits += 1
+    # Wenn Sprite nicht auf Feld ausgerichtet oder durch Bewegung dazu eingenordet wurde
+    if (x_anz % 2) == 0 and x_change == 0:
+        # wenn Sprite mittig über Grid-Linie startet und mit der einen oder anderen Hälfte eine Kollision verursacht
+        if ((x_act, y_act + 1) in act_partsdict.keys() or (
+        x_act + 1, y_act + 1) in act_partsdict.keys()) or y_act == y_anz - 1:
+            stop = True
 
-                if len(act_partsdict) == len(full_partsdict):
-                    success(6)
-                    fertig = True
-                else:
-                    success(1)
-            # passt nicht, nur Kollision
+    # Kollision oder unterer Rand erreicht?
+    if ((x_act, y_act + 1) in act_partsdict.keys()) or (y_act + 1 == y_anz):
+        #Kollision mit oberster Reihe (kann nix passen)
+        if y_act < 0:
+            stop = True
+        # passt?
+        elif full_partsdict[x_act, y_act][3] == full_partsdict[x, y][3]:
+            act_partsdict[x, y] = full_partsdict[x, y]
+            stop = True
+            zugzahl -= 1
+            fits += 1
+
+            if len(act_partsdict) == len(full_partsdict):
+                success(6)
+                fertig = True
             else:
-                stop = True
-
-
-    # wenn Sprite mittig über Grid-Linie startet und mit der einen oder anderen Hälfte eine Kollision verursacht
-    elif ((x_act, y_act + 1) in act_partsdict.keys() or (x_act + 1, y_act + 1) in act_partsdict.keys()):
-        stop = True
+                success(1)
+        # passt nicht, nur Kollision
+        else:
+            stop = True
 
     return(stop, fertig, act_partsdict)
 
@@ -780,6 +785,8 @@ def pictris(full_partsdict, grid):
         counter = 0
         punkte = 0
         parts = 0
+        fits = 0
+        fails = 0
 
     moving = False
 
@@ -857,7 +864,6 @@ def pictris(full_partsdict, grid):
                     punkte = 0
                     alphawert = 55
                     parts = 0
-                    # Init für korrekt eingepasste Teile
                     fits = 0
                     fails = 0
 
