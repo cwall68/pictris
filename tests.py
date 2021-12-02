@@ -537,23 +537,18 @@ def part_fall(img, full_partsdict, x, y, act_partsdict, alphawert):
     global full_image_y
     global game_rounds
     global replay
-    global zugzahl
     global fits
     global fails
     global punkte
     global parts
-    global started
 
-    started = True
     fertig = False
     parts += 1
-    zugzahl += 1
-
 
     blit_field(full_partsdict, act_partsdict, alphawert)
     text_surface = pygame.font.Font.render(font, f'Punkte: {punkte} von {x_anz*y_anz}', True, (55, 55, 55))
     screen.blit(text_surface, dest=(50, 50))
-    pygame.display.flip()
+    #pygame.display.flip()
 
     # Hier wird das Spielteil gesenkt
     start_pos_x = (full_image_x + int(x_anz*part_size/2 - part_size/2))
@@ -580,7 +575,6 @@ def part_fall(img, full_partsdict, x, y, act_partsdict, alphawert):
                         game_rounds = -1
                         stop = True
                         fertig = True
-                        zugzahl = 0
 
                     if event.key == pygame.K_RIGHT:
                         x_change += 1
@@ -677,7 +671,6 @@ def part_fall(img, full_partsdict, x, y, act_partsdict, alphawert):
 
             if fertig:
                 success(8)
-                zugzahl = 0
                 punkte = 0
                 act_partsdict.clear()
                 pygame.time.delay(1000)
@@ -692,7 +685,6 @@ def part_fall(img, full_partsdict, x, y, act_partsdict, alphawert):
 
 #prüft ob die Kachel kollidiert und wenn ja ob sie an passender Stelle liegt
 def place_check(x, y, pic_pos_x, pic_pos_y, x_change, full_partsdict, act_partsdict, alphawert):
-    global zugzahl
     global fits
     global fails
 
@@ -718,7 +710,6 @@ def place_check(x, y, pic_pos_x, pic_pos_y, x_change, full_partsdict, act_partsd
         elif full_partsdict[x_act, y_act][3] == full_partsdict[x, y][3]:
             act_partsdict[x, y] = full_partsdict[x, y]
             stop = True
-            zugzahl -= 1
             fits += 1
 
             if len(act_partsdict) == len(full_partsdict):
@@ -746,26 +737,20 @@ def pictris(full_partsdict, grid):
     global spielbild
     global alphawert_init
     global game_rounds
-    global fade
     global w_floor
     global h_floor
     global x_anz
     global y_anz
     global init
-    global fade_factor
-    global partslist
-    global GRAY
     global RED
-    global counter
     global fertig
     global font
     global replay
-    global zugzahl
     global fits
     global fails
     global punkte
     global parts
-    global started
+    #Wartezeit
     global before_fall
 
     act_partsdict = {}
@@ -780,6 +765,7 @@ def pictris(full_partsdict, grid):
         fails = 0
 
     moving = False
+    started = False
 
     font = pygame.font.Font(pygame.font.get_default_font(), 36)
 
@@ -802,10 +788,11 @@ def pictris(full_partsdict, grid):
     while running:
         if not started:
             alphawert = alphawert_init
+            blit_field(full_partsdict, act_partsdict, alphawert)
         else:
             alphawert = 55
 
-        blit_field(full_partsdict, act_partsdict, alphawert)
+        # blit_field(full_partsdict, act_partsdict, alphawert)
 
         if started:
             blit_field(full_partsdict, act_partsdict, alphawert)
@@ -815,9 +802,10 @@ def pictris(full_partsdict, grid):
             screen.blit(img, (start_pos_x, start_pos_Y))
             blit_grid(grid, RED)
             pygame.display.update()
-
+            #Kachel wird für spezifizierte Zeit vor Fall gezeigt
             pygame.time.delay(before_fall)
 
+            #Kachelfalldurchlauf
             act_partsdict, fertig= part_fall(img, full_partsdict, x, y, act_partsdict, alphawert)
             if fertig:
                 replay = True
@@ -825,11 +813,10 @@ def pictris(full_partsdict, grid):
                 started = False
                 return
 
+            blit_field(full_partsdict, act_partsdict, alphawert)
+            #Neue Kachel erzeugen wenn nicht fertig
             x, y = make_randpos(act_partsdict)
             img = full_partsdict[x, y][0]
-            img.set_alpha(255)
-
-            pygame.display.flip()
 
         for event in pygame.event.get():
 
@@ -841,7 +828,6 @@ def pictris(full_partsdict, grid):
                     sys.exit()
 
                 if event.key == pygame.K_SPACE:
-                    zugzahl = 0
                     game_rounds = 0
                     counter = 0
                     init = True
@@ -850,26 +836,21 @@ def pictris(full_partsdict, grid):
                     return
 
                 if event.key == pygame.K_RETURN:
-                    zugzahl = 0
                     counter = 0
                     punkte = 0
                     alphawert = 55
                     parts = 0
                     fits = 0
                     fails = 0
+                    started = True
 
                     act_partsdict, fertig= part_fall(img, full_partsdict, x, y, act_partsdict, alphawert)
 
                     x, y = make_randpos(act_partsdict)
-
                     img = full_partsdict[x, y][0]
-                    img.set_alpha(255)
-
-                    pygame.display.flip()
 
         img.set_alpha(255)
         screen.blit(img, (start_pos_x, start_pos_Y))
-
         blit_grid(grid, RED)
         pygame.display.update()
 
