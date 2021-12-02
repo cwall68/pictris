@@ -604,7 +604,7 @@ def part_fall(img, full_partsdict, x, y, act_partsdict, alphawert):
                             pic_pos_x = pic_pos_x_old
 
                     if event.key == pygame.K_UP:
-                        #Wenn rechtzeitig vor Eintritt ins Spielfeld eliminiert zählt es nicht als Zug
+                        #Funktioniert nur wenn rechtzeitig vor Eintritt ins Spielfeld gedrückt
                         if (full_image_y - (pic_pos_y + part_size)) > 0:
                             #Check ob passende Kachel weggedrückt
                             fits_old = fits
@@ -618,14 +618,14 @@ def part_fall(img, full_partsdict, x, y, act_partsdict, alphawert):
                                                                                   full_partsdict, act_partsdict, alphawert)
 
                                     if fits > fits_old:
-                                        print("zu schnell gedrückt")
-                                        print(f'fits: {fits} / fits_old: {fits_old}')
-                                        print(f'x_check: {x_check} / y_check: {y_check}')
+                                        # print("zu schnell gedrückt")
+                                        # print(f'fits: {fits} / fits_old: {fits_old}')
+                                        # print(f'x_check: {x_check} / y_check: {y_check}')
                                         break
                                     else:
                                         y_check += 1
-                                        print(f'fits: {fits} / fits_old: {fits_old}')
-                                        print(f'x_check: {x_check} / y_check: {y_check}')
+                                        # print(f'fits: {fits} / fits_old: {fits_old}')
+                                        # print(f'x_check: {x_check} / y_check: {y_check}')
 
                                 if fits > fits_old:
                                     break
@@ -636,7 +636,7 @@ def part_fall(img, full_partsdict, x, y, act_partsdict, alphawert):
                                 fits = fits_old
                                 fails += 1
                                 act_partsdict = act_partsdict_old.copy()
-
+                            fertig = False
                             stop = True
 
                     if event.key == pygame.K_DOWN:
@@ -662,14 +662,13 @@ def part_fall(img, full_partsdict, x, y, act_partsdict, alphawert):
                         if fits == fits_old:
                             fails += 1
 
+            punkte = fits - fails
+
             blit_field(full_partsdict, act_partsdict, alphawert)
 
             img.set_alpha(255)
             screen.blit(img, (pic_pos_x, pic_pos_y))
             blit_grid(grid, RED)
-
-            if fertig:
-                punkte = fits - fails
 
             text_surface = pygame.font.Font.render(font, f'Punkte: {punkte} von {x_anz * y_anz} aus {parts}', True, (55, 55, 55))
             screen.blit(text_surface, dest=(50, 50))
@@ -677,6 +676,7 @@ def part_fall(img, full_partsdict, x, y, act_partsdict, alphawert):
             pygame.display.update()
 
             if fertig:
+                success(8)
                 zugzahl = 0
                 punkte = 0
                 act_partsdict.clear()
@@ -684,13 +684,6 @@ def part_fall(img, full_partsdict, x, y, act_partsdict, alphawert):
                 stop = True
 
             if stop:
-                if not fertig:
-                    punkte = fits - fails
-                    text_surface = pygame.font.Font.render(font, f'Punkte: {punkte} von {x_anz * y_anz} aus {parts}', True,
-                                                           (55, 55, 55))
-                    screen.blit(text_surface, dest=(50, 50))
-                    pygame.display.update()
-
                 break
 
         move = False
@@ -707,9 +700,7 @@ def place_check(x, y, pic_pos_x, pic_pos_y, x_change, full_partsdict, act_partsd
     fertig = False
 
     x_act = math.floor((pic_pos_x - full_image_x) / part_size)
-    #x_act = (pic_pos_x - full_image_x) / part_size
     y_act = math.floor((pic_pos_y - full_image_y) / part_size)
-    #y_act = (pic_pos_y - full_image_y) / part_size
 
     # Wenn Sprite nicht auf Feld ausgerichtet oder durch Bewegung dazu eingenordet wurde
     if (x_anz % 2) == 0 and x_change == 0:
@@ -731,7 +722,7 @@ def place_check(x, y, pic_pos_x, pic_pos_y, x_change, full_partsdict, act_partsd
             fits += 1
 
             if len(act_partsdict) == len(full_partsdict):
-                success(6)
+                #success(6)
                 fertig = True
             else:
                 success(1)
@@ -868,12 +859,6 @@ def pictris(full_partsdict, grid):
                     fails = 0
 
                     act_partsdict, fertig= part_fall(img, full_partsdict, x, y, act_partsdict, alphawert)
-                    if fertig:
-                        replay = True
-                        started = False
-                        init = False
-                        parts = 0
-                        return
 
                     x, y = make_randpos(act_partsdict)
 
@@ -1228,8 +1213,6 @@ def blit_grid(grid, color):
 def success(anz):
     global partslist
 
-    # for element in partslist:
-    #     screen.blit(element[0], element[1])
     for n in range(0, anz):
         for i in range(0, 25):
             blit_grid(grid, (255, 255, 255))
@@ -1239,7 +1222,7 @@ def success(anz):
             pygame.display.flip()
 
 
-    #sucht nach Zufall ein Bild aus dem Spiuelbildverzeichnis
+    #sucht nach Zufall ein Bild aus dem Spielbildverzeichnis
 def find_pic():
     global game_dir
 
