@@ -146,7 +146,7 @@ alphawert_init = 255
 #Steuerung der Geschwindigkeit des Hintergrundbildverschwindens bei Puzzle und Pictris
 fade_factor = 0.2
 #Kachel wartet bei Pictris vor dem Fall
-before_fall = 750
+before_fall_init = 750
 
 #w und h sind die Werte für Breite und Höhe des Spielfelds
 #x und y lokalisieren den game floor auf dem Gesamtbildschirm
@@ -154,7 +154,10 @@ w_floor, h_floor = screen_width - screen_width // 4, screen_height - 30
 game_x = screen_width - w_floor
 game_y = screen_height - h_floor - offset_y
 
-game_dir = r"C:\Users\User\Desktop\best of puzzles"
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+#print(f'BASE_DIR: {BASE_DIR}')
+
+pic_dir = os.path.join(BASE_DIR,"best of puzzles")
 
 def make_game_floor(game):
     global w_floor
@@ -458,6 +461,15 @@ def puzzle(full_partsdict, grid):
             elif event.type == pygame.MOUSEMOTION and moving == True:
                 if fertig == False:
                     rect.move_ip(event.rel)
+                    #Kachel in den Grenzen des Spielfelds halten
+                    if rect.x < full_image_x:
+                        rect.x = full_image_x
+                    if rect.x > (full_image_x + (x_anz-1)*part_size):
+                        rect.x = (full_image_x + (x_anz-1)*part_size)
+                    if rect.y < 0:
+                        rect.y = 0
+                    if rect.y > (full_image_y + (y_anz-1)*part_size):
+                        rect.y = (full_image_y + (y_anz-1)*part_size)
 
             elif event.type == pygame.MOUSEBUTTONUP:
                 zugzahl += 1
@@ -751,7 +763,7 @@ def pictris(full_partsdict, grid):
     global punkte
     global parts
     #Wartezeit
-    global before_fall
+    global before_fall_init
 
     act_partsdict = {}
 
@@ -795,6 +807,7 @@ def pictris(full_partsdict, grid):
         # blit_field(full_partsdict, act_partsdict, alphawert)
 
         if started:
+            before_fall = before_fall_init - int(fits*(before_fall_init-550)/(x_anz*y_anz))
             blit_field(full_partsdict, act_partsdict, alphawert)
             img.set_alpha(255)
             start_pos_x = (full_image_x + int(x_anz * part_size / 2 - part_size / 2))
@@ -1205,24 +1218,21 @@ def success(anz):
 
     #sucht nach Zufall ein Bild aus dem Spielbildverzeichnis
 def find_pic():
-    global game_dir
+    global pic_dir
 
     full_pic_dict = {}
     file_count = 0
 
-    for root, dirs, files in os.walk(game_dir):
+    for root, dirs, files in os.walk(pic_dir):
         for file in files:
             if ".png" in file or ".jpg" in file or ".jpeg" in file or ".PNG" in file or ".JPG" in file or ".JPEG" in file:
                 file_count += 1
                 path = os.path.join(root, file)
                 full_pic_dict[file_count] = path
 
-
-    # print(f'Files: {file_count}')
-
     select_pic = random.randint(1, file_count)
-    select_pic_file = full_pic_dict[select_pic]
-    #select_pic_file = r"C:\Users\User\Desktop\Guadix.jpg"
+    #select_pic_file = full_pic_dict[select_pic]
+    select_pic_file = r"C:\Users\User\Desktop\pictris\Zahlen 16.jpg"
     return(select_pic_file)
 
 def show_fullparts(full_partsdict):
