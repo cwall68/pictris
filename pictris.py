@@ -18,6 +18,10 @@ from ctypes import wintypes
 
 app = QtWidgets.QApplication(sys.argv)
 
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+pic_dir = os.path.join(BASE_DIR,"best of puzzles")
+graf_dir = os.path.join(BASE_DIR,"Grafiken")
+
 
 class Controls(QtWidgets.QMainWindow):
     def __init__(self, parent=None):
@@ -27,6 +31,42 @@ class Controls(QtWidgets.QMainWindow):
         self.statusBar()
         self.setGeometry(0, 0, self.screen_width, self.screen_height)
         self.setWindowTitle('Pictris Controls')
+
+        self.label_width = 85
+        self.label_height = 85
+        self.label_start_x = 75
+        self.label_start_y = 25
+        self.label_space = 2*self.label_width
+
+        self.nine_label = QtWidgets.QLabel(self)
+        self.nine_label_pic_path = os.path.join(graf_dir, "Zahlen 9.jpg")
+        print(self.nine_label_pic_path)
+        self.nine_label_pic = QtGui.QPixmap(self.nine_label_pic_path)
+        self.nine_label_pic.scaled(self.label_width, self.label_height)
+        self.nine_label_pic = QtGui.QPixmap(self.label_width, self.label_height)
+        self.nine_label.setPixmap(self.nine_label_pic)
+        self.nine_label.setGeometry(self.label_start_x, self.label_start_y, self.label_width,
+                                    self.label_height)
+
+        self.dir_label = QtWidgets.QLabel(self)
+        self.dir_label_pic_path = os.path.join(graf_dir,"lieblingsordner.png" )
+        print(self.dir_label_pic_path)
+        self.dir_label_pic = QtGui.QPixmap(self.dir_label_pic_path)
+        self.dir_label_pic.scaled(self.label_width, self.label_height)
+        self.dir_label_pic = QtGui.QPixmap(self.label_width, self.label_height)
+        self.dir_label.setPixmap(self.dir_label_pic)
+        self.dir_label.setGeometry(self.label_start_x, int(self.label_start_y + 0.66*self.label_space), self.label_width, self.label_height)
+
+        self.pic_label = QtWidgets.QLabel(self)
+        self.pic_label_pic_path = os.path.join(graf_dir,"lieblingsbild.png" )
+        print(self.pic_label_pic_path)
+        self.pic_label_pic = QtGui.QPixmap(self.pic_label_pic_path)
+        self.pic_label_pic.scaled(self.label_width, self.label_height)
+        self.pic_label_pic = QtGui.QPixmap(self.label_width, self.label_height)
+        self.pic_label.setPixmap(self.pic_label_pic)
+        self.pic_label.setGeometry(self.label_start_x + self.label_space, int(self.label_start_y + 0.66*self.label_space), self.label_width, self.label_height)
+
+
 
 
         self.puzzle_start = QPushButton("Puzzle Pix", self)
@@ -154,9 +194,10 @@ w_floor, h_floor = screen_width - screen_width // 4, screen_height
 game_x = screen_width - w_floor
 game_y = screen_height - h_floor - offset_y
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+# BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+# pic_dir = os.path.join(BASE_DIR,"best of puzzles")
+# graf_dir = os.path.join(BASE_DIR,"Grafiken")
 
-pic_dir = os.path.join(BASE_DIR,"best of puzzles")
 
 def make_game_floor(game):
     global w_floor
@@ -1253,6 +1294,7 @@ def start_game(game):
 
 if __name__ == '__main__':
     controlsWindow.show()
+    controlsWindow.dir_label.show()
     controlsWindow.puzzle_start.clicked.connect(lambda: start_game("puzzle"))
     controlsWindow.puzzle15_start.clicked.connect(lambda: start_game("puzzle 15"))
     controlsWindow.puzzleABC_start.clicked.connect(lambda: start_game("puzzle ABC"))
