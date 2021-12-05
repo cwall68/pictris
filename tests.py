@@ -22,11 +22,12 @@ app = QtWidgets.QApplication(sys.argv)
 class Controls(QtWidgets.QMainWindow):
     def __init__(self, parent=None):
         super().__init__(parent)
+        #Feststellung der aktuellen Bildschirmgröße
+        self.screen_width, self.screen_height= pyautogui.size()
         self.statusBar()
-        self.breite = 1850
-        self.hoehe = 1000
-        # self.setGeometry(30, 50, self.breite, self.hoehe)
+        self.setGeometry(0, 0, self.screen_width, self.screen_height)
         self.setWindowTitle('Pictris Controls')
+
 
         self.puzzle_start = QPushButton("Puzzle Pix", self)
         self.puzzle_start.setGeometry(170, 330, 130, 40)
@@ -116,16 +117,14 @@ class Controls(QtWidgets.QMainWindow):
             ":!checked{font-size: 10px}"
         )
 
+        #Kontrollbild hinter Spielfeld
         self.pic_control = QtWidgets.QLabel(self)
 
-        self.point_counter = QtWidgets.QLabel(self)
-        self.point_counter.setGeometry(QtCore.QRect(170, 40, 47, 13))
-
-#Feststellung der aktuellen Bildschirmgröße
-screen_width, screen_height= pyautogui.size()
 
 #Anlegen des Fensters mit den Auswhl- und Kontrollfeldern für das Spiel
 controlsWindow = Controls()
+screen_width = controlsWindow.screen_width
+screen_height = controlsWindow.screen_height
 controlsWindow.setGeometry(0, 0, screen_width, screen_height)
 
 pygame.init()
@@ -148,14 +147,14 @@ fade_factor = 0.2
 #Kachel wartet bei Pictris vor dem Fall
 before_fall_init = 750
 
-#w und h sind die Werte für Breite und Höhe des Spielfelds
+#w und h sind die Werte für Breite und Höhe des Spielfelds (game floor)
 #x und y lokalisieren den game floor auf dem Gesamtbildschirm
-w_floor, h_floor = screen_width - screen_width // 4, screen_height - 30
+#w_floor, h_floor = screen_width - screen_width // 4, screen_height - 30
+w_floor, h_floor = screen_width - screen_width // 4, screen_height
 game_x = screen_width - w_floor
 game_y = screen_height - h_floor - offset_y
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-#print(f'BASE_DIR: {BASE_DIR}')
 
 pic_dir = os.path.join(BASE_DIR,"best of puzzles")
 
@@ -182,7 +181,6 @@ def make_game_floor(game):
     pygame.display.set_caption(game)
     pygame.display.flip()
 
-#make_game_floor("Willkommen")
 
 def start(game):
     global spielbild

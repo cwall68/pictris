@@ -12,3 +12,7 @@ print(f'BASE_DIR: {BASE_DIR}')
 
 pic_dir = os.path.join(BASE_DIR,"best of puzzles")
 print(f'Bilder in: {pic_dir}')
+
+graf_dir = os.path.join(BASE_DIR,"Grafiken")
+pic = os.path.join(graf_dir,"lieblingsordner.png" )
+print(f'Bild: {pic}')
