@@ -37,6 +37,7 @@ class Controls(QtWidgets.QMainWindow):
         self.label_start_x = 75
         self.label_start_y = 25
         self.label_space = int(1.5*self.label_width)
+        self.button_height = 15
 
         self.nine_label = QtWidgets.QLabel(self)
         self.nine_label_pic_path = os.path.join(graf_dir, "Zahlen 9.jpg")
@@ -47,14 +48,20 @@ class Controls(QtWidgets.QMainWindow):
         self.nine_label.setGeometry(self.label_start_x, self.label_start_y, self.label_width,
                                     self.label_height)
 
-        self.fifteen_label = QtWidgets.QLabel(self)
-        self.fifteen_label_pic_path = os.path.join(graf_dir, "zahlen 15.jpg")
-        self.fifteen_label_pic = QtGui.QPixmap(self.fifteen_label_pic_path)
-        self.fifteen_label_pic.scaled(self.label_width, self.label_height)
-        self.fifteen_label_pic = QtGui.QPixmap(self.label_width, self.label_height)
-        self.fifteen_label.setPixmap(self.fifteen_label_pic)
-        self.fifteen_label.setGeometry(self.label_start_x + self.label_space, self.label_start_y, self.label_width,
-                                    self.label_height)
+        self.nine_button = QRadioButton("9er Quadrat", self)
+        self.nine_button.setGeometry(self.label_start_x, self.label_start_y + self.label_height + self.button_height, self.label_width, self.button_height)
+
+        self.sixteen_label = QtWidgets.QLabel(self)
+        self.sixteen_label_pic_path = os.path.join(graf_dir, "Zahlen 16.jpg")
+        self.sixteen_label_pic = QtGui.QPixmap(self.sixteen_label_pic_path)
+        self.sixteen_label_pic.scaled(self.label_width, self.label_height)
+        self.sixteen_label_pic = QtGui.QPixmap(self.label_width, self.label_height)
+        self.sixteen_label.setPixmap(self.sixteen_label_pic)
+        self.sixteen_label.setGeometry(self.label_start_x + self.label_space, self.label_start_y, self.label_width,
+                                       self.label_height)
+
+        self.sixteen_button = QRadioButton("16er Quadrat", self)
+        self.sixteen_button.setGeometry(self.label_start_x + self.label_space, self.label_start_y + self.label_height + self.button_height, self.label_width, self.button_height)
 
         self.abc_label = QtWidgets.QLabel(self)
         self.abc_label_pic_path = os.path.join(graf_dir, "ABC Puzzle.jpg")
@@ -65,13 +72,20 @@ class Controls(QtWidgets.QMainWindow):
         self.abc_label.setGeometry(self.label_start_x + 2*self.label_space, self.label_start_y, self.label_width,
                                     self.label_height)
 
+        self.abc_button = QRadioButton("ABC Quadrat", self)
+        self.abc_button.setGeometry(self.label_start_x + 2*self.label_space, self.label_start_y + self.label_height + self.button_height, self.label_width, self.button_height)
+
         self.dir_label = QtWidgets.QLabel(self)
         self.dir_label_pic_path = os.path.join(graf_dir,"lieblingsordner.png" )
         self.dir_label_pic = QtGui.QPixmap(self.dir_label_pic_path)
         self.dir_label_pic.scaled(self.label_width, self.label_height)
         self.dir_label_pic = QtGui.QPixmap(self.label_width, self.label_height)
         self.dir_label.setPixmap(self.dir_label_pic)
-        self.dir_label.setGeometry(self.label_start_x, int(self.label_start_y + self.label_space), self.label_width, self.label_height)
+        self.dir_label.setGeometry(self.label_start_x, int(self.label_start_y + 1.2*self.label_space), self.label_width, self.label_height)
+
+        self.dir_button = QRadioButton("Lieblingsordner", self)
+        self.dir_button.setGeometry(self.label_start_x, self.label_start_y + int(1.15*self.label_space) + self.label_height + self.button_height, 2*self.label_width, self.button_height)
+        self.dir_button.setChecked(True)
 
         self.pic_label = QtWidgets.QLabel(self)
         self.pic_label_pic_path = os.path.join(graf_dir,"lieblingsbild.png" )
@@ -79,13 +93,16 @@ class Controls(QtWidgets.QMainWindow):
         self.pic_label_pic.scaled(self.label_width, self.label_height)
         self.pic_label_pic = QtGui.QPixmap(self.label_width, self.label_height)
         self.pic_label.setPixmap(self.pic_label_pic)
-        self.pic_label.setGeometry(self.label_start_x, int(self.label_start_y + 2*self.label_space), self.label_width, self.label_height)
+        self.pic_label.setGeometry(self.label_start_x, int(self.label_start_y + 2.4*self.label_space), self.label_width, self.label_height)
+
+        self.pic_button = QRadioButton("Bild der Wahl", self)
+        self.pic_button.setGeometry(self.label_start_x, int(self.label_start_y + 2.4*self.label_space)+ self.label_height + self.button_height, 2*self.label_width, self.button_height)
 
 
 
 
         self.puzzle_start = QPushButton("Puzzle Pix", self)
-        self.puzzle_start.setGeometry(170, 530, 130, 40)
+        self.puzzle_start.setGeometry(170, 630, 130, 40)
         self.puzzle_start.setCheckable(True)
         self.puzzle_start.setStyleSheet(
             ":checked{background: solid lightgreen}"
@@ -96,7 +113,7 @@ class Controls(QtWidgets.QMainWindow):
         )
 
         self.puzzle15_start = QPushButton("Puzzle 15", self)
-        self.puzzle15_start.setGeometry(170, 430, 130, 40)
+        self.puzzle15_start.setGeometry(170, 530, 130, 40)
         self.puzzle15_start.setCheckable(True)
         self.puzzle15_start.setStyleSheet(
             ":checked{background: solid lightgreen}"
@@ -107,7 +124,7 @@ class Controls(QtWidgets.QMainWindow):
         )
 
         self.puzzleABC_start = QPushButton("Puzzle ABC", self)
-        self.puzzleABC_start.setGeometry(170, 480, 130, 40)
+        self.puzzleABC_start.setGeometry(170, 580, 130, 40)
         self.puzzleABC_start.setCheckable(True)
         self.puzzleABC_start.setStyleSheet(
             ":checked{background: solid lightgreen}"
@@ -118,7 +135,7 @@ class Controls(QtWidgets.QMainWindow):
         )
 
         self.slider9_start = QPushButton("Slider 9", self)
-        self.slider9_start.setGeometry(170, 630, 130, 40)
+        self.slider9_start.setGeometry(170, 730, 130, 40)
         self.slider9_start.setCheckable(True)
         self.slider9_start.setStyleSheet(
             ":checked{background: solid lightblue}"
@@ -129,7 +146,7 @@ class Controls(QtWidgets.QMainWindow):
         )
 
         self.slider15_start = QPushButton("Slider 15", self)
-        self.slider15_start.setGeometry(170, 680, 130, 40)
+        self.slider15_start.setGeometry(170, 780, 130, 40)
         self.slider15_start.setCheckable(True)
         self.slider15_start.setStyleSheet(
             ":checked{background: solid lightblue}"
@@ -140,7 +157,7 @@ class Controls(QtWidgets.QMainWindow):
         )
 
         self.sliderABC_start = QPushButton("Slider ABC", self)
-        self.sliderABC_start.setGeometry(170, 730, 130, 40)
+        self.sliderABC_start.setGeometry(170, 830, 130, 40)
         self.sliderABC_start.setCheckable(True)
         self.sliderABC_start.setStyleSheet(
             ":checked{background: solid lightblue}"
@@ -151,7 +168,7 @@ class Controls(QtWidgets.QMainWindow):
         )
 
         self.sliderpix_start = QPushButton("Slider Pix", self)
-        self.sliderpix_start.setGeometry(170, 780, 130, 40)
+        self.sliderpix_start.setGeometry(170, 880, 130, 40)
         self.sliderpix_start.setCheckable(True)
         self.sliderpix_start.setStyleSheet(
             ":checked{background: solid lightblue}"
@@ -162,7 +179,7 @@ class Controls(QtWidgets.QMainWindow):
         )
 
         self.pictris_start = QPushButton("Pictris", self)
-        self.pictris_start.setGeometry(170, 880, 130, 40)
+        self.pictris_start.setGeometry(170, 980, 130, 40)
         self.pictris_start.setCheckable(True)
         self.pictris_start.setStyleSheet(
             ":checked{background: solid yellow}"
