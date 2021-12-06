@@ -123,60 +123,60 @@ class Controls(QtWidgets.QMainWindow):
             ":!checked{font-size: 10px}"
         )
 
-        self.puzzle15_start = QPushButton("Puzzle 15", self)
-        self.puzzle15_start.setGeometry(170, 530, 130, 40)
-        self.puzzle15_start.setCheckable(True)
-        self.puzzle15_start.setStyleSheet(
-            ":checked{background: solid lightgreen}"
-            ":checked{border: 2px solid red}"
-            ":!checked{background-color: rgb(255,255,255)}"
-            ":!checked{border: 2px solid lightgreen}"
-            ":!checked{font-size: 10px}"
-        )
-
-        self.puzzleABC_start = QPushButton("Puzzle ABC", self)
-        self.puzzleABC_start.setGeometry(170, 580, 130, 40)
-        self.puzzleABC_start.setCheckable(True)
-        self.puzzleABC_start.setStyleSheet(
-            ":checked{background: solid lightgreen}"
-            ":checked{border: 2px solid red}"
-            ":!checked{background-color: rgb(255,255,255)}"
-            ":!checked{border: 2px solid lightgreen}"
-            ":!checked{font-size: 10px}"
-        )
-
-        self.slider9_start = QPushButton("Slider 9", self)
-        self.slider9_start.setGeometry(170, 730, 130, 40)
-        self.slider9_start.setCheckable(True)
-        self.slider9_start.setStyleSheet(
-            ":checked{background: solid lightblue}"
-            ":checked{border: 2px solid red}"
-            ":!checked{background-color: rgb(255,255,255)}"
-            ":!checked{border: 2px solid lightblue}"
-            ":!checked{font-size: 10px}"
-        )
-
-        self.slider15_start = QPushButton("Slider 15", self)
-        self.slider15_start.setGeometry(170, 780, 130, 40)
-        self.slider15_start.setCheckable(True)
-        self.slider15_start.setStyleSheet(
-            ":checked{background: solid lightblue}"
-            ":checked{border: 2px solid red}"
-            ":!checked{background-color: rgb(255,255,255)}"
-            ":!checked{border: 2px solid lightblue}"
-            ":!checked{font-size: 10px}"
-        )
-
-        self.sliderABC_start = QPushButton("Slider ABC", self)
-        self.sliderABC_start.setGeometry(170, 830, 130, 40)
-        self.sliderABC_start.setCheckable(True)
-        self.sliderABC_start.setStyleSheet(
-            ":checked{background: solid lightblue}"
-            ":checked{border: 2px solid red}"
-            ":!checked{background-color: rgb(255,255,255)}"
-            ":!checked{border: 2px solid lightblue}"
-            ":!checked{font-size: 10px}"
-        )
+        # self.puzzle15_start = QPushButton("Puzzle 15", self)
+        # self.puzzle15_start.setGeometry(170, 530, 130, 40)
+        # self.puzzle15_start.setCheckable(True)
+        # self.puzzle15_start.setStyleSheet(
+        #     ":checked{background: solid lightgreen}"
+        #     ":checked{border: 2px solid red}"
+        #     ":!checked{background-color: rgb(255,255,255)}"
+        #     ":!checked{border: 2px solid lightgreen}"
+        #     ":!checked{font-size: 10px}"
+        # )
+        #
+        # self.puzzleABC_start = QPushButton("Puzzle ABC", self)
+        # self.puzzleABC_start.setGeometry(170, 580, 130, 40)
+        # self.puzzleABC_start.setCheckable(True)
+        # self.puzzleABC_start.setStyleSheet(
+        #     ":checked{background: solid lightgreen}"
+        #     ":checked{border: 2px solid red}"
+        #     ":!checked{background-color: rgb(255,255,255)}"
+        #     ":!checked{border: 2px solid lightgreen}"
+        #     ":!checked{font-size: 10px}"
+        # )
+        #
+        # self.slider9_start = QPushButton("Slider 9", self)
+        # self.slider9_start.setGeometry(170, 730, 130, 40)
+        # self.slider9_start.setCheckable(True)
+        # self.slider9_start.setStyleSheet(
+        #     ":checked{background: solid lightblue}"
+        #     ":checked{border: 2px solid red}"
+        #     ":!checked{background-color: rgb(255,255,255)}"
+        #     ":!checked{border: 2px solid lightblue}"
+        #     ":!checked{font-size: 10px}"
+        # )
+        #
+        # self.slider15_start = QPushButton("Slider 15", self)
+        # self.slider15_start.setGeometry(170, 780, 130, 40)
+        # self.slider15_start.setCheckable(True)
+        # self.slider15_start.setStyleSheet(
+        #     ":checked{background: solid lightblue}"
+        #     ":checked{border: 2px solid red}"
+        #     ":!checked{background-color: rgb(255,255,255)}"
+        #     ":!checked{border: 2px solid lightblue}"
+        #     ":!checked{font-size: 10px}"
+        # )
+        #
+        # self.sliderABC_start = QPushButton("Slider ABC", self)
+        # self.sliderABC_start.setGeometry(170, 830, 130, 40)
+        # self.sliderABC_start.setCheckable(True)
+        # self.sliderABC_start.setStyleSheet(
+        #     ":checked{background: solid lightblue}"
+        #     ":checked{border: 2px solid red}"
+        #     ":!checked{background-color: rgb(255,255,255)}"
+        #     ":!checked{border: 2px solid lightblue}"
+        #     ":!checked{font-size: 10px}"
+        # )
 
         self.sliderpix_start = QPushButton("Slider Pix", self)
         self.sliderpix_start.setGeometry(170, 880, 130, 40)
@@ -292,38 +292,39 @@ def start(game):
 
     started = False
 
-    if game == "puzzle" or game == "slider" or game == "pictris":
+    #if game == "puzzle" or game == "slider" or game == "pictris":
+    if controlsWindow.dir_button.isChecked() == True or controlsWindow.pic_button.isChecked() == True:
         if init == True and replay == False:
             spielbild = find_pic()
+            controlsWindow.pic_path.setText(spielbild)
             part_anz = part_anz_init
             game_rounds = 0
         else:
-            if game == "puzzle" or game == "pictris":
-                game_rounds += 1
-                part_anz = part_anz + game_rounds
+            game_rounds += 1
+            part_anz = part_anz + game_rounds
 
-    elif game == "puzzle 15":
-        spielbild = r"C:\Users\User\Desktop\pictris\Zahlen gerade.jpg"
-        part_anz = 4
-        fade_factor = 0.1
-        game = "puzzle"
-    elif game == "puzzle ABC":
-        spielbild = r"C:\Users\User\Desktop\pictris\ABC Puzzle.jpg"
-        part_anz = 5
-        fade_factor = 0.1
-        game = "puzzle"
-    elif game == "slider 9":
-        spielbild = r"C:\Users\User\Desktop\pictris\Zahlen ungerade.jpg"
+    # elif game == "puzzle 15":
+    #     spielbild = r"C:\Users\User\Desktop\pictris\Zahlen gerade.jpg"
+    #     part_anz = 4
+    #     fade_factor = 0.1
+    #     game = "puzzle"
+    # elif game == "puzzle ABC":
+    #     spielbild = r"C:\Users\User\Desktop\pictris\ABC Puzzle.jpg"
+    #     part_anz = 5
+    #     fade_factor = 0.1
+    #     game = "puzzle"
+    elif controlsWindow.nine_button.isChecked() == True:
+        spielbild = find_pic()
         part_anz = 3
-        game = "slider"
-    elif game == "slider 15":
-        spielbild = r"C:\Users\User\Desktop\pictris\Zahlen gerade.jpg"
+        #game = "slider"
+    elif controlsWindow.sixteen_button.isChecked() == True:
+        spielbild = find_pic()
         part_anz = 4
-        game = "slider"
-    elif game == "slider ABC":
-        spielbild = r"C:\Users\User\Desktop\pictris\ABC Puzzle.jpg"
+        #game = "slider"
+    elif controlsWindow.abc_button.isChecked() == True:
+        spielbild = find_pic()
         part_anz = 5
-        game = "slider"
+        #game = "slider"
 
     #Hier wird das oben bestimmte Spielbild in das Spieformat gebracht und in diesem Format als tmp Pic abgelegt
     image = resize(spielbild)
@@ -408,29 +409,29 @@ def find_part_size(width, height, part_anz):
 def uncheck(game):
 
     controlsWindow.puzzle_start.setChecked(False)
-    controlsWindow.puzzle15_start.setChecked(False)
-    controlsWindow.puzzleABC_start.setChecked(False)
+    #controlsWindow.puzzle15_start.setChecked(False)
+    #controlsWindow.puzzleABC_start.setChecked(False)
     controlsWindow.sliderpix_start.setChecked(False)
-    controlsWindow.slider9_start.setChecked(False)
-    controlsWindow.slider15_start.setChecked(False)
-    controlsWindow.sliderABC_start.setChecked(False)
+    #controlsWindow.slider9_start.setChecked(False)
+    #controlsWindow.slider15_start.setChecked(False)
+    #controlsWindow.sliderABC_start.setChecked(False)
     controlsWindow.pictris_start.setChecked(False)
-    if game == "puzzle":
-        controlsWindow.puzzle_start.setChecked(True)
-    elif game == "puzzle 15":
-        controlsWindow.puzzle15_start.setChecked(True)
-    elif game == "puzzle ABC":
-        controlsWindow.puzzleABC_start.setChecked(True)
-    elif game == "slider":
-        controlsWindow.sliderpix_start.setChecked(True)
-    elif game == "slider ABC":
-        controlsWindow.sliderABC_start.setChecked(True)
-    elif game == "slider 9":
-        controlsWindow.slider9_start.setChecked(True)
-    elif game == "slider 15":
-        controlsWindow.slider15_start.setChecked(True)
-    elif game == "pictris":
-        controlsWindow.pictris_start.setChecked(True)
+    # if game == "puzzle":
+    #     controlsWindow.puzzle_start.setChecked(True)
+    # elif game == "puzzle 15":
+    #     controlsWindow.puzzle15_start.setChecked(True)
+    # elif game == "puzzle ABC":
+    #     controlsWindow.puzzleABC_start.setChecked(True)
+    # elif game == "slider":
+    #     controlsWindow.sliderpix_start.setChecked(True)
+    # elif game == "slider ABC":
+    #     controlsWindow.sliderABC_start.setChecked(True)
+    # elif game == "slider 9":
+    #     controlsWindow.slider9_start.setChecked(True)
+    # elif game == "slider 15":
+    #     controlsWindow.slider15_start.setChecked(True)
+    # elif game == "pictris":
+    #     controlsWindow.pictris_start.setChecked(True)
 
 
 def resize(file):
@@ -1335,6 +1336,16 @@ def find_pic():
                 select_pic_file = pic_text
         else:
             select_pic_file = r"C:\Users\User\PycharmProjects\pictris\Grafiken\lieblingsbild.png"
+
+    elif controlsWindow.nine_button.isChecked() == True:
+        select_pic_file = r"C:\Users\User\PycharmProjects\pictris\Quadrate\Zahlen 9.jpg"
+
+    elif controlsWindow.sixteen_button.isChecked() == True:
+        select_pic_file = r"C:\Users\User\PycharmProjects\pictris\Quadrate\Zahlen 16.jpg"
+
+    elif controlsWindow.abc_button.isChecked() == True:
+        select_pic_file = r"C:\Users\User\PycharmProjects\pictris\Quadrate\ABC Puzzle.jpg"
+
     return(select_pic_file)
 
 def show_fullparts(full_partsdict):
@@ -1359,14 +1370,18 @@ if __name__ == '__main__':
     controlsWindow.show()
     controlsWindow.dir_label.show()
     controlsWindow.puzzle_start.clicked.connect(lambda: start_game("puzzle"))
-    controlsWindow.puzzle15_start.clicked.connect(lambda: start_game("puzzle 15"))
-    controlsWindow.puzzleABC_start.clicked.connect(lambda: start_game("puzzle ABC"))
-    controlsWindow.slider9_start.clicked.connect(lambda: start_game("slider 9"))
-    controlsWindow.slider15_start.clicked.connect(lambda: start_game("slider 15"))
-    controlsWindow.sliderABC_start.clicked.connect(lambda: start_game("slider ABC"))
+    #controlsWindow.puzzle15_start.clicked.connect(lambda: start_game("puzzle 15"))
+    #controlsWindow.puzzleABC_start.clicked.connect(lambda: start_game("puzzle ABC"))
+    #controlsWindow.slider9_start.clicked.connect(lambda: start_game("slider 9"))
+    #controlsWindow.slider15_start.clicked.connect(lambda: start_game("slider 15"))
+    #controlsWindow.sliderABC_start.clicked.connect(lambda: start_game("slider ABC"))
     controlsWindow.sliderpix_start.released.connect(lambda: start_game("slider"))
     controlsWindow.pictris_start.released.connect(lambda: start_game("pictris"))
+    controlsWindow.nine_button.toggled.connect(controlsWindow.pic_control.hide)
+    controlsWindow.sixteen_button.toggled.connect(controlsWindow.pic_control.hide)
+    controlsWindow.abc_button.toggled.connect(controlsWindow.pic_control.hide)
     controlsWindow.dir_button.toggled.connect(controlsWindow.pic_control.hide)
+    controlsWindow.pic_button.toggled.connect(controlsWindow.pic_control.hide)
 
 
 #pygame.quit()
