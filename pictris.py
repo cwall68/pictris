@@ -33,11 +33,12 @@ class Controls(QtWidgets.QMainWindow):
         self.setWindowTitle('Pictris Controls')
 
         self.label_width = 85
-        self.label_height = 85
+        self.label_height = self.label_width
         self.label_start_x = 75
         self.label_start_y = 25
         self.label_space = int(1.5*self.label_width)
         self.button_height = 15
+        self.text_height = 40
 
         self.nine_label = QtWidgets.QLabel(self)
         self.nine_label_pic_path = os.path.join(graf_dir, "Zahlen 9.jpg")
@@ -83,6 +84,11 @@ class Controls(QtWidgets.QMainWindow):
         self.dir_label.setPixmap(self.dir_label_pic)
         self.dir_label.setGeometry(self.label_start_x, int(self.label_start_y + 1.2*self.label_space), self.label_width, self.label_height)
 
+        self.dir_path = QTextEdit(self)
+        self.dir_path.setGeometry(self.label_start_x + self.label_space, int(self.label_start_y + 0.5*self.label_height + 1.2 * self.label_space - 0.5*self.text_height),
+                                   self.label_width + self.label_space, self.text_height)
+        self.dir_path.setText(f'best of puzzles')
+
         self.dir_button = QRadioButton("Lieblingsordner", self)
         self.dir_button.setGeometry(self.label_start_x, self.label_start_y + int(1.15*self.label_space) + self.label_height + self.button_height, 2*self.label_width, self.button_height)
         self.dir_button.setChecked(True)
@@ -95,8 +101,13 @@ class Controls(QtWidgets.QMainWindow):
         self.pic_label.setPixmap(self.pic_label_pic)
         self.pic_label.setGeometry(self.label_start_x, int(self.label_start_y + 2.4*self.label_space), self.label_width, self.label_height)
 
+
+        self.pic_path = QTextEdit(self)
+        self.pic_path.setGeometry(self.label_start_x + self.label_space, int(self.label_start_y + 2.5*self.label_height + 1.1*self.label_space - 0.5*self.text_height),
+                                   self.label_width + self.label_space, self.text_height)
+
         self.pic_button = QRadioButton("Bild der Wahl", self)
-        self.pic_button.setGeometry(self.label_start_x, int(self.label_start_y + 2.4*self.label_space)+ self.label_height + self.button_height, 2*self.label_width, self.button_height)
+        self.pic_button.setGeometry(self.label_start_x, int(self.label_start_y + 2.4*self.label_space)+ self.label_height + self.button_height, 2*self.label_height, self.button_height)
 
 
 
@@ -1289,21 +1300,41 @@ def success(anz):
 
     #sucht nach Zufall ein Bild aus dem Spielbildverzeichnis
 def find_pic():
-    global pic_dir
 
-    full_pic_dict = {}
-    file_count = 0
+    if controlsWindow.dir_button.isChecked() == True:
+        dir_text = controlsWindow.dir_path.toPlainText()
+        if dir_text.startswith('"') and dir_text.endswith('"'):
+            select_dir = dir_text[1:-1]
+            if select_dir == "best of puzzles":
+                select_dir = os.path.join(BASE_DIR,"best of puzzles")
+        else:
+            if dir_text == "":
+                select_pic_file = r"C:\Users\User\PycharmProjects\pictris\Grafiken\lieblingsordner.png"
+            else:
+                select_dir = dir_text
 
-    for root, dirs, files in os.walk(pic_dir):
-        for file in files:
-            if ".png" in file or ".jpg" in file or ".jpeg" in file or ".PNG" in file or ".JPG" in file or ".JPEG" in file:
-                file_count += 1
-                path = os.path.join(root, file)
-                full_pic_dict[file_count] = path
+        if dir_text != "":
+            full_pic_dict = {}
+            file_count = 0
+            for root, dirs, files in os.walk(select_dir):
+                for file in files:
+                    if ".png" in file or ".jpg" in file or ".jpeg" in file or ".PNG" in file or ".JPG" in file or ".JPEG" in file:
+                        file_count += 1
+                        path = os.path.join(root, file)
+                        full_pic_dict[file_count] = path
 
-    select_pic = random.randint(1, file_count)
-    #select_pic_file = full_pic_dict[select_pic]
-    select_pic_file = r"C:\Users\User\Desktop\pictris\Zahlen 16.jpg"
+            select_pic = random.randint(1, file_count)
+            select_pic_file = full_pic_dict[select_pic]
+
+    elif controlsWindow.pic_button.isChecked() == True:
+        pic_text = controlsWindow.pic_path.toPlainText()
+        if pic_text != "":
+            if pic_text.startswith('"') and pic_text.endswith('"'):
+                select_pic_file = pic_text[1:-1]
+            else:
+                select_pic_file = pic_text
+        else:
+            select_pic_file = r"C:\Users\User\PycharmProjects\pictris\Grafiken\lieblingsbild.png"
     return(select_pic_file)
 
 def show_fullparts(full_partsdict):
@@ -1335,6 +1366,8 @@ if __name__ == '__main__':
     controlsWindow.sliderABC_start.clicked.connect(lambda: start_game("slider ABC"))
     controlsWindow.sliderpix_start.released.connect(lambda: start_game("slider"))
     controlsWindow.pictris_start.released.connect(lambda: start_game("pictris"))
+    controlsWindow.dir_button.toggled.connect(controlsWindow.pic_control.hide)
+
 
 #pygame.quit()
 sys.exit(app.exec())
