@@ -35,10 +35,17 @@ class Controls(QtWidgets.QMainWindow):
         self.label_width = 85
         self.label_height = self.label_width
         self.label_start_x = 75
-        self.label_start_y = 25
+        self.label_start_y = 75
         self.label_space = int(1.5*self.label_width)
         self.button_height = 15
         self.text_height = 40
+
+
+        self.pic_choice_label = QtWidgets.QLabel(self)
+        self.pic_choice_label.setText("Bildauswahl:")
+        self.pic_choice_label.setGeometry(self.label_start_x, self.label_start_y - self.label_height , 2*self.label_space + self.label_width, self.label_height)
+        self.pic_choice_label.setStyleSheet("font-size: 18px;")
+
 
         self.nine_label = QtWidgets.QLabel(self)
         self.nine_label_pic_path = os.path.join(graf_dir, "Zahlen 9.jpg")
@@ -89,7 +96,7 @@ class Controls(QtWidgets.QMainWindow):
                                    self.label_width + self.label_space, self.text_height)
         self.dir_path.setText(f'best of puzzles')
 
-        self.dir_button = QRadioButton("Lieblingsordner", self)
+        self.dir_button = QRadioButton("Zufallsbild aus Lieblingsordner", self)
         self.dir_button.setGeometry(self.label_start_x, self.label_start_y + int(1.15*self.label_space) + self.label_height + self.button_height, 2*self.label_width, self.button_height)
         self.dir_button.setChecked(True)
 
@@ -109,95 +116,47 @@ class Controls(QtWidgets.QMainWindow):
         self.pic_button = QRadioButton("Bild der Wahl", self)
         self.pic_button.setGeometry(self.label_start_x, int(self.label_start_y + 2.4*self.label_space)+ self.label_height + self.button_height, 2*self.label_height, self.button_height)
 
+        self.start_button_height = 40
+        self.start_button_space = 2 * self.start_button_height
+        self.start_button_y = int(0.5 * self.screen_height)+ 110
+        self.start_button_width = 2*self.label_space + self.label_width
 
+        self.start_label = QtWidgets.QLabel(self)
+        self.start_label.setText("Spielauswahl:")
+        self.start_label.setGeometry(self.label_start_x, self.start_button_y - int(0.8*self.start_button_space), self.start_button_width, self.start_button_height)
+        self.start_label.setStyleSheet("font-size: 18px;")
 
-
-        self.puzzle_start = QPushButton("Puzzle Pix", self)
-        self.puzzle_start.setGeometry(170, 630, 130, 40)
+        self.puzzle_start = QPushButton("Puzzle", self)
+        self.puzzle_start.setGeometry(self.label_start_x, self.start_button_y, self.start_button_width, self.start_button_height)
         self.puzzle_start.setCheckable(True)
         self.puzzle_start.setStyleSheet(
             ":checked{background: solid lightgreen}"
-            ":checked{border: 2px solid red}"
+            ":checked{border: 4px solid red}"
             ":!checked{background-color: rgb(255,255,255)}"
-            ":!checked{border: 2px solid lightgreen}"
-            ":!checked{font-size: 10px}"
+            ":!checked{border: 4px solid lightgreen}"
+            ":!checked{font-size: 13px}"
         )
 
-        # self.puzzle15_start = QPushButton("Puzzle 15", self)
-        # self.puzzle15_start.setGeometry(170, 530, 130, 40)
-        # self.puzzle15_start.setCheckable(True)
-        # self.puzzle15_start.setStyleSheet(
-        #     ":checked{background: solid lightgreen}"
-        #     ":checked{border: 2px solid red}"
-        #     ":!checked{background-color: rgb(255,255,255)}"
-        #     ":!checked{border: 2px solid lightgreen}"
-        #     ":!checked{font-size: 10px}"
-        # )
-        #
-        # self.puzzleABC_start = QPushButton("Puzzle ABC", self)
-        # self.puzzleABC_start.setGeometry(170, 580, 130, 40)
-        # self.puzzleABC_start.setCheckable(True)
-        # self.puzzleABC_start.setStyleSheet(
-        #     ":checked{background: solid lightgreen}"
-        #     ":checked{border: 2px solid red}"
-        #     ":!checked{background-color: rgb(255,255,255)}"
-        #     ":!checked{border: 2px solid lightgreen}"
-        #     ":!checked{font-size: 10px}"
-        # )
-        #
-        # self.slider9_start = QPushButton("Slider 9", self)
-        # self.slider9_start.setGeometry(170, 730, 130, 40)
-        # self.slider9_start.setCheckable(True)
-        # self.slider9_start.setStyleSheet(
-        #     ":checked{background: solid lightblue}"
-        #     ":checked{border: 2px solid red}"
-        #     ":!checked{background-color: rgb(255,255,255)}"
-        #     ":!checked{border: 2px solid lightblue}"
-        #     ":!checked{font-size: 10px}"
-        # )
-        #
-        # self.slider15_start = QPushButton("Slider 15", self)
-        # self.slider15_start.setGeometry(170, 780, 130, 40)
-        # self.slider15_start.setCheckable(True)
-        # self.slider15_start.setStyleSheet(
-        #     ":checked{background: solid lightblue}"
-        #     ":checked{border: 2px solid red}"
-        #     ":!checked{background-color: rgb(255,255,255)}"
-        #     ":!checked{border: 2px solid lightblue}"
-        #     ":!checked{font-size: 10px}"
-        # )
-        #
-        # self.sliderABC_start = QPushButton("Slider ABC", self)
-        # self.sliderABC_start.setGeometry(170, 830, 130, 40)
-        # self.sliderABC_start.setCheckable(True)
-        # self.sliderABC_start.setStyleSheet(
-        #     ":checked{background: solid lightblue}"
-        #     ":checked{border: 2px solid red}"
-        #     ":!checked{background-color: rgb(255,255,255)}"
-        #     ":!checked{border: 2px solid lightblue}"
-        #     ":!checked{font-size: 10px}"
-        # )
-
-        self.sliderpix_start = QPushButton("Slider Pix", self)
-        self.sliderpix_start.setGeometry(170, 880, 130, 40)
-        self.sliderpix_start.setCheckable(True)
-        self.sliderpix_start.setStyleSheet(
+        self.slider_start = QPushButton("Slider", self)
+        self.slider_start.setGeometry(self.label_start_x, self.start_button_y + self.start_button_space, self.start_button_width, self.start_button_height)
+        self.slider_start.setCheckable(True)
+        self.slider_start.setStyleSheet(
             ":checked{background: solid lightblue}"
-            ":checked{border: 2px solid red}"
+            ":checked{border: 4px solid red}"
             ":!checked{background-color: rgb(255,255,255)}"
-            ":!checked{border: 2px solid lightblue}"
-            ":!checked{font-size: 10px}"
+            ":!checked{border: 4px solid lightblue}"
+            ":!checked{font-size: 13px}"
         )
 
         self.pictris_start = QPushButton("Pictris", self)
-        self.pictris_start.setGeometry(170, 980, 130, 40)
+        self.pictris_start.setGeometry(self.label_start_x, self.start_button_y + 2*self.start_button_space, self.start_button_width, self.start_button_height)
         self.pictris_start.setCheckable(True)
         self.pictris_start.setStyleSheet(
             ":checked{background: solid yellow}"
-            ":checked{border: 2px solid red}"
+            ":checked{border: 4px solid red}"
             ":!checked{background-color: rgb(255,255,255)}"
-            ":!checked{border: 2px solid yellow}"
-            ":!checked{font-size: 10px}"
+            ":!checked{border: 4px solid yellow}"
+            ":!checked{font-size: 13px}"
         )
 
         #Kontrollbild hinter Spielfeld
@@ -409,29 +368,14 @@ def find_part_size(width, height, part_anz):
 def uncheck(game):
 
     controlsWindow.puzzle_start.setChecked(False)
-    #controlsWindow.puzzle15_start.setChecked(False)
-    #controlsWindow.puzzleABC_start.setChecked(False)
-    controlsWindow.sliderpix_start.setChecked(False)
-    #controlsWindow.slider9_start.setChecked(False)
-    #controlsWindow.slider15_start.setChecked(False)
-    #controlsWindow.sliderABC_start.setChecked(False)
+    controlsWindow.slider_start.setChecked(False)
     controlsWindow.pictris_start.setChecked(False)
-    # if game == "puzzle":
-    #     controlsWindow.puzzle_start.setChecked(True)
-    # elif game == "puzzle 15":
-    #     controlsWindow.puzzle15_start.setChecked(True)
-    # elif game == "puzzle ABC":
-    #     controlsWindow.puzzleABC_start.setChecked(True)
-    # elif game == "slider":
-    #     controlsWindow.sliderpix_start.setChecked(True)
-    # elif game == "slider ABC":
-    #     controlsWindow.sliderABC_start.setChecked(True)
-    # elif game == "slider 9":
-    #     controlsWindow.slider9_start.setChecked(True)
-    # elif game == "slider 15":
-    #     controlsWindow.slider15_start.setChecked(True)
-    # elif game == "pictris":
-    #     controlsWindow.pictris_start.setChecked(True)
+    if game == "puzzle":
+        controlsWindow.puzzle_start.setChecked(True)
+    elif game == "slider":
+        controlsWindow.slider_start.setChecked(True)
+    elif game == "pictris":
+        controlsWindow.pictris_start.setChecked(True)
 
 
 def resize(file):
@@ -1198,22 +1142,22 @@ def check_solvability(act_pos_dict, x_anz, y_anz):
 
     #if (x_anz == 3 and y_anz == 4):
     if ((parity_start % 2) == 0 and (parity_goal % 2) == 0) or ((parity_start % 2) != 0 and (parity_goal % 2) != 0):
-        lösbar = True
+        loesbar = True
         #Sonderlocke bei nicht-quadratischen Spielfeldern
         if (x_anz % 2) != 0 and (y_anz % 2) == 0:
-            lösbar = False
+            loesbar = False
     else:
-        lösbar = False
+        loesbar = False
         # Sonderlocke bei nicht-quadratischen Spielfeldern
         if (x_anz % 2) != 0 and (y_anz % 2) == 0:
-            lösbar = True
+            loesbar = True
 
-    if lösbar:
+    if loesbar:
         print("lösbar")
     else:
         print("unlösbar")
 
-    return(lösbar)
+    return(loesbar)
 
 
 #erzeugt ein Dictionary aller Teile mit x,y Koordinaten im Grid als Key und [surface, (part_pos_x, part_pos_y), Position in Reihenfolge im Grid, Wert] als Value
@@ -1274,9 +1218,6 @@ def make_grid(x_init, y_init, x_anz, y_anz, part_size):
 
     for y_start in range(0, y_anz+1):
         grid[("v",(0, y_start))] = [(x_init, (y_init + (y_start * part_size))) , ((x_init + (x_anz)*part_size), (y_init + (y_start * part_size)) )]
-
-    #for key, value in grid.items():
-        #print(f'{key}: {value[0]} / {value[1]}')
 
     return(grid)
 
@@ -1370,12 +1311,7 @@ if __name__ == '__main__':
     controlsWindow.show()
     controlsWindow.dir_label.show()
     controlsWindow.puzzle_start.clicked.connect(lambda: start_game("puzzle"))
-    #controlsWindow.puzzle15_start.clicked.connect(lambda: start_game("puzzle 15"))
-    #controlsWindow.puzzleABC_start.clicked.connect(lambda: start_game("puzzle ABC"))
-    #controlsWindow.slider9_start.clicked.connect(lambda: start_game("slider 9"))
-    #controlsWindow.slider15_start.clicked.connect(lambda: start_game("slider 15"))
-    #controlsWindow.sliderABC_start.clicked.connect(lambda: start_game("slider ABC"))
-    controlsWindow.sliderpix_start.released.connect(lambda: start_game("slider"))
+    controlsWindow.slider_start.released.connect(lambda: start_game("slider"))
     controlsWindow.pictris_start.released.connect(lambda: start_game("pictris"))
     controlsWindow.nine_button.toggled.connect(controlsWindow.pic_control.hide)
     controlsWindow.sixteen_button.toggled.connect(controlsWindow.pic_control.hide)
