@@ -1245,17 +1245,17 @@ def find_pic():
 
     if controlsWindow.dir_button.isChecked() == True:
         dir_text = controlsWindow.dir_path.toPlainText()
-        if dir_text.startswith('"') and dir_text.endswith('"'):
+        if dir_text == "":
+            select_pic_file = r"Grafiken\lieblingsordner.png"
+        elif dir_text.startswith('"') and dir_text.endswith('"'):
             select_dir = dir_text[1:-1]
             if select_dir == "best of puzzles":
                 select_dir = os.path.join(BASE_DIR,"best of puzzles")
         else:
-            if dir_text == "":
-                select_pic_file = r"C:\Users\User\PycharmProjects\pictris\Grafiken\lieblingsordner.png"
-            else:
-                select_dir = dir_text
+            select_dir = dir_text
 
-        if dir_text != "":
+        #if dir_text != "":
+        if os.path.isdir(dir_text):
             full_pic_dict = {}
             file_count = 0
             for root, dirs, files in os.walk(select_dir):
@@ -1267,6 +1267,8 @@ def find_pic():
 
             select_pic = random.randint(1, file_count)
             select_pic_file = full_pic_dict[select_pic]
+        else:
+            select_pic_file = r"Grafiken\lieblingsordner.png"
 
     elif controlsWindow.pic_button.isChecked() == True:
         pic_text = controlsWindow.pic_path.toPlainText()
