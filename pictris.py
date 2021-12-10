@@ -1272,20 +1272,24 @@ def find_pic():
         pic_text = controlsWindow.pic_path.toPlainText()
         if pic_text != "":
             if pic_text.startswith('"') and pic_text.endswith('"'):
-                select_pic_file = pic_text[1:-1]
+                select_pic = pic_text[1:-1]
             else:
-                select_pic_file = pic_text
+                select_pic = pic_text
+            if os.path.isfile(select_pic):
+                select_pic_file = select_pic
+            else:
+                select_pic_file = r"Grafiken\lieblingsbild.png"
         else:
-            select_pic_file = r"C:\Users\User\PycharmProjects\pictris\Grafiken\lieblingsbild.png"
+            select_pic_file = r"Grafiken\lieblingsbild.png"
 
     elif controlsWindow.nine_button.isChecked() == True:
-        select_pic_file = r"C:\Users\User\PycharmProjects\pictris\Quadrate\Zahlen 9.jpg"
+        select_pic_file = r"Quadrate\Zahlen 9.jpg"
 
     elif controlsWindow.sixteen_button.isChecked() == True:
-        select_pic_file = r"C:\Users\User\PycharmProjects\pictris\Quadrate\Zahlen 16.jpg"
+        select_pic_file = r"Quadrate\Zahlen 16.jpg"
 
     elif controlsWindow.abc_button.isChecked() == True:
-        select_pic_file = r"C:\Users\User\PycharmProjects\pictris\Quadrate\ABC Puzzle.jpg"
+        select_pic_file = r"Quadrate\ABC Puzzle.jpg"
 
     return(select_pic_file)
 
