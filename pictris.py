@@ -345,6 +345,13 @@ def start(game):
         return
 
     while True:
+        if started == False:
+            screen.fill(GRAY)
+            for key, value in full_partsdict.items():
+                screen.blit(value[0], value[1])
+            blit_grid(grid, (255, 0, 0))
+            pygame.display.flip()
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 sys.exit()
