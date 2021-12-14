@@ -34,8 +34,8 @@ class Controls(QtWidgets.QMainWindow):
 
         self.label_width = 85
         self.label_height = self.label_width
-        self.label_start_x = 75
-        self.label_start_y = 75
+        self.label_start_x = 85
+        self.label_start_y = 85
         self.label_space = int(1.5*self.label_width)
         self.button_height = 15
         self.text_height = 40
@@ -94,6 +94,7 @@ class Controls(QtWidgets.QMainWindow):
         self.dir_path = QTextEdit(self)
         self.dir_path.setGeometry(self.label_start_x + self.label_space, int(self.label_start_y + 0.5*self.label_height + 1.2 * self.label_space - 0.5*self.text_height),
                                    self.label_width + self.label_space, self.text_height)
+        self.dir_path.setStyleSheet("background-color: rgb(255, 255, 255);")
         self.dir_path.setText(f'best of puzzles')
 
         self.dir_button = QRadioButton("Zufallsbild aus Lieblingsordner", self)
@@ -112,6 +113,7 @@ class Controls(QtWidgets.QMainWindow):
         self.pic_path = QTextEdit(self)
         self.pic_path.setGeometry(self.label_start_x + self.label_space, int(self.label_start_y + 2.5*self.label_height + 1.1*self.label_space - 0.5*self.text_height),
                                    self.label_width + self.label_space, self.text_height)
+        self.pic_path.setStyleSheet("background-color: rgb(255, 255, 255);")
 
         self.pic_button = QRadioButton("Bild der Wahl", self)
         self.pic_button.setGeometry(self.label_start_x, int(self.label_start_y + 2.4*self.label_space)+ self.label_height + self.button_height, 2*self.label_height, self.button_height)
@@ -159,8 +161,21 @@ class Controls(QtWidgets.QMainWindow):
             ":!checked{font-size: 13px}"
         )
 
+
+        self.ambient = QRadioButton("Ambient Sound", self)
+        self.ambient.setGeometry(self.label_start_x, self.start_button_y + 4*self.start_button_space, 2*self.label_width, self.button_height)
+        self.ambient.setAutoExclusive(False)
+        self.ambient.setChecked(True)
+
+        self.game_sounds = QRadioButton("Spiel Sounds", self)
+        self.game_sounds.setGeometry(self.label_start_x + 2*self.label_width, self.start_button_y + 4*self.start_button_space, 2*self.label_width, self.button_height)
+        self.game_sounds.setAutoExclusive(False)
+        self.game_sounds.setChecked(True)
+
         #Kontrollbild hinter Spielfeld
         self.pic_control = QtWidgets.QLabel(self)
+
+
 
 
 #Anlegen des Fensters mit den Auswhl- und Kontrollfeldern für das Spiel
@@ -170,16 +185,16 @@ screen_height = controlsWindow.screen_height
 controlsWindow.setGeometry(0, 0, screen_width, screen_height)
 
 pygame.init()
-FPS = 60
-clock = pygame.time.Clock()
 
-GRAY = (150, 150, 150)
+clock = pygame.time.Clock()
+FPS = 60
+
+GRAY = (200, 200, 200)
+
 RED = (255, 0, 0)
 
 #Mindestzahl an Teilen auf der längeren Bildkante
 part_anz_init = 4
-#Zähler für die Verkleinerung der Puzzleteile bei Bildpuzzle
-game_rounds = 0
 #Bildabstand vom unteren Rand
 offset_y = 50
 #Fading-Ausgangswert
@@ -187,19 +202,27 @@ alphawert_init = 255
 #Steuerung der Geschwindigkeit des Hintergrundbildverschwindens bei Puzzle und Pictris
 fade_factor = 0.2
 #Kachel wartet bei Pictris vor dem Fall
-before_fall_init = 750
+before_fall_init = 1000
 
-#w und h sind die Werte für Breite und Höhe des Spielfelds (game floor)
-#x und y lokalisieren den game floor auf dem Gesamtbildschirm
-#w_floor, h_floor = screen_width - screen_width // 4, screen_height - 30
+#Zähler für die Verkleinerung der Puzzleteile bei Bildpuzzle
+game_rounds = 0
+
+replay = False
+#Dictionary bewahrt die Zufallskonfiguration des Spielfelds um dieses in gleicher Form wieder spielen zu können
+replay_dict = {}
+
+zugzahl = 0
+
 w_floor, h_floor = screen_width - screen_width // 4, screen_height
 game_x = screen_width - w_floor
 game_y = screen_height - h_floor - offset_y
 
-# BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-# pic_dir = os.path.join(BASE_DIR,"best of puzzles")
-# graf_dir = os.path.join(BASE_DIR,"Grafiken")
 
+game_ambient = pygame.mixer.Sound(r"Sounds\02 - Abiding Love.mp3")
+game_ambient.set_volume(0.1)
+kachelpasst = pygame.mixer.Sound(r"Sounds\salamisound-3402567-tischglocke-einmal.mp3")
+kachelplop = pygame.mixer.Sound(r"Sounds\245645__unfa__cartoon-pop-clean.wav")
+kachelfalsch = pygame.mixer.Sound(r"Sounds\salamisound-4681975-kleine-hupe-einmal-kurz.mp3")
 
 def make_game_floor(game):
     global w_floor
@@ -208,8 +231,7 @@ def make_game_floor(game):
     global game_y
     global screen
 
-    #os.environ['SDL_VIDEO_WINDOW_POS'] = '%d,%d' % (game_x, game_y)
-    #os.environ['SDL_WINDOW_ALWAYS_ON_TOP'] = '%s' % ('SDL_VIDEO_WINDOW')
+    game = "have fun"
 
     screen = pygame.display.set_mode(size=(w_floor, h_floor))
     screen.fill(GRAY)
@@ -222,7 +244,7 @@ def make_game_floor(game):
     user32.SetWindowPos(hwnd, -1, game_x, 0, w_floor, h_floor, 0x0001)
 
     pygame.display.set_caption(game)
-    pygame.display.flip()
+    pygame.display.update()
 
 
 def start(game):
@@ -262,16 +284,6 @@ def start(game):
             game_rounds += 1
             part_anz = part_anz + game_rounds
 
-    # elif game == "puzzle 15":
-    #     spielbild = r"C:\Users\User\Desktop\pictris\Zahlen gerade.jpg"
-    #     part_anz = 4
-    #     fade_factor = 0.1
-    #     game = "puzzle"
-    # elif game == "puzzle ABC":
-    #     spielbild = r"C:\Users\User\Desktop\pictris\ABC Puzzle.jpg"
-    #     part_anz = 5
-    #     fade_factor = 0.1
-    #     game = "puzzle"
     elif controlsWindow.nine_button.isChecked() == True:
         spielbild = find_pic()
         part_anz = 3
@@ -319,9 +331,13 @@ def start(game):
             screen.blit(pic, (pic_pos_x, pic_pos_y))
             pygame.display.update()
         move = False
-
+    # print(f'Game = {game}')
     if game_rounds > 0 and game == "puzzle":
         puzzle(full_partsdict, grid)
+        return
+
+    if game_rounds > 0 and game == "slider":
+        slider(full_partsdict, grid)
         return
 
     if game == "pictris":
@@ -378,6 +394,23 @@ def uncheck(game):
         controlsWindow.pictris_start.setChecked(True)
 
 
+def game_sounds():
+    if controlsWindow.game_sounds.isChecked() == True:
+        kachelpasst.set_volume(1)
+        kachelplop.set_volume(1)
+        kachelfalsch.set_volume(1)
+    else:
+        kachelpasst.set_volume(0)
+        kachelplop.set_volume(0)
+        kachelfalsch.set_volume(0)
+
+def ambient_sound():
+    if controlsWindow.ambient.isChecked() == True:
+        game_ambient.set_volume(0.1)
+    else:
+        game_ambient.set_volume(0)
+
+
 def resize(file):
 
     fixed_height = 650
@@ -389,7 +422,7 @@ def resize(file):
 
     return(image)
 
-zugzahl = 0
+
 def puzzle(full_partsdict, grid):
     global alphawert_init
     global game_rounds
@@ -445,10 +478,15 @@ def puzzle(full_partsdict, grid):
 
     pygame.display.flip()
 
+    pygame.mixer.Sound.play(game_ambient)
+
     running = True
     #fade = 0.77
     while running:
         screen.fill(GRAY)
+
+        ambient_sound()
+        game_sounds()
 
         #Ausgabe langsam verblassender Hintergrund
         for key, value in full_partsdict.items():
@@ -477,6 +515,7 @@ def puzzle(full_partsdict, grid):
                     counter = 0
                     init = True
                     replay = False
+                    game_ambient.set_volume(0)
                     return
 
             elif event.type == pygame.MOUSEBUTTONDOWN:
@@ -514,6 +553,7 @@ def puzzle(full_partsdict, grid):
                     if act_partsdict[x,y][3] == full_partsdict[x_neu, y_neu][3]:
                         coord_neu = x_neu, y_neu
                         parts_list.append(coord_neu)
+                        success(1)
 
                         counter += 1
 
@@ -533,6 +573,7 @@ def puzzle(full_partsdict, grid):
                             return
                     else:
                         counter -= 1
+                        pygame.mixer.Sound.play(kachelfalsch)
 
                     if fertig == False:
                         x = random. randint(0,x_anz-1)
@@ -553,8 +594,8 @@ def puzzle(full_partsdict, grid):
                     anz = x_anz*y_anz
                     abzug = (alphawert_init / ((anz - (anz*fade_factor))**0.5) * (zugzahl**0.5))
                     alphawert = alphawert_init - abzug
-                    if alphawert <= 8:
-                        alphawert = 8
+                    if alphawert <= 5:
+                        alphawert = 5
                     print(f'Abzug: {abzug} Alphawert: {alphawert}')
 
         screen.blit(img, rect)
@@ -580,6 +621,10 @@ def part_fall(img, full_partsdict, x, y, act_partsdict, alphawert):
     global fails
     global punkte
     global parts
+
+    ambient_sound()
+
+    game_sounds()
 
     fertig = False
     parts += 1
@@ -654,11 +699,13 @@ def part_fall(img, full_partsdict, x, y, act_partsdict, alphawert):
                                         # print("zu schnell gedrückt")
                                         # print(f'fits: {fits} / fits_old: {fits_old}')
                                         # print(f'x_check: {x_check} / y_check: {y_check}')
+
                                         break
                                     else:
                                         y_check += 1
                                         # print(f'fits: {fits} / fits_old: {fits_old}')
                                         # print(f'x_check: {x_check} / y_check: {y_check}')
+
 
                                 if fits > fits_old:
                                     break
@@ -668,7 +715,10 @@ def part_fall(img, full_partsdict, x, y, act_partsdict, alphawert):
                             if fits > fits_old:
                                 fits = fits_old
                                 fails += 1
+                                pygame.mixer.Sound.play(kachelfalsch)
                                 act_partsdict = act_partsdict_old.copy()
+                            else:
+                                pygame.mixer.Sound.play(kachelplop)
                             fertig = False
                             stop = True
 
@@ -694,6 +744,7 @@ def part_fall(img, full_partsdict, x, y, act_partsdict, alphawert):
                         #Abzug wg ohne Treffer durchgelaufen
                         if fits == fits_old:
                             fails += 1
+                            pygame.mixer.Sound.play(kachelplop)
 
             punkte = fits - fails
 
@@ -752,7 +803,6 @@ def place_check(x, y, pic_pos_x, pic_pos_y, x_change, full_partsdict, act_partsd
             fits += 1
 
             if len(act_partsdict) == len(full_partsdict):
-                #success(6)
                 fertig = True
             else:
                 success(1)
@@ -789,7 +839,6 @@ def pictris(full_partsdict, grid):
     global fails
     global punkte
     global parts
-    #Wartezeit
     global before_fall_init
 
     act_partsdict = {}
@@ -820,6 +869,9 @@ def pictris(full_partsdict, grid):
 
     running = True
 
+    # pygame.mixer.Sound.play(game_ambient)
+    # game_ambient.set_volume(0.1)
+
     # #Init für korrekt eingepasste Teile
     # fits = 0
     # fails = 0
@@ -829,12 +881,12 @@ def pictris(full_partsdict, grid):
             alphawert = alphawert_init
             blit_field(full_partsdict, act_partsdict, alphawert)
         else:
-            alphawert = 55
+            alphawert = 45
 
         # blit_field(full_partsdict, act_partsdict, alphawert)
 
         if started:
-            before_fall = before_fall_init - int(fits*(before_fall_init-550)/(x_anz*y_anz))
+            before_fall = before_fall_init - int(fits*(before_fall_init-150)/(x_anz*y_anz))
             blit_field(full_partsdict, act_partsdict, alphawert)
             img.set_alpha(255)
             start_pos_x = (full_image_x + int(x_anz * part_size / 2 - part_size / 2))
@@ -851,6 +903,7 @@ def pictris(full_partsdict, grid):
                 replay = True
                 init = False
                 started = False
+                game_ambient.set_volume(0)
                 return
 
             blit_field(full_partsdict, act_partsdict, alphawert)
@@ -873,6 +926,7 @@ def pictris(full_partsdict, grid):
                     init = True
                     replay = False
                     started = False
+                    game_ambient.set_volume(0)
                     return
 
                 if event.key == pygame.K_RETURN:
@@ -883,6 +937,10 @@ def pictris(full_partsdict, grid):
                     fits = 0
                     fails = 0
                     started = True
+                    pygame.time.delay(before_fall_init)
+
+                    pygame.mixer.Sound.play(game_ambient)
+                    game_ambient.set_volume(0.1)
 
                     act_partsdict, fertig= part_fall(img, full_partsdict, x, y, act_partsdict, alphawert)
 
@@ -914,9 +972,6 @@ def copy_full_partsdict(full_partsdict):
 
     return(act_partsdict)
 
-replay = False
-#Dictionary bewahrt die Zufallskonfiguration des Spielfelds um dieses in gleicher Form wieder spielen zu können
-replay_dict = {}
 
 def slider(full_partsdict, grid):
     global w_floor
@@ -993,8 +1048,12 @@ def slider(full_partsdict, grid):
     screen.blit(text_surface, dest=(50, 50))
     pygame.display.flip()
 
+    pygame.mixer.Sound.play(game_ambient)
 
     while running:
+
+        game_sounds()
+        ambient_sound()
 
         pygame.display.flip()
 
@@ -1064,11 +1123,11 @@ def slider(full_partsdict, grid):
                 elif y_neu < 0 or y_neu >= y_anz:
                     pass
                 #Nur auf angrenzendes leeres Feld ablegen
-                elif abs(x_neu - x_wert) > 1 and not ((spiel == "Slider ABC") or (spiel == "Slider Pix")):
+                elif abs(x_neu - x_wert) > 1 and not (controlsWindow.dir_button.isChecked() == True or controlsWindow.pic_button.isChecked() == True):
                     pass
-                elif abs(y_neu - y_wert) > 1 and not ((spiel == "Slider ABC") or (spiel == "Slider Pix")):
+                elif abs(y_neu - y_wert) > 1 and not (controlsWindow.dir_button.isChecked() == True or controlsWindow.pic_button.isChecked() == True):
                     pass
-                elif (abs(x_neu - x_wert) + abs(y_neu - y_wert)) > 1 and not ((spiel == "Slider ABC") or (spiel == "Slider Pix")):
+                elif (abs(x_neu - x_wert) + abs(y_neu - y_wert)) > 1 and not (controlsWindow.dir_button.isChecked() == True or controlsWindow.pic_button.isChecked() == True):
                     pass
 
                 else:
@@ -1079,10 +1138,10 @@ def slider(full_partsdict, grid):
                     del act_pos_dict[(x_wert, y_wert)]
                     counter += 1
 
-                #Ausgabe der neuen Bildversion
-                screen.fill(GRAY)
-                for key, value in act_pos_dict.items():
-                    screen.blit(value[0], value[1])
+                # #Ausgabe der neuen Bildversion
+                # screen.fill(GRAY)
+                # for key, value in act_pos_dict.items():
+                #     screen.blit(value[0], value[1])
 
                 #Check ob Spiel abgeschlossen
                 i = 1
@@ -1095,18 +1154,38 @@ def slider(full_partsdict, grid):
                             screen.blit(text_surface, dest=(50, 50))
                             pygame.display.flip()
                             success(6)
-                            replay = True
+                            if controlsWindow.dir_button.isChecked() == True or controlsWindow.pic_button.isChecked() == True:
+                                replay = False
+                            else:
+                                replay = True
                             return
                         else:
                             i +=1
                     else:
                         break
 
+                #Ausgabe der neuen Bildversion
+                screen.fill(GRAY)
+                for key, value in act_pos_dict.items():
+                    screen.blit(value[0], value[1])
+
                 text_surface = pygame.font.Font.render(font, f'Züge: {counter}', True, (55, 55, 55))
                 screen.blit(text_surface, dest=(50, 50))
 
                 blit_grid(grid, (255, 0, 0))
                 pygame.display.update()
+
+        if moving == False:
+            # Ausgabe der neuen Bildversion
+            screen.fill(GRAY)
+            for key, value in act_pos_dict.items():
+                screen.blit(value[0], value[1])
+
+            text_surface = pygame.font.Font.render(font, f'Züge: {counter}', True, (55, 55, 55))
+            screen.blit(text_surface, dest=(50, 50))
+
+            blit_grid(grid, (255, 0, 0))
+            pygame.display.update()
 
     return
 
@@ -1227,7 +1306,6 @@ def blit_grid(grid, color):
         pygame.draw.line(screen, color, value[0], value[1], 3)
     #     print(f'{key}: {value[0]} / {value[1]}')
 
-
 def success(anz):
     global partslist
 
@@ -1238,6 +1316,8 @@ def success(anz):
         for j in range(0, 25):
             blit_grid(grid, (255, 0, 0))
             pygame.display.flip()
+
+        pygame.mixer.Sound.play(kachelpasst)
 
 
     #sucht nach Zufall ein Bild aus dem Spielbildverzeichnis
@@ -1253,8 +1333,6 @@ def find_pic():
                 select_dir = os.path.join(BASE_DIR,"best of puzzles")
         else:
             select_dir = dir_text
-
-        #if dir_text != "":
         if os.path.isdir(dir_text):
             full_pic_dict = {}
             file_count = 0
@@ -1324,6 +1402,8 @@ if __name__ == '__main__':
     controlsWindow.abc_button.toggled.connect(controlsWindow.pic_control.hide)
     controlsWindow.dir_button.toggled.connect(controlsWindow.pic_control.hide)
     controlsWindow.pic_button.toggled.connect(controlsWindow.pic_control.hide)
+    controlsWindow.ambient.toggled.connect(make_game_floor)
+    controlsWindow.game_sounds.toggled.connect(make_game_floor)
 
 
 #pygame.quit()
