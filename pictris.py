@@ -150,8 +150,13 @@ class Controls(QtWidgets.QMainWindow):
             ":!checked{font-size: 13px}"
         )
 
+        self.shuffle = QRadioButton("Shuffle", self)
+        self.shuffle.setGeometry(self.label_start_x, self.start_button_y + int(1.7*self.start_button_space), 2*self.label_width, self.button_height)
+        self.shuffle.setAutoExclusive(False)
+        self.shuffle.setChecked(False)
+
         self.pictris_start = QPushButton("Pictris", self)
-        self.pictris_start.setGeometry(self.label_start_x, self.start_button_y + 2*self.start_button_space, self.start_button_width, self.start_button_height)
+        self.pictris_start.setGeometry(self.label_start_x, self.start_button_y + int(2.4*self.start_button_space), self.start_button_width, self.start_button_height)
         self.pictris_start.setCheckable(True)
         self.pictris_start.setStyleSheet(
             ":checked{background: solid yellow}"
@@ -187,6 +192,7 @@ controlsWindow.setGeometry(0, 0, screen_width, screen_height)
 pygame.init()
 
 clock = pygame.time.Clock()
+
 FPS = 60
 
 GRAY = (200, 200, 200)
@@ -273,7 +279,6 @@ def start(game):
 
     started = False
 
-    #if game == "puzzle" or game == "slider" or game == "pictris":
     if controlsWindow.dir_button.isChecked() == True or controlsWindow.pic_button.isChecked() == True:
         if init == True and replay == False:
             spielbild = find_pic()
@@ -330,13 +335,14 @@ def start(game):
             screen.fill(GRAY)
             screen.blit(pic, (pic_pos_x, pic_pos_y))
             pygame.display.update()
+            pygame.time.delay(10)
         move = False
     # print(f'Game = {game}')
-    if game_rounds > 0 and game == "puzzle":
+    if game_rounds >= 0 and game == "puzzle":
         puzzle(full_partsdict, grid)
         return
 
-    if game_rounds > 0 and game == "slider":
+    if game_rounds >= 0 and game == "slider":
         slider(full_partsdict, grid)
         return
 
@@ -887,6 +893,34 @@ def pictris(full_partsdict, grid):
         if not started:
             alphawert = alphawert_init
             blit_field(full_partsdict, act_partsdict, alphawert)
+
+            counter = 0
+            punkte = 0
+            alphawert = 55
+            parts = 0
+            fits = 0
+            fails = 0
+            started = True
+
+            pygame.mixer.Sound.play(game_ambient)
+            game_ambient.set_volume(0.1)
+
+            before_fall = before_fall_init - int(fits * (before_fall_init - 150) / (x_anz * y_anz))
+            blit_field(full_partsdict, act_partsdict, alphawert)
+            img.set_alpha(255)
+            start_pos_x = (full_image_x + int(x_anz * part_size / 2 - part_size / 2))
+            start_pos_Y = (full_image_y // 2) - int(part_size / 2)
+            screen.blit(img, (start_pos_x, start_pos_Y))
+            blit_grid(grid, RED)
+            pygame.display.update()
+            # Kachel wird für spezifizierte Zeit vor Fall gezeigt
+            pygame.time.delay(before_fall)
+
+            act_partsdict, fertig = part_fall(img, full_partsdict, x, y, act_partsdict, alphawert)
+
+            # x, y = make_randpos(act_partsdict)
+            # img = full_partsdict[x, y][0]
+
         else:
             alphawert = 45
 
@@ -1129,12 +1163,20 @@ def slider(full_partsdict, grid):
                     pass
                 elif y_neu < 0 or y_neu >= y_anz:
                     pass
+                # #Nur auf angrenzendes leeres Feld ablegen
+                # elif abs(x_neu - x_wert) > 1 and not (controlsWindow.dir_button.isChecked() == True or controlsWindow.pic_button.isChecked() == True):
+                #     pass
+                # elif abs(y_neu - y_wert) > 1 and not (controlsWindow.dir_button.isChecked() == True or controlsWindow.pic_button.isChecked() == True):
+                #     pass
+                # elif (abs(x_neu - x_wert) + abs(y_neu - y_wert)) > 1 and not (controlsWindow.dir_button.isChecked() == True or controlsWindow.pic_button.isChecked() == True):
+                #     pass
+
                 #Nur auf angrenzendes leeres Feld ablegen
-                elif abs(x_neu - x_wert) > 1 and not (controlsWindow.dir_button.isChecked() == True or controlsWindow.pic_button.isChecked() == True):
+                elif abs(x_neu - x_wert) > 1 and controlsWindow.shuffle.isChecked() == False:
                     pass
-                elif abs(y_neu - y_wert) > 1 and not (controlsWindow.dir_button.isChecked() == True or controlsWindow.pic_button.isChecked() == True):
+                elif abs(y_neu - y_wert) > 1 and controlsWindow.shuffle.isChecked() == False:
                     pass
-                elif (abs(x_neu - x_wert) + abs(y_neu - y_wert)) > 1 and not (controlsWindow.dir_button.isChecked() == True or controlsWindow.pic_button.isChecked() == True):
+                elif (abs(x_neu - x_wert) + abs(y_neu - y_wert)) > 1 and controlsWindow.shuffle.isChecked() == False:
                     pass
 
                 else:
@@ -1411,6 +1453,7 @@ if __name__ == '__main__':
     controlsWindow.pic_button.toggled.connect(controlsWindow.pic_control.hide)
     controlsWindow.ambient.toggled.connect(make_game_floor)
     controlsWindow.game_sounds.toggled.connect(make_game_floor)
+    controlsWindow.shuffle.toggled.connect(make_game_floor)
 
 
 #pygame.quit()
