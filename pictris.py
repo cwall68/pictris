@@ -332,6 +332,11 @@ def start(game):
     move = True
     while move == True:
         for pic_pos_y in range (0,full_image_y):
+            for event in pygame.event.get():
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_SPACE:
+                        game_ambient.set_volume(0)
+                        return
             screen.fill(GRAY)
             screen.blit(pic, (pic_pos_x, pic_pos_y))
             pygame.display.update()
@@ -351,31 +356,14 @@ def start(game):
         return
 
     while True:
-        if started == False:
-            screen.fill(GRAY)
-            for key, value in full_partsdict.items():
-                screen.blit(value[0], value[1])
-            blit_grid(grid, (255, 0, 0))
-            pygame.display.flip()
-
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 sys.exit()
-
-            elif event.type == pygame.MOUSEBUTTONDOWN:
-                pass
-            elif event.type == pygame.MOUSEBUTTONUP:
-                if game == "puzzle":
-                    puzzle(full_partsdict, grid)
-                    return
-                elif game == "slider":
-                    slider(full_partsdict, grid)
-                    return
-
-            elif event.type == pygame.KEYDOWN:
+            if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
                     sys.exit()
                 if event.key == pygame.K_SPACE:
+                    game_ambient.set_volume(0)
                     return
 
 
@@ -634,6 +622,8 @@ def part_fall(img, full_partsdict, x, y, act_partsdict, alphawert):
     global fails
     global punkte
     global parts
+    global init
+    global started
 
     ambient_sound()
 
@@ -668,10 +658,15 @@ def part_fall(img, full_partsdict, x, y, act_partsdict, alphawert):
                     if event.key == pygame.K_ESCAPE:
                         sys.exit()
                     if event.key == pygame.K_SPACE:
-                        replay = True
-                        game_rounds = -1
+                        replay = False
+                        game_rounds = 0
                         stop = True
-                        fertig = True
+                        fertig = False
+                        init = True
+                        started = False
+                        game_ambient.set_volume(0)
+                        start("pictris")
+                        #return (act_partsdict, fertig)
 
                     if event.key == pygame.K_RIGHT:
                         x_change += 1
@@ -747,6 +742,7 @@ def part_fall(img, full_partsdict, x, y, act_partsdict, alphawert):
                                         fails += 1
                                     break
                             pic_pos_y += 1
+
 
             # Check bei jedem vollen y-Wert
             if not stop:
@@ -853,6 +849,7 @@ def pictris(full_partsdict, grid):
     global punkte
     global parts
     global before_fall_init
+    global started
 
     act_partsdict = {}
 
@@ -870,15 +867,15 @@ def pictris(full_partsdict, grid):
 
     font = pygame.font.Font(pygame.font.get_default_font(), 36)
 
-    screen.fill(GRAY)
+    #screen.fill(GRAY)
 
-    x, y = make_randpos(act_partsdict)
-    img = full_partsdict[x, y][0]
+    # x, y = make_randpos(act_partsdict)
+    # img = full_partsdict[x, y][0]
 
-    img.set_alpha(255)
-    start_pos_x = (full_image_x + int(x_anz * part_size / 2 - part_size / 2))
-    start_pos_Y = (full_image_y // 2) - int(part_size / 2)
-    screen.blit(img, (start_pos_x, start_pos_Y))
+    # img.set_alpha(255)
+    # start_pos_x = (full_image_x + int(x_anz * part_size / 2 - part_size / 2))
+    # start_pos_Y = (full_image_y // 2) - int(part_size / 2)
+    # screen.blit(img, (start_pos_x, start_pos_Y))
 
     running = True
 
@@ -891,12 +888,9 @@ def pictris(full_partsdict, grid):
 
     while running:
         if not started:
-            alphawert = alphawert_init
-            blit_field(full_partsdict, act_partsdict, alphawert)
-
             counter = 0
             punkte = 0
-            alphawert = 55
+            alphawert = 45
             parts = 0
             fits = 0
             fails = 0
@@ -905,7 +899,16 @@ def pictris(full_partsdict, grid):
             pygame.mixer.Sound.play(game_ambient)
             game_ambient.set_volume(0.1)
 
+            screen.fill(GRAY)
+
+            x, y = make_randpos(act_partsdict)
+            img = full_partsdict[x, y][0]
+
+            # alphawert = alphawert_init
+            #blit_field(full_partsdict, act_partsdict, alphawert)
+
             before_fall = before_fall_init - int(fits * (before_fall_init - 150) / (x_anz * y_anz))
+
             blit_field(full_partsdict, act_partsdict, alphawert)
             img.set_alpha(255)
             start_pos_x = (full_image_x + int(x_anz * part_size / 2 - part_size / 2))
@@ -918,8 +921,8 @@ def pictris(full_partsdict, grid):
 
             act_partsdict, fertig = part_fall(img, full_partsdict, x, y, act_partsdict, alphawert)
 
-            # x, y = make_randpos(act_partsdict)
-            # img = full_partsdict[x, y][0]
+            x, y = make_randpos(act_partsdict)
+            img = full_partsdict[x, y][0]
 
         else:
             alphawert = 45
@@ -944,7 +947,8 @@ def pictris(full_partsdict, grid):
                 replay = True
                 init = False
                 started = False
-                game_ambient.set_volume(0)
+                #game_ambient.set_volume(0)
+                start("pictris")
                 return
 
             blit_field(full_partsdict, act_partsdict, alphawert)
@@ -957,13 +961,18 @@ def pictris(full_partsdict, grid):
             if event.type == pygame.QUIT:
                 sys.exit()
 
-            elif event.type == pygame.KEYDOWN:
+            if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
                     sys.exit()
 
                 if event.key == pygame.K_SPACE:
                     game_rounds = 0
                     counter = 0
+                    punkte = 0
+                    alphawert = 45
+                    parts = 0
+                    fits = 0
+                    fails = 0
                     init = True
                     replay = False
                     started = False
@@ -973,7 +982,7 @@ def pictris(full_partsdict, grid):
                 if event.key == pygame.K_RETURN:
                     counter = 0
                     punkte = 0
-                    alphawert = 55
+                    alphawert = 45
                     parts = 0
                     fits = 0
                     fails = 0
@@ -1355,6 +1364,12 @@ def blit_grid(grid, color):
         pygame.draw.line(screen, color, value[0], value[1], 3)
     #     print(f'{key}: {value[0]} / {value[1]}')
 
+#Versteckt das Kontrollbild beim Bildwechsel und bringt das Spielfeld wieder nach vorn
+def after_toggle():
+    controlsWindow.pic_control.hide()
+    make_game_floor("have fun")
+
+#Blinken und Klingeln bei Erfolg
 def success(anz):
     global partslist
 
@@ -1440,17 +1455,19 @@ def start_game(game):
         start(game)
 
 
+
+
 if __name__ == '__main__':
     controlsWindow.show()
     controlsWindow.dir_label.show()
     controlsWindow.puzzle_start.clicked.connect(lambda: start_game("puzzle"))
     controlsWindow.slider_start.released.connect(lambda: start_game("slider"))
     controlsWindow.pictris_start.released.connect(lambda: start_game("pictris"))
-    controlsWindow.nine_button.toggled.connect(controlsWindow.pic_control.hide)
-    controlsWindow.sixteen_button.toggled.connect(controlsWindow.pic_control.hide)
-    controlsWindow.abc_button.toggled.connect(controlsWindow.pic_control.hide)
-    controlsWindow.dir_button.toggled.connect(controlsWindow.pic_control.hide)
-    controlsWindow.pic_button.toggled.connect(controlsWindow.pic_control.hide)
+    controlsWindow.nine_button.toggled.connect(after_toggle)
+    controlsWindow.sixteen_button.toggled.connect(after_toggle)
+    controlsWindow.abc_button.toggled.connect(after_toggle)
+    controlsWindow.dir_button.toggled.connect(after_toggle)
+    controlsWindow.pic_button.toggled.connect(after_toggle)
     controlsWindow.ambient.toggled.connect(make_game_floor)
     controlsWindow.game_sounds.toggled.connect(make_game_floor)
     controlsWindow.shuffle.toggled.connect(make_game_floor)
