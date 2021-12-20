@@ -150,7 +150,7 @@ class Controls(QtWidgets.QMainWindow):
             ":!checked{font-size: 13px}"
         )
 
-        self.shuffle = QRadioButton("Shuffle", self)
+        self.shuffle = QCheckBox("Shuffle", self)
         self.shuffle.setGeometry(self.label_start_x, self.start_button_y + int(1.7*self.start_button_space), 2*self.label_width, self.button_height)
         self.shuffle.setAutoExclusive(False)
         self.shuffle.setChecked(False)
@@ -166,13 +166,12 @@ class Controls(QtWidgets.QMainWindow):
             ":!checked{font-size: 13px}"
         )
 
-
-        self.ambient = QRadioButton("Ambient Sound", self)
+        self.ambient = QCheckBox("Ambient Sound", self)
         self.ambient.setGeometry(self.label_start_x, self.start_button_y + 4*self.start_button_space, 2*self.label_width, self.button_height)
         self.ambient.setAutoExclusive(False)
         self.ambient.setChecked(True)
 
-        self.game_sounds = QRadioButton("Spiel Sounds", self)
+        self.game_sounds = QCheckBox("Spiel Sounds", self)
         self.game_sounds.setGeometry(self.label_start_x + 2*self.label_width, self.start_button_y + 4*self.start_button_space, 2*self.label_width, self.button_height)
         self.game_sounds.setAutoExclusive(False)
         self.game_sounds.setChecked(True)
@@ -223,9 +222,10 @@ w_floor, h_floor = screen_width - screen_width // 4, screen_height
 game_x = screen_width - w_floor
 game_y = screen_height - h_floor - offset_y
 
-
-game_ambient = pygame.mixer.Sound(r"Sounds\02 - Abiding Love.mp3")
-game_ambient.set_volume(0.1)
+pygame.mixer.music.load(r"Sounds\02 - Abiding Love.mp3")
+pygame.mixer.music.set_volume(0.1)
+# game_ambient = pygame.mixer.Sound(r"Sounds\02 - Abiding Love.mp3")
+# game_ambient.set_volume(0.1)
 kachelpasst = pygame.mixer.Sound(r"Sounds\salamisound-3402567-tischglocke-einmal.mp3")
 kachelplop = pygame.mixer.Sound(r"Sounds\245645__unfa__cartoon-pop-clean.wav")
 kachelfalsch = pygame.mixer.Sound(r"Sounds\salamisound-4681975-kleine-hupe-einmal-kurz.mp3")
@@ -315,11 +315,11 @@ def start(game):
     x_anz = width // part_size
     y_anz = height // part_size
 
-    pic = pygame.image.load(r"C:\Users\User\Desktop\tmp_resize.JPG")
+    pic = pygame.image.load(r"tmp_resize.JPG")
 
     make_game_floor(game)
 
-    control_pic = QtGui.QPixmap(r"C:\Users\User\Desktop\tmp_resize.JPG")
+    control_pic = QtGui.QPixmap(r"tmp_resize.JPG")
     controlsWindow.pic_control.setGeometry(screen_width - width - offset_y, screen_height - height - offset_y, width, height)
     controlsWindow.pic_control.setPixmap(control_pic)
     controlsWindow.pic_control.show()
@@ -335,7 +335,8 @@ def start(game):
             for event in pygame.event.get():
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_SPACE:
-                        game_ambient.set_volume(0)
+                        # game_ambient.set_volume(0)
+                        pygame.mixer.music.set_volume(0)
                         return
             screen.fill(GRAY)
             screen.blit(pic, (pic_pos_x, pic_pos_y))
@@ -363,7 +364,8 @@ def start(game):
                 if event.key == pygame.K_ESCAPE:
                     sys.exit()
                 if event.key == pygame.K_SPACE:
-                    game_ambient.set_volume(0)
+                    #game_ambient.set_volume(0)
+                    pygame.mixer.music.set_volume(0)
                     return
 
 
@@ -407,9 +409,11 @@ def game_sounds():
 
 def ambient_sound():
     if controlsWindow.ambient.isChecked() == True:
-        game_ambient.set_volume(0.1)
+        #game_ambient.set_volume(0.1)
+        pygame.mixer.music.set_volume(0.1)
     else:
-        game_ambient.set_volume(0)
+        #game_ambient.set_volume(0)
+        pygame.mixer.music.set_volume(0)
 
 
 def resize(file):
@@ -419,7 +423,7 @@ def resize(file):
     height_percent = (fixed_height / float(image.size[1]))
     width_size = int((float(image.size[0]) * float(height_percent)))
     image = image.resize((width_size, fixed_height), Image.NEAREST)
-    image.save(r"C:\Users\User\Desktop\tmp_resize.JPG")
+    image.save(r"tmp_resize.JPG")
 
     return(image)
 
@@ -479,7 +483,8 @@ def puzzle(full_partsdict, grid):
 
     pygame.display.flip()
 
-    pygame.mixer.Sound.play(game_ambient)
+    #pygame.mixer.Sound.play(game_ambient)
+    pygame.mixer.music.play(-1)
 
     running = True
     #fade = 0.77
@@ -516,7 +521,8 @@ def puzzle(full_partsdict, grid):
                     counter = 0
                     init = True
                     replay = False
-                    game_ambient.set_volume(0)
+                    #game_ambient.set_volume(0)
+                    pygame.mixer.music.set_volume(0)
                     return
 
             elif event.type == pygame.MOUSEBUTTONDOWN:
@@ -664,7 +670,8 @@ def part_fall(img, full_partsdict, x, y, act_partsdict, alphawert):
                         fertig = False
                         init = True
                         started = False
-                        game_ambient.set_volume(0)
+                        #game_ambient.set_volume(0)
+                        pygame.mixer.music.set_volume(0)
                         start("pictris")
                         #return (act_partsdict, fertig)
 
@@ -896,8 +903,10 @@ def pictris(full_partsdict, grid):
             fails = 0
             started = True
 
-            pygame.mixer.Sound.play(game_ambient)
-            game_ambient.set_volume(0.1)
+            # pygame.mixer.Sound.play(game_ambient)
+            # game_ambient.set_volume(0.1)
+            pygame.mixer.music.play(-1)
+            pygame.mixer.music.set_volume(0.1)
 
             screen.fill(GRAY)
 
@@ -976,7 +985,7 @@ def pictris(full_partsdict, grid):
                     init = True
                     replay = False
                     started = False
-                    game_ambient.set_volume(0)
+                    #game_ambient.set_volume(0)
                     return
 
                 if event.key == pygame.K_RETURN:
@@ -989,8 +998,10 @@ def pictris(full_partsdict, grid):
                     started = True
                     pygame.time.delay(before_fall_init)
 
-                    pygame.mixer.Sound.play(game_ambient)
-                    game_ambient.set_volume(0.1)
+                    # pygame.mixer.Sound.play(game_ambient)
+                    # game_ambient.set_volume(0.1)
+                    pygame.mixer.music.play(-1)
+                    pygame.mixer.music.set_volume(0.1)
 
                     act_partsdict, fertig= part_fall(img, full_partsdict, x, y, act_partsdict, alphawert)
 
@@ -1098,7 +1109,9 @@ def slider(full_partsdict, grid):
     screen.blit(text_surface, dest=(50, 50))
     pygame.display.flip()
 
-    pygame.mixer.Sound.play(game_ambient)
+    #pygame.mixer.Sound.play(game_ambient)
+    pygame.mixer.music.play(-1)
+    pygame.mixer.music.set_volume(0.1)
 
     while running:
 
@@ -1331,7 +1344,7 @@ def make_pic_part(x, y, game):
     global screen_height
     global part_size
 
-    pic = pygame.image.load(r"C:\Users\User\Desktop\tmp_resize.JPG")
+    pic = pygame.image.load(r"tmp_resize.JPG")
     w, h = w_floor, screen_height
     screen = pygame.display.set_mode((w, h))
     screen.blit(pic, (0,0))
