@@ -35,15 +35,15 @@ class Controls(QtWidgets.QMainWindow):
         self.label_width = 85
         self.label_height = self.label_width
         self.label_start_x = 85
-        self.label_start_y = 85
+        self.label_start_y = 70
         self.label_space = int(1.5*self.label_width)
-        self.button_height = 15
+        self.button_height = 13
         self.text_height = 40
 
-
+        # Bildauswahl
         self.pic_choice_label = QtWidgets.QLabel(self)
         self.pic_choice_label.setText("Bildauswahl:")
-        self.pic_choice_label.setGeometry(self.label_start_x, self.label_start_y - self.label_height , 2*self.label_space + self.label_width, self.label_height)
+        self.pic_choice_label.setGeometry(self.label_start_x, int(self.label_start_y - 0.8*self.label_height) , 2*self.label_space + self.label_width, self.label_height)
         self.pic_choice_label.setStyleSheet("font-size: 18px;")
 
 
@@ -57,7 +57,7 @@ class Controls(QtWidgets.QMainWindow):
                                     self.label_height)
 
         self.nine_button = QRadioButton("9er Quadrat", self)
-        self.nine_button.setGeometry(self.label_start_x, self.label_start_y + self.label_height + self.button_height, self.label_width, self.button_height)
+        self.nine_button.setGeometry(self.label_start_x, self.label_start_y + int(0.9*self.label_height) + self.button_height, self.label_width, self.button_height)
 
         self.sixteen_label = QtWidgets.QLabel(self)
         self.sixteen_label_pic_path = os.path.join(graf_dir, "Zahlen 16.jpg")
@@ -69,7 +69,7 @@ class Controls(QtWidgets.QMainWindow):
                                        self.label_height)
 
         self.sixteen_button = QRadioButton("16er Quadrat", self)
-        self.sixteen_button.setGeometry(self.label_start_x + self.label_space, self.label_start_y + self.label_height + self.button_height, self.label_width, self.button_height)
+        self.sixteen_button.setGeometry(self.label_start_x + self.label_space, self.label_start_y + int(0.9*self.label_height) + self.button_height, self.label_width, self.button_height)
 
         self.abc_label = QtWidgets.QLabel(self)
         self.abc_label_pic_path = os.path.join(graf_dir, "ABC Puzzle.jpg")
@@ -81,7 +81,7 @@ class Controls(QtWidgets.QMainWindow):
                                     self.label_height)
 
         self.abc_button = QRadioButton("ABC Quadrat", self)
-        self.abc_button.setGeometry(self.label_start_x + 2*self.label_space, self.label_start_y + self.label_height + self.button_height, self.label_width, self.button_height)
+        self.abc_button.setGeometry(self.label_start_x + 2*self.label_space, self.label_start_y + int(0.9*self.label_height) + self.button_height, self.label_width, self.button_height)
 
         self.dir_label = QtWidgets.QLabel(self)
         self.dir_label_pic_path = os.path.join(graf_dir,"lieblingsordner.png" )
@@ -89,16 +89,16 @@ class Controls(QtWidgets.QMainWindow):
         self.dir_label_pic.scaled(self.label_width, self.label_height)
         self.dir_label_pic = QtGui.QPixmap(self.label_width, self.label_height)
         self.dir_label.setPixmap(self.dir_label_pic)
-        self.dir_label.setGeometry(self.label_start_x, int(self.label_start_y + 1.2*self.label_space), self.label_width, self.label_height)
+        self.dir_label.setGeometry(self.label_start_x, int(self.label_start_y + 1*self.label_space), self.label_width, self.label_height)
 
         self.dir_path = QTextEdit(self)
-        self.dir_path.setGeometry(self.label_start_x + self.label_space, int(self.label_start_y + 0.5*self.label_height + 1.2 * self.label_space - 0.5*self.text_height),
+        self.dir_path.setGeometry(self.label_start_x + self.label_space, int(self.label_start_y + 0.5*self.label_height + self.label_space - 0.5*self.text_height),
                                    self.label_width + self.label_space, self.text_height)
         self.dir_path.setStyleSheet("background-color: rgb(255, 255, 255);")
         self.dir_path.setText(f'best of puzzles')
 
         self.dir_button = QRadioButton("Zufallsbild aus Lieblingsordner", self)
-        self.dir_button.setGeometry(self.label_start_x, self.label_start_y + int(1.15*self.label_space) + self.label_height + self.button_height, 2*self.label_width, self.button_height)
+        self.dir_button.setGeometry(self.label_start_x, self.label_start_y + self.label_space + int(0.9*self.label_height) + self.button_height, 2*self.label_width, self.button_height)
         self.dir_button.setChecked(True)
 
         self.pic_label = QtWidgets.QLabel(self)
@@ -107,20 +107,22 @@ class Controls(QtWidgets.QMainWindow):
         self.pic_label_pic.scaled(self.label_width, self.label_height)
         self.pic_label_pic = QtGui.QPixmap(self.label_width, self.label_height)
         self.pic_label.setPixmap(self.pic_label_pic)
-        self.pic_label.setGeometry(self.label_start_x, int(self.label_start_y + 2.4*self.label_space), self.label_width, self.label_height)
+        self.pic_label.setGeometry(self.label_start_x, int(self.label_start_y + 2*self.label_space), self.label_width, self.label_height)
 
 
         self.pic_path = QTextEdit(self)
-        self.pic_path.setGeometry(self.label_start_x + self.label_space, int(self.label_start_y + 2.5*self.label_height + 1.1*self.label_space - 0.5*self.text_height),
+        self.pic_path.setGeometry(self.label_start_x + self.label_space, int(self.label_start_y + 2.1*self.label_height + self.label_space - 0.5*self.text_height),
                                    self.label_width + self.label_space, self.text_height)
         self.pic_path.setStyleSheet("background-color: rgb(255, 255, 255);")
 
         self.pic_button = QRadioButton("Bild der Wahl", self)
-        self.pic_button.setGeometry(self.label_start_x, int(self.label_start_y + 2.4*self.label_space)+ self.label_height + self.button_height, 2*self.label_height, self.button_height)
+        self.pic_button.setGeometry(self.label_start_x, int(self.label_start_y + 2*self.label_space)+ int(0.9*self.label_height) + self.button_height, 2*self.label_height, self.button_height)
 
+        # Spielwahl
+        # Dimensionen der Spielbuttons
         self.start_button_height = 40
-        self.start_button_space = 2 * self.start_button_height
-        self.start_button_y = int(0.5 * self.screen_height)+ 110
+        self.start_button_space = int(1.5 * self.start_button_height)
+        self.start_button_y = int(0.5 * self.screen_height) - 20
         self.start_button_width = 2*self.label_space + self.label_width
 
         self.start_label = QtWidgets.QLabel(self)
@@ -151,12 +153,12 @@ class Controls(QtWidgets.QMainWindow):
         )
 
         self.shuffle = QCheckBox("Shuffle", self)
-        self.shuffle.setGeometry(self.label_start_x, self.start_button_y + int(1.7*self.start_button_space), 2*self.label_width, self.button_height)
+        self.shuffle.setGeometry(self.label_start_x, self.start_button_y + int(1.8*self.start_button_space), 2*self.label_width, self.button_height)
         self.shuffle.setAutoExclusive(False)
         self.shuffle.setChecked(False)
 
         self.pictris_start = QPushButton("Pictris", self)
-        self.pictris_start.setGeometry(self.label_start_x, self.start_button_y + int(2.4*self.start_button_space), self.start_button_width, self.start_button_height)
+        self.pictris_start.setGeometry(self.label_start_x, self.start_button_y + int(2.3*self.start_button_space), self.start_button_width, self.start_button_height)
         self.pictris_start.setCheckable(True)
         self.pictris_start.setStyleSheet(
             ":checked{background: solid yellow}"
@@ -166,13 +168,20 @@ class Controls(QtWidgets.QMainWindow):
             ":!checked{font-size: 13px}"
         )
 
+        # GT-Mode
+
+        self.start_label = QtWidgets.QLabel(self)
+        self.start_label.setText("GT-Mode:")
+        self.start_label.setGeometry(self.label_start_x, self.start_button_y + int(3.7*self.start_button_space), self.start_button_width, self.start_button_height)
+        self.start_label.setStyleSheet("font-size: 18px;")
+
         self.ambient = QCheckBox("Ambient Sound", self)
-        self.ambient.setGeometry(self.label_start_x, self.start_button_y + 4*self.start_button_space, 2*self.label_width, self.button_height)
+        self.ambient.setGeometry(self.label_start_x, self.screen_height - self.start_button_space, 2*self.label_width, self.button_height)
         self.ambient.setAutoExclusive(False)
         self.ambient.setChecked(True)
 
         self.game_sounds = QCheckBox("Spiel Sounds", self)
-        self.game_sounds.setGeometry(self.label_start_x + 2*self.label_width, self.start_button_y + 4*self.start_button_space, 2*self.label_width, self.button_height)
+        self.game_sounds.setGeometry(self.label_start_x + 2*self.label_width, self.screen_height - self.start_button_space, 2*self.label_width, self.button_height)
         self.game_sounds.setAutoExclusive(False)
         self.game_sounds.setChecked(True)
 
