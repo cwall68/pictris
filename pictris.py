@@ -8,9 +8,8 @@ import math
 
 
 from PyQt5 import QtCore, QtGui,QtWidgets
-from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QIcon, QPixmap, QMouseEvent
 from PyQt5.QtWidgets import *
+from PyQt5.QtCore import *
 
 import ctypes
 from ctypes import wintypes
@@ -172,6 +171,7 @@ class Controls(QtWidgets.QMainWindow):
         )
 
         # GT-Mode
+        self.gt_mode = False
         self.gt_offset = 2*self.start_button_height
         self.gt_button_size = 3 * self.start_button_height
 
@@ -195,6 +195,14 @@ class Controls(QtWidgets.QMainWindow):
             ":!checked{color: white}"
         )
 
+        self.race_flag = QtWidgets.QLabel(self)
+        self.race_flag_pic_path = os.path.join(graf_dir, "race_start")
+        self.race_flag_pic = QtGui.QPixmap(self.race_flag_pic_path)
+        self.race_flag_pic.scaled(self.label_width, self.label_height)
+        self.race_flag_pic = QtGui.QPixmap(self.label_width, self.label_height)
+        self.race_flag.setPixmap(self.race_flag_pic)
+        self.race_flag.setGeometry(self.label_start_x + int(2.5*self.gt_button_size), int(0.5 * self.screen_height) - self.gt_offset, self.label_width,
+                                    self.label_height)
 
         # Sound Controls
         self.ambient = QCheckBox("Ambient Sound", self)
@@ -210,7 +218,68 @@ class Controls(QtWidgets.QMainWindow):
         #Kontrollbild hinter Spielfeld
         self.pic_control = QtWidgets.QLabel(self)
 
+        # Timer
+        # Set the necessary variables
+        self.counter = 0
+        self.minute = '00'
+        self.second = '00'
+        self.count = '00'
+        self.startWatch = False
 
+        # Create label to display the watch
+        self.timer_label = QLabel(self)
+        # Set geometry for the label
+        self.timer_label.setGeometry(self.label_start_x + int(2.5 * self.gt_button_size) - 20,
+                                     int(0.5 * self.screen_height) - self.gt_offset, self.label_width + 20,
+                                     self.label_height - 30)
+
+        # Create timer object
+        timer = QTimer(self)
+        # Add a method with the timer
+        timer.timeout.connect(self.showCounter)
+        # Call start() method to modify the timer value
+        timer.start(100)
+
+
+    def showCounter(self):
+        # Check the value of startWatch  variable to start or stop the Stop Watch
+        if self.startWatch:
+            # Increment counter by 1
+            self.counter += 1
+
+            # Count and set the time counter value
+            cnt = int((self.counter / 10 - int(self.counter / 10)) * 10)
+            self.count = '0' + str(cnt)
+
+            # Set the second value
+            if int(self.counter / 10) < 10:
+                self.second = '0' + str(int(self.counter / 10))
+            else:
+                self.second = str(int(self.counter / 10))
+                # Set the minute value
+                if self.counter / 10 == 60.0:
+                    #self.second == '00'
+                    self.counter = 0
+                    min = int(self.minute) + 1
+                    if min < 10:
+                        self.minute = '0' + str(min)
+                    else:
+                        self.minute = str(min)
+
+        # Merge the mintue, second and count values
+        text = self.minute + ':' + self.second + ':' + self.count
+        # Display the stop watch values in the label
+        self.timer_label.setText('<h1 style="color:red">' + text + '</h1>')
+
+    def Reset(self):
+        self.startWatch = False
+        # Reset all counter variables
+        self.counter = 0
+        self.minute = '00'
+        self.second = '00'
+        self.count = '00'
+        # Set the initial values for the stop watch
+        self.timer_label.setText(str(self.counter))
 
 
 #Anlegen des Fensters mit den Auswhl- und Kontrollfeldern für das Spiel
@@ -218,6 +287,8 @@ controlsWindow = Controls()
 screen_width = controlsWindow.screen_width
 screen_height = controlsWindow.screen_height
 controlsWindow.setGeometry(0, 0, screen_width, screen_height)
+
+controlsWindow.timer_label.hide()
 
 pygame.init()
 
@@ -375,6 +446,12 @@ def start(game):
             pygame.display.update()
             pygame.time.delay(10)
         move = False
+        if controlsWindow.gt_mode == True:
+            controlsWindow.race_flag.hide()
+            controlsWindow.timer_label.show()
+            controlsWindow.startWatch = True
+            controlsWindow.showCounter()
+
     # print(f'Game = {game}')
     if game_rounds >= 0 and game == "puzzle":
         puzzle(full_partsdict, grid)
@@ -1519,6 +1596,10 @@ def show_fullparts(full_partsdict):
         screen.blit(value[0], value[1])
     pygame.display.flip()
 
+def start_gt():
+    controlsWindow.gt_mode = True
+    start_game("puzzle")
+
 def start_game(game):
     global init
     global replay
@@ -1547,6 +1628,7 @@ if __name__ == '__main__':
     controlsWindow.ambient.toggled.connect(make_game_floor)
     controlsWindow.game_sounds.toggled.connect(make_game_floor)
     controlsWindow.shuffle.toggled.connect(make_game_floor)
+    controlsWindow.gt_start.clicked.connect(start_gt)
 
 
 #pygame.quit()
