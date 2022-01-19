@@ -32,13 +32,15 @@ class Controls(QtWidgets.QMainWindow):
         self.setGeometry(0, 0, self.screen_width, self.screen_height)
         self.setWindowTitle('Pictris Controls')
 
-        self.label_width = 85
+        self.label_width = int(self.screen_width/22.5)
         self.label_height = self.label_width
-        self.label_start_x = 85
-        self.label_start_y = 70
+        self.controls_space_width = int(0.25*self.screen_width)
+        self.controls_elements_width = 4*self.label_width
+        self.label_start_x = int((self.controls_space_width - self.controls_elements_width)/2)
+        self.label_start_y = int(self.screen_height/15)
         self.label_space = int(1.5*self.label_width)
-        self.button_height = 13
-        self.text_height = 40
+        self.button_height = int(self.screen_height/80)
+        self.text_height = int(self.screen_height/30)
 
         # Bildauswahl
         self.pic_choice_label = QtWidgets.QLabel(self)
@@ -118,15 +120,16 @@ class Controls(QtWidgets.QMainWindow):
         self.pic_button = QRadioButton("Bild der Wahl", self)
         self.pic_button.setGeometry(self.label_start_x, int(self.label_start_y + 2*self.label_space)+ int(0.9*self.label_height) + self.button_height, 2*self.label_height, self.button_height)
 
-        # Spielwahl
+
         # Dimensionen der Spielbuttons
         self.start_button_height = 40
         self.start_button_space = int(1.5 * self.start_button_height)
-        self.start_button_y = int(0.5 * self.screen_height) - 20
+        self.start_button_y = int(0.5 * self.screen_height) + int(4.2*self.start_button_space)
         self.start_button_width = 2*self.label_space + self.label_width
 
+        # Spielwahl
         self.start_label = QtWidgets.QLabel(self)
-        self.start_label.setText("Spielauswahl:")
+        self.start_label.setText("Einzel-Spielauswahl:")
         self.start_label.setGeometry(self.label_start_x, self.start_button_y - int(0.8*self.start_button_space), self.start_button_width, self.start_button_height)
         self.start_label.setStyleSheet("font-size: 18px;")
 
@@ -169,12 +172,31 @@ class Controls(QtWidgets.QMainWindow):
         )
 
         # GT-Mode
+        self.gt_offset = 2*self.start_button_height
+        self.gt_button_size = 3 * self.start_button_height
 
         self.start_label = QtWidgets.QLabel(self)
         self.start_label.setText("GT-Mode:")
-        self.start_label.setGeometry(self.label_start_x, self.start_button_y + int(3.7*self.start_button_space), self.start_button_width, self.start_button_height)
+        self.start_label.setGeometry(self.label_start_x, int(0.5 * self.screen_height) - self.gt_offset, self.start_button_width, self.start_button_height)
         self.start_label.setStyleSheet("font-size: 18px;")
 
+        self.gt_start = QPushButton("Start", self)
+        self.gt_start.setGeometry(self.label_start_x + self.gt_button_size, int(0.5 * self.screen_height) - self.start_button_height, self.gt_button_size, self.gt_button_size)
+        self.gt_start.setCheckable(True)
+        self.gt_start.setStyleSheet(
+            ":checked{background: rgb(190,255,190)}"
+            ":checked{border: 10px solid lightblue}"
+            f':checked{{border-radius: {self.gt_button_size/2}}}'
+            ":!checked{background-color: red}"
+            ":!checked{border: 10px solid black}"
+            f':!checked{{border-radius: {self.gt_button_size/2}}}'            
+            ":!checked{font-size: 15px}"
+            ":!checked{font-weight: bold}"            
+            ":!checked{color: white}"
+        )
+
+
+        # Sound Controls
         self.ambient = QCheckBox("Ambient Sound", self)
         self.ambient.setGeometry(self.label_start_x, self.screen_height - self.start_button_space, 2*self.label_width, self.button_height)
         self.ambient.setAutoExclusive(False)
