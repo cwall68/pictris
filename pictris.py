@@ -271,7 +271,7 @@ class Controls(QtWidgets.QMainWindow):
         # Display the stop watch values in the label
         self.timer_label.setText('<h1 style="color:red">' + text + '</h1>')
 
-    def Reset(self):
+    def reset(self):
         self.startWatch = False
         # Reset all counter variables
         self.counter = 0
@@ -429,28 +429,33 @@ def start(game):
 
     grid = make_grid(full_image_x, full_image_y, x_anz, y_anz, part_size)
     full_partsdict = make_full_partsdict(x_anz, y_anz, game)
-
-    #Hier wird das Spielbild in Position gesenkt
-    pic_pos_x = full_image_x
-    move = True
-    while move == True:
-        for pic_pos_y in range (0,full_image_y):
-            for event in pygame.event.get():
-                if event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_SPACE:
-                        # game_ambient.set_volume(0)
-                        pygame.mixer.music.set_volume(0)
-                        return
-            screen.fill(GRAY)
-            screen.blit(pic, (pic_pos_x, pic_pos_y))
-            pygame.display.update()
-            pygame.time.delay(10)
-        move = False
-        if controlsWindow.gt_mode == True:
-            controlsWindow.race_flag.hide()
-            controlsWindow.timer_label.show()
-            controlsWindow.startWatch = True
-            controlsWindow.showCounter()
+    font = pygame.font.Font(pygame.font.get_default_font(), 20)
+    text_surface = pygame.font.Font.render(font, f'Bildwechsel mit Leertaste', True, (55, 55, 55))
+    if game_rounds == 0:
+        #Hier wird das Spielbild in Position gesenkt
+        pic_pos_x = full_image_x
+        move = True
+        while move == True:
+            for pic_pos_y in range (0,full_image_y):
+                for event in pygame.event.get():
+                    if event.type == pygame.KEYDOWN:
+                        if event.key == pygame.K_SPACE:
+                            # game_ambient.set_volume(0)
+                            pygame.mixer.music.set_volume(0)
+                            return
+                screen.fill(GRAY)
+                screen.blit(pic, (pic_pos_x, pic_pos_y))
+                screen.blit(text_surface, dest=(controlsWindow.screen_width/4, controlsWindow.screen_height - 55))
+                pygame.display.update()
+                pygame.time.delay(10)
+            move = False
+            if controlsWindow.gt_mode == True:
+                controlsWindow.race_flag.hide()
+                controlsWindow.timer_label.show()
+                controlsWindow.startWatch = True
+                controlsWindow.showCounter()
+                if controlsWindow.dir_button.isChecked() == True:
+                    controlsWindow.pic_button.setChecked(True)
 
     # print(f'Game = {game}')
     if game_rounds >= 0 and game == "puzzle":
@@ -1597,8 +1602,20 @@ def show_fullparts(full_partsdict):
     pygame.display.flip()
 
 def start_gt():
-    controlsWindow.gt_mode = True
-    start_game("puzzle")
+    #if controlsWindow.gt_mode == False:
+    if controlsWindow.gt_start.isChecked() == True:
+        controlsWindow.gt_mode = True
+        controlsWindow.gt_start.setText("Stop")
+        start_game("puzzle")
+    else:
+        controlsWindow.gt_mode = False
+        controlsWindow.race_flag.show()
+        controlsWindow.timer_label.hide()
+        controlsWindow.startWatch = False
+        controlsWindow.reset()
+        controlsWindow.gt_start.setText("Start")
+
+
 
 def start_game(game):
     global init
