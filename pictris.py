@@ -407,9 +407,9 @@ def start_playing(game):
     else:
         game_rounds += 1
 
-    print(f'Aussprungsbedingung: {(game_rounds // planned_rounds) - 1}')
     if controlsWindow.gt_mode and (game_rounds // planned_rounds) - 1 == len(gt_game_list):
-        print(f'Aussprungsbedingung eingetreten: {(game_rounds // planned_rounds) - 1}')
+        screen.fill(GRAY)
+        pygame.display.update()
         return
 
     if controlsWindow.gt_mode:
@@ -434,7 +434,7 @@ def start_playing(game):
     elif controlsWindow.abc_button.isChecked() == True:
         part_anz = 5
 
-    elif controlsWindow.pic_button.isChecked() == True:
+    elif controlsWindow.pic_button.isChecked() == True or controlsWindow.dir_button.isChecked() == True:
         if controlsWindow.gt_mode:
             part_anz = part_anz + gt_game_list[game_id][1] - 1
         else:
@@ -495,11 +495,12 @@ def start_playing(game):
                     controlsWindow.pic_button.setChecked(True)
 
     # print(f'Game = {game}')
-    if game_rounds >= 1 and game == "puzzle":
+    # if game_rounds >= 1 and game == "puzzle":
+    if game == "puzzle":
         puzzle(full_partsdict, grid)
         return
 
-    if game_rounds >= 1 and game == "slider":
+    if game == "slider":
         slider(full_partsdict, grid)
         return
 
@@ -1646,13 +1647,19 @@ def start_gt():
     global gt_stop
     global gt_game_list
     global planned_rounds
+    global init
+    global replay
 
     #if controlsWindow.gt_mode == False:
     if controlsWindow.gt_start.isChecked() == True and not gt_stop:
+        init = True
+        replay = False
         controlsWindow.gt_mode = True
         controlsWindow.gt_start.setText("Stop")
+        controlsWindow.shuffle.setChecked(True)
         gt_game_list = [["puzzle", 0, 0], ["slider", 0, 0] , ["pictris", 0 ,0]]
-        planned_rounds = 1
+        #gt_game_list = [["slider", 0, 0]]
+        planned_rounds = 2
         start_game(gt_game_list[0][0])
     else:
         controlsWindow.gt_mode = False
@@ -1664,6 +1671,7 @@ def start_gt():
         gt_game_list.clear()
         # gt_stop = True
         controlsWindow.pic_control.hide()
+        controlsWindow.shuffle.setChecked(False)
         # screen.fill(GRAY)
         # pygame.display.update()
         pygame.mixer.music.set_volume(0)
