@@ -187,6 +187,7 @@ class Controls(QtWidgets.QMainWindow):
             ":checked{background: rgb(190,255,190)}"
             ":checked{border: 10px solid lightblue}"
             f':checked{{border-radius: {self.gt_button_size/2}}}'
+            ":checked{color: black}"
             ":!checked{background-color: red}"
             ":!checked{border: 10px solid black}"
             f':!checked{{border-radius: {self.gt_button_size/2}}}'            
@@ -315,6 +316,7 @@ before_fall_init = 1000
 game_rounds = 0
 
 replay = False
+
 #Dictionary bewahrt die Zufallskonfiguration des Spielfelds um dieses in gleicher Form wieder spielen zu können
 replay_dict = {}
 
@@ -357,7 +359,7 @@ def make_game_floor(game):
     pygame.display.update()
 
 
-def start(game):
+def start_playing(game):
     global spielbild
     global fade_factor
     global part_size
@@ -380,30 +382,63 @@ def start(game):
     global y_anz
     global replay
     global started
+    global gt_stop
+    global gt_game_list
+    global planned_rounds
+
+    if gt_stop:
+        #gt_stop = False
+        screen.fill(GRAY)
+        pygame.display.update()
+        pygame.mixer.music.set_volume(0)
+        pygame.time.delay(1000)
+        return
+
 
     started = False
 
-    if controlsWindow.dir_button.isChecked() == True or controlsWindow.pic_button.isChecked() == True:
-        if init == True and replay == False:
-            spielbild = find_pic()
-            controlsWindow.pic_path.setText(spielbild)
-            part_anz = part_anz_init
-            game_rounds = 0
-        else:
-            game_rounds += 1
-            part_anz = part_anz + game_rounds
 
-    elif controlsWindow.nine_button.isChecked() == True:
+    # if controlsWindow.dir_button.isChecked() == True or controlsWindow.pic_button.isChecked() == True:
+    if init == True and replay == False:
         spielbild = find_pic()
+        controlsWindow.pic_path.setText(spielbild)
+        part_anz = part_anz_init
+        game_rounds = 1
+    else:
+        game_rounds += 1
+
+    print(f'Aussprungsbedingung: {(game_rounds // planned_rounds) - 1}')
+    if controlsWindow.gt_mode and (game_rounds // planned_rounds) - 1 == len(gt_game_list):
+        print(f'Aussprungsbedingung eingetreten: {(game_rounds // planned_rounds) - 1}')
+        return
+
+    if controlsWindow.gt_mode:
+        game_id = (game_rounds // planned_rounds) - 1
+        print(f'game_id: {game_id}')
+        gt_game_list[game_id][1] += 1
+        rounds_per_game = gt_game_list[game_id][1]
+        part_anz = part_anz + rounds_per_game - 1
+        if game_rounds > len(gt_game_list) * planned_rounds:
+            gt_stop = True
+            controlsWindow.startWatch = False
+            return
+        game = gt_game_list[game_id][0]
+
+
+    if controlsWindow.nine_button.isChecked() == True:
         part_anz = 3
 
     elif controlsWindow.sixteen_button.isChecked() == True:
-        spielbild = find_pic()
         part_anz = 4
 
     elif controlsWindow.abc_button.isChecked() == True:
-        spielbild = find_pic()
         part_anz = 5
+
+    elif controlsWindow.pic_button.isChecked() == True:
+        if controlsWindow.gt_mode:
+            part_anz = part_anz + gt_game_list[game_id][1] - 1
+        else:
+            part_anz = part_anz + game_rounds -1
 
     #Hier wird das oben bestimmte Spielbild in das Spieformat gebracht und in diesem Format als tmp Pic abgelegt
     image = resize(spielbild)
@@ -431,7 +466,8 @@ def start(game):
     full_partsdict = make_full_partsdict(x_anz, y_anz, game)
     font = pygame.font.Font(pygame.font.get_default_font(), 20)
     text_surface = pygame.font.Font.render(font, f'Bildwechsel mit Leertaste', True, (55, 55, 55))
-    if game_rounds == 0:
+
+    if game_rounds == 1:
         #Hier wird das Spielbild in Position gesenkt
         pic_pos_x = full_image_x
         move = True
@@ -445,7 +481,8 @@ def start(game):
                             return
                 screen.fill(GRAY)
                 screen.blit(pic, (pic_pos_x, pic_pos_y))
-                screen.blit(text_surface, dest=(controlsWindow.screen_width/4, controlsWindow.screen_height - 55))
+                if controlsWindow.dir_button.isChecked() == True:
+                    screen.blit(text_surface, dest=(controlsWindow.screen_width/4, controlsWindow.screen_height - 55))
                 pygame.display.update()
                 pygame.time.delay(10)
             move = False
@@ -458,11 +495,11 @@ def start(game):
                     controlsWindow.pic_button.setChecked(True)
 
     # print(f'Game = {game}')
-    if game_rounds >= 0 and game == "puzzle":
+    if game_rounds >= 1 and game == "puzzle":
         puzzle(full_partsdict, grid)
         return
 
-    if game_rounds >= 0 and game == "slider":
+    if game_rounds >= 1 and game == "slider":
         slider(full_partsdict, grid)
         return
 
@@ -541,7 +578,7 @@ def resize(file):
 
     return(image)
 
-
+gt_stop = False
 def puzzle(full_partsdict, grid):
     global alphawert_init
     global game_rounds
@@ -560,6 +597,8 @@ def puzzle(full_partsdict, grid):
     global font
     global replay
     global zugzahl
+    global gt_stop
+
 
     act_partsdict = {}
 
@@ -603,6 +642,8 @@ def puzzle(full_partsdict, grid):
     running = True
     #fade = 0.77
     while running:
+        if gt_stop == True:
+            return("Stop")
         screen.fill(GRAY)
 
         ambient_sound()
@@ -631,7 +672,7 @@ def puzzle(full_partsdict, grid):
                 if event.key == pygame.K_ESCAPE:
                     sys.exit()
                 if event.key == pygame.K_SPACE:
-                    game_rounds = 0
+                    game_rounds = 1
                     counter = 0
                     init = True
                     replay = False
@@ -782,14 +823,14 @@ def part_fall(img, full_partsdict, x, y, act_partsdict, alphawert):
                         sys.exit()
                     if event.key == pygame.K_SPACE:
                         replay = False
-                        game_rounds = 0
+                        game_rounds = 1
                         stop = True
                         fertig = False
                         init = True
                         started = False
                         #game_ambient.set_volume(0)
                         pygame.mixer.music.set_volume(0)
-                        start("pictris")
+                        start_playing("pictris")
                         #return (act_partsdict, fertig)
 
                     if event.key == pygame.K_RIGHT:
@@ -1074,7 +1115,7 @@ def pictris(full_partsdict, grid):
                 init = False
                 started = False
                 #game_ambient.set_volume(0)
-                start("pictris")
+                start_playing("pictris")
                 return
 
             blit_field(full_partsdict, act_partsdict, alphawert)
@@ -1092,7 +1133,7 @@ def pictris(full_partsdict, grid):
                     sys.exit()
 
                 if event.key == pygame.K_SPACE:
-                    game_rounds = 0
+                    game_rounds = 1
                     counter = 0
                     punkte = 0
                     alphawert = 45
@@ -1258,7 +1299,7 @@ def slider(full_partsdict, grid):
                 if event.key == pygame.K_ESCAPE:
                     sys.exit()
                 if event.key == pygame.K_SPACE:
-                    game_rounds = 0
+                    game_rounds = 1
                     counter = 0
                     init = True
                     replay = False
@@ -1602,11 +1643,17 @@ def show_fullparts(full_partsdict):
     pygame.display.flip()
 
 def start_gt():
+    global gt_stop
+    global gt_game_list
+    global planned_rounds
+
     #if controlsWindow.gt_mode == False:
-    if controlsWindow.gt_start.isChecked() == True:
+    if controlsWindow.gt_start.isChecked() == True and not gt_stop:
         controlsWindow.gt_mode = True
         controlsWindow.gt_start.setText("Stop")
-        start_game("puzzle")
+        gt_game_list = [["puzzle", 0, 0], ["slider", 0, 0] , ["pictris", 0 ,0]]
+        planned_rounds = 1
+        start_game(gt_game_list[0][0])
     else:
         controlsWindow.gt_mode = False
         controlsWindow.race_flag.show()
@@ -1614,19 +1661,43 @@ def start_gt():
         controlsWindow.startWatch = False
         controlsWindow.reset()
         controlsWindow.gt_start.setText("Start")
+        gt_game_list.clear()
+        # gt_stop = True
+        controlsWindow.pic_control.hide()
+        # screen.fill(GRAY)
+        # pygame.display.update()
+        pygame.mixer.music.set_volume(0)
+        controlsWindow.puzzle_start.setChecked(False)
+        controlsWindow.slider_start.setChecked(False)
+        controlsWindow.pictris_start.setChecked(False)
+        gt_stop = True
+        screen.fill(GRAY)
+        pygame.display.update()
+
 
 
 
 def start_game(game):
     global init
     global replay
+    global gt_stop
+    global game_rounds
+    global planned_rounds
 
     uncheck(game)
 
     init = True
     replay = False
+    game_rounds = 0
     while True:
-        start(game)
+        if controlsWindow.gt_mode and (game_rounds // planned_rounds) - 1 == len(gt_game_list):
+            controlsWindow.startWatch = False
+            break
+        if gt_stop:
+            gt_stop = False
+            return
+        start_playing(game)
+
 
 
 
