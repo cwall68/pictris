@@ -382,7 +382,9 @@ def start_playing(game):
     global y_anz
     global replay
     global started
+    global fertig
     global gt_stop
+    global abbruch
     global gt_game_list
     global planned_rounds
 
@@ -391,11 +393,16 @@ def start_playing(game):
         screen.fill(GRAY)
         pygame.display.update()
         pygame.mixer.music.set_volume(0)
-        pygame.time.delay(1000)
+        #pygame.time.delay(1000)
+        return
+    if abbruch:
+        #gt_stop = False
+        screen.fill(GRAY)
+        pygame.display.update()
+        pygame.mixer.music.set_volume(0)
+        #pygame.time.delay(1000)
         return
 
-
-    started = False
 
 
     # if controlsWindow.dir_button.isChecked() == True or controlsWindow.pic_button.isChecked() == True:
@@ -464,8 +471,8 @@ def start_playing(game):
 
     grid = make_grid(full_image_x, full_image_y, x_anz, y_anz, part_size)
     full_partsdict = make_full_partsdict(x_anz, y_anz, game)
-    font = pygame.font.Font(pygame.font.get_default_font(), 20)
-    text_surface = pygame.font.Font.render(font, f'Bildwechsel mit Leertaste', True, (55, 55, 55))
+    font_2 = pygame.font.Font(pygame.font.get_default_font(), 15)
+    text_surface_2 = pygame.font.Font.render(font_2, f'Bildwechsel mit Leertaste', True, (55, 55, 55))
 
     if game_rounds == 1:
         #Hier wird das Spielbild in Position gesenkt
@@ -476,16 +483,21 @@ def start_playing(game):
                 for event in pygame.event.get():
                     if event.type == pygame.KEYDOWN:
                         if event.key == pygame.K_SPACE:
-                            # game_ambient.set_volume(0)
-                            pygame.mixer.music.set_volume(0)
-                            return
+                            if move:
+                                if controlsWindow.gt_mode:
+                                    gt_game_list[game_id][1] -= 1
+                                pygame.mixer.music.set_volume(0)
+                                return
+                            else:
+                                pass
                 screen.fill(GRAY)
                 screen.blit(pic, (pic_pos_x, pic_pos_y))
                 if controlsWindow.dir_button.isChecked() == True:
-                    screen.blit(text_surface, dest=(controlsWindow.screen_width/4, controlsWindow.screen_height - 55))
+                    screen.blit(text_surface_2, dest=(controlsWindow.screen_width/3, controlsWindow.screen_height - 50))
                 pygame.display.update()
                 pygame.time.delay(10)
             move = False
+            started = True
             if controlsWindow.gt_mode == True:
                 controlsWindow.race_flag.hide()
                 controlsWindow.timer_label.show()
@@ -515,10 +527,6 @@ def start_playing(game):
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
                     sys.exit()
-                if event.key == pygame.K_SPACE:
-                    #game_ambient.set_volume(0)
-                    pygame.mixer.music.set_volume(0)
-                    return
 
 
 def find_part_size(width, height, part_anz):
@@ -599,6 +607,9 @@ def puzzle(full_partsdict, grid):
     global replay
     global zugzahl
     global gt_stop
+    global started
+    global abbruch
+
 
 
     act_partsdict = {}
@@ -613,7 +624,7 @@ def puzzle(full_partsdict, grid):
     #alpha_step = alphawert_init // (x_anz*y_anz)
     alphawert = alphawert_init
 
-    moving = False
+    sliding = False
 
     zugzahl = 0
 
@@ -673,21 +684,29 @@ def puzzle(full_partsdict, grid):
                 if event.key == pygame.K_ESCAPE:
                     sys.exit()
                 if event.key == pygame.K_SPACE:
-                    game_rounds = 1
-                    counter = 0
-                    init = True
-                    replay = False
-                    #game_ambient.set_volume(0)
-                    pygame.mixer.music.set_volume(0)
-                    return
+                    if started and not controlsWindow.gt_mode:
+                        fertig = True
+                        game_rounds = 0
+                        counter = 0
+                        init = True
+                        replay = False
+                        started = False
+                        fertig = True
+                        abbruch = True
+                        #game_ambient.set_volume(0)
+                        pygame.mixer.music.set_volume(0)
+                        #start_game("stop_game")
+                        return
+                    else:
+                        pass
 
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 if rect.collidepoint(event.pos):
-                    moving = True
+                    sliding = True
                     #print("Buttondown angenommen")
 
 
-            elif event.type == pygame.MOUSEMOTION and moving == True:
+            elif event.type == pygame.MOUSEMOTION and sliding == True:
                 if fertig == False:
                     rect.move_ip(event.rel)
                     #Kachel in den Grenzen des Spielfelds halten
@@ -753,7 +772,7 @@ def puzzle(full_partsdict, grid):
 
                         rect = img.get_rect()
                         rect.center = w_floor // 2, full_image_y // 2
-                    moving = False
+                    sliding = False
 
                     # Ausblenden des Hintergrunds (erst schneller, dann langsam
                     #abzug = game_rounds*alpha_step + (alpha_step)**(fade_factor/zugzahl)
@@ -768,6 +787,11 @@ def puzzle(full_partsdict, grid):
 
         text_surface = pygame.font.Font.render(font, f'Punkte: {counter}', True, (55, 55, 55))
         screen.blit(text_surface, dest=(50, 50))
+
+        font_2 = pygame.font.Font(pygame.font.get_default_font(), 15)
+        text_surface_2 = pygame.font.Font.render(font_2, f'Abbruch mit Leertaste', True, (55, 55, 55))
+        if not controlsWindow.gt_mode:
+            screen.blit(text_surface_2, dest=(controlsWindow.screen_width / 3, controlsWindow.screen_height - 50))
 
         pygame.draw.rect(screen, RED, rect, 1)
 
@@ -1659,7 +1683,7 @@ def start_gt():
         controlsWindow.shuffle.setChecked(True)
         gt_game_list = [["puzzle", 0, 0], ["slider", 0, 0] , ["pictris", 0 ,0]]
         #gt_game_list = [["slider", 0, 0]]
-        planned_rounds = 2
+        planned_rounds = 1
         start_game(gt_game_list[0][0])
     else:
         controlsWindow.gt_mode = False
@@ -1675,24 +1699,30 @@ def start_gt():
         # screen.fill(GRAY)
         # pygame.display.update()
         pygame.mixer.music.set_volume(0)
-        controlsWindow.puzzle_start.setChecked(False)
-        controlsWindow.slider_start.setChecked(False)
-        controlsWindow.pictris_start.setChecked(False)
+        uncheck("abbruch")
         gt_stop = True
         screen.fill(GRAY)
         pygame.display.update()
 
 
 
-
+abbruch = False
 def start_game(game):
     global init
     global replay
     global gt_stop
     global game_rounds
     global planned_rounds
+    global started
+    global fertig
+    global abbruch
 
     uncheck(game)
+
+    started = False
+    fertig = False
+    # if game == "stop_game":
+    #     return
 
     init = True
     replay = False
@@ -1703,6 +1733,15 @@ def start_game(game):
             break
         if gt_stop:
             gt_stop = False
+            screen.fill(GRAY)
+            pygame.display.update()
+            return
+        if abbruch:
+            abbruch = False
+            screen.fill(GRAY)
+            pygame.display.update()
+            uncheck("abbruch")
+            controlsWindow.pic_control.hide()
             return
         start_playing(game)
 
