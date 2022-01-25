@@ -241,6 +241,55 @@ class Controls(QtWidgets.QMainWindow):
         # Call start() method to modify the timer value
         timer.start(100)
 
+        #Counter
+        self.counter_y = int(0.5 * self.screen_height) + self.label_height+22
+        self.counter_window = QtWidgets.QLabel(self)
+        self.counter_window_path = os.path.join(graf_dir, "fenster")
+        self.counter_window_pic = QtGui.QPixmap(self.counter_window_path)
+        self.counter_window_pic.scaled(self.start_button_width, int(self.label_height))
+        self.counter_window_pic = QtGui.QPixmap(self.start_button_width, int(self.label_height))
+        self.counter_window.setPixmap(self.counter_window_pic)
+        self.counter_window.setGeometry(self.label_start_x,
+                                   self.counter_y, self.start_button_width,
+                                   self.label_height)
+
+        self.counter_start = self.label_start_x+32
+        self.counter_space = 35
+        self.counter_2_counter = 112
+        self.counter_1_1 = QtWidgets.QLabel(self)
+        self.counter_1_1.setText('<h1 style="color:white">' + "0" + '</h1>')
+        self.counter_1_1.setGeometry(self.counter_start,
+                                        self.counter_y, 50,
+                                        50)
+        self.counter_1_2 = QtWidgets.QLabel(self)
+        self.counter_1_2.setText('<h1 style="color:white">' + "00" + '</h1>')
+        self.counter_1_2.setGeometry(self.counter_start + self.counter_space,
+                                        self.counter_y, 50,
+                                        50)
+
+        self.counter_2_1 = QtWidgets.QLabel(self)
+        self.counter_2_1.setText('<h1 style="color:white">' + "0" + '</h1>')
+        self.counter_2_1.setGeometry(self.counter_start + self.counter_2_counter,
+                                        self.counter_y, 50,
+                                        50)
+        self.counter_2_2 = QtWidgets.QLabel(self)
+        self.counter_2_2.setText('<h1 style="color:white">' + "00" + '</h1>')
+        self.counter_2_2.setGeometry(self.counter_start + self.counter_2_counter +self.counter_space,
+                                        self.counter_y, 50,
+                                        50)
+
+        self.counter_3_1 = QtWidgets.QLabel(self)
+        self.counter_3_1.setText('<h1 style="color:white">' + "0" + '</h1>')
+        self.counter_3_1.setGeometry(self.counter_start + 2*self.counter_2_counter,
+                                        self.counter_y, 50,
+                                        50)
+        self.counter_3_2 = QtWidgets.QLabel(self)
+        self.counter_3_2.setText('<h1 style="color:white">' + "00" + '</h1>')
+        self.counter_3_2.setGeometry(self.counter_start + 2*self.counter_2_counter +self.counter_space,
+                                        self.counter_y, 50,
+                                        50)
+
+
 
     def showCounter(self):
         # Check the value of startWatch  variable to start or stop the Stop Watch
@@ -271,6 +320,7 @@ class Controls(QtWidgets.QMainWindow):
         text = self.minute + ':' + self.second + ':' + self.count
         # Display the stop watch values in the label
         self.timer_label.setText('<h1 style="color:red">' + text + '</h1>')
+
 
     def reset(self):
         self.startWatch = False
@@ -506,10 +556,14 @@ def start_playing(game):
                 if controlsWindow.dir_button.isChecked() == True:
                     controlsWindow.pic_button.setChecked(True)
 
-    # print(f'Game = {game}')
-    # if game_rounds >= 1 and game == "puzzle":
     if game == "puzzle":
-        puzzle(full_partsdict, grid)
+        count = puzzle(full_partsdict, grid)
+        if count != None:
+            controlsWindow.counter_1_1.setText(f'<h1 style="color:white"> {game_rounds} </h1>')
+            controlsWindow.counter_1_2.setText(f'<h1 style="color:white"> {count} </h1>')
+        else:
+            controlsWindow.counter_1_1.setText(f'<h1 style="color:white"> 0 </h1>')
+            controlsWindow.counter_1_2.setText(f'<h1 style="color:white"> 00 </h1>')
         return
 
     if game == "slider":
@@ -652,10 +706,9 @@ def puzzle(full_partsdict, grid):
     # pygame.mixer.music.play(-1)
 
     running = True
-    #fade = 0.77
     while running:
         if gt_stop == True:
-            return("Stop")
+            return()
         screen.fill(GRAY)
 
         ambient_sound()
@@ -754,8 +807,8 @@ def puzzle(full_partsdict, grid):
                             screen.blit(text_surface, dest=(50, 50))
                             pygame.display.flip()
                             success(6)
-                            counter = 0
-                            return
+                            #counter = 0
+                            return(counter)
                     else:
                         counter -= 1
                         pygame.mixer.Sound.play(kachelfalsch)
@@ -1744,9 +1797,6 @@ def start_game(game):
             controlsWindow.pic_control.hide()
             return
         start_playing(game)
-
-
-
 
 
 if __name__ == '__main__':
