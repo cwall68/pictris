@@ -242,7 +242,7 @@ class Controls(QtWidgets.QMainWindow):
         timer.start(100)
 
         #Counter
-        self.counter_y = int(0.5 * self.screen_height) + self.label_height+22
+        self.counter_y = int(0.5 * self.screen_height) + self.label_height+18
         self.counter_window = QtWidgets.QLabel(self)
         self.counter_window_path = os.path.join(graf_dir, "fenster")
         self.counter_window_pic = QtGui.QPixmap(self.counter_window_path)
@@ -472,12 +472,13 @@ def start_playing(game):
     if controlsWindow.gt_mode:
         game_id = (game_rounds // planned_rounds) - 1
         print(f'game_id: {game_id}')
-        gt_game_list[game_id][1] += 1
-        rounds_per_game = gt_game_list[game_id][1]
-        part_anz = part_anz + rounds_per_game - 1
+        # gt_game_list[game_id][1] += 1
+        # rounds_per_game = gt_game_list[game_id][1]
+        # part_anz = part_anz + rounds_per_game - 1
         if game_rounds > len(gt_game_list) * planned_rounds:
             gt_stop = True
             controlsWindow.startWatch = False
+            pygame.mixer.music.set_volume(0)
             return
         game = gt_game_list[game_id][0]
 
@@ -493,7 +494,7 @@ def start_playing(game):
 
     elif controlsWindow.pic_button.isChecked() == True or controlsWindow.dir_button.isChecked() == True:
         if controlsWindow.gt_mode:
-            part_anz = part_anz + gt_game_list[game_id][1] - 1
+            part_anz = part_anz + gt_game_list[game_id][1]
         else:
             part_anz = part_anz + game_rounds -1
 
@@ -558,20 +559,50 @@ def start_playing(game):
 
     if game == "puzzle":
         count = puzzle(full_partsdict, grid)
+
         if count != None:
-            controlsWindow.counter_1_1.setText(f'<h1 style="color:white"> {game_rounds} </h1>')
-            controlsWindow.counter_1_2.setText(f'<h1 style="color:white"> {count} </h1>')
+            gt_game_list[0][1] = gt_game_list[0][1] + 1
+            gt_game_list[0][2] = gt_game_list[0][2] + count
+            controlsWindow.counter_1_1.setText(f'<h1 style="color:white"> {gt_game_list[0][1]} </h1>')
+            controlsWindow.counter_1_2.setText(f'<h1 style="color:white"> {gt_game_list[0][2]} </h1>')
         else:
-            controlsWindow.counter_1_1.setText(f'<h1 style="color:white"> 0 </h1>')
-            controlsWindow.counter_1_2.setText(f'<h1 style="color:white"> 00 </h1>')
+            if controlsWindow.gt_mode:
+                game_counter_init()
+            else:
+                controlsWindow.counter_1_1.setText(f'<h1 style="color:white"> 0 </h1>')
+                controlsWindow.counter_1_2.setText(f'<h1 style="color:white"> 00 </h1>')
         return
 
     if game == "slider":
-        slider(full_partsdict, grid)
+        count = slider(full_partsdict, grid)
+
+        if count != None:
+            gt_game_list[1][1] += 1
+            gt_game_list[1][2] = gt_game_list[1][2] + count
+            controlsWindow.counter_2_1.setText(f'<h1 style="color:white"> {gt_game_list[1][1]} </h1>')
+            controlsWindow.counter_2_2.setText(f'<h1 style="color:white"> {gt_game_list[1][2]} </h1>')
+        else:
+            if controlsWindow.gt_mode:
+                game_counter_init()
+            else:
+                controlsWindow.counter_2_1.setText(f'<h1 style="color:white"> 0 </h1>')
+                controlsWindow.counter_2_2.setText(f'<h1 style="color:white"> 00 </h1>')
         return
 
     if game == "pictris":
-        pictris(full_partsdict, grid)
+        count = pictris(full_partsdict, grid)
+
+        if count != None:
+            gt_game_list[2][1] += 1
+            gt_game_list[2][2] = gt_game_list[2][2] + count
+            controlsWindow.counter_3_1.setText(f'<h1 style="color:white"> {gt_game_list[2][1]} </h1>')
+            controlsWindow.counter_3_2.setText(f'<h1 style="color:white"> {gt_game_list[2][2]} </h1>')
+        else:
+            if controlsWindow.gt_mode:
+                game_counter_init()
+            else:
+                controlsWindow.counter_3_1.setText(f'<h1 style="color:white"> 0 </h1>')
+                controlsWindow.counter_3_2.setText(f'<h1 style="color:white"> 00 </h1>')
         return
 
     while True:
@@ -581,6 +612,34 @@ def start_playing(game):
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
                     sys.exit()
+
+#setzt die Zähler in der game_list auf Null und schreibt dies in die Ausgabe
+def game_counter_init():
+    global gt_game_list
+
+    gt_game_list = [["puzzle", 0, 0], ["slider", 0, 0], ["pictris", 0, 0]]
+
+    # gt_game_list[0][1] = 0
+    # gt_game_list[0][2] = 0
+    # controlsWindow.counter_1_1.setText(f'<h1 style="color:white"> {gt_game_list[0][1]} </h1>')
+    # controlsWindow.counter_1_2.setText(f'<h1 style="color:white"> {gt_game_list[0][2]} </h1>')
+    # gt_game_list[1][1] = 0
+    # gt_game_list[1][2] = 0
+    # controlsWindow.counter_2_1.setText(f'<h1 style="color:white"> {gt_game_list[1][1]} </h1>')
+    # controlsWindow.counter_2_2.setText(f'<h1 style="color:white"> {gt_game_list[1][2]} </h1>')
+    # gt_game_list[2][1] = 0
+    # gt_game_list[2][2] = 0
+    # controlsWindow.counter_3_1.setText(f'<h1 style="color:white"> {gt_game_list[2][1]} </h1>')
+    # controlsWindow.counter_3_2.setText(f'<h1 style="color:white"> {gt_game_list[2][2]} </h1>')
+
+    controlsWindow.counter_1_1.setText(f'<h1 style="color:white"> 0 </h1>')
+    controlsWindow.counter_1_2.setText(f'<h1 style="color:white"> 00 </h1>')
+
+    controlsWindow.counter_2_1.setText(f'<h1 style="color:white"> 0 </h1>')
+    controlsWindow.counter_2_2.setText(f'<h1 style="color:white"> 00 </h1>')
+
+    controlsWindow.counter_3_1.setText(f'<h1 style="color:white"> 0 </h1>')
+    controlsWindow.counter_3_2.setText(f'<h1 style="color:white"> 00 </h1>')
 
 
 def find_part_size(width, height, part_anz):
@@ -672,8 +731,8 @@ def puzzle(full_partsdict, grid):
 
     fertig = False
 
-    if init == True:
-        counter = 0
+    #if init == True:
+    counter = 0
 
     #alpha_step = alphawert_init // (x_anz*y_anz)
     alphawert = alphawert_init
@@ -1013,7 +1072,7 @@ def part_fall(img, full_partsdict, x, y, act_partsdict, alphawert):
 
             if fertig:
                 success(8)
-                punkte = 0
+                #punkte = 0
                 act_partsdict.clear()
                 pygame.time.delay(1000)
                 stop = True
@@ -1023,7 +1082,7 @@ def part_fall(img, full_partsdict, x, y, act_partsdict, alphawert):
 
         move = False
 
-    return(act_partsdict, fertig)
+    return(act_partsdict, fertig, punkte)
 
 #prüft ob die Kachel kollidiert und wenn ja ob sie an passender Stelle liegt
 def place_check(x, y, pic_pos_x, pic_pos_y, x_change, full_partsdict, act_partsdict, alphawert):
@@ -1164,7 +1223,7 @@ def pictris(full_partsdict, grid):
             # Kachel wird für spezifizierte Zeit vor Fall gezeigt
             pygame.time.delay(before_fall)
 
-            act_partsdict, fertig = part_fall(img, full_partsdict, x, y, act_partsdict, alphawert)
+            act_partsdict, fertig, punkte = part_fall(img, full_partsdict, x, y, act_partsdict, alphawert)
 
             x, y = make_randpos(act_partsdict)
             img = full_partsdict[x, y][0]
@@ -1187,14 +1246,14 @@ def pictris(full_partsdict, grid):
             pygame.time.delay(before_fall)
 
             #Kachelfalldurchlauf
-            act_partsdict, fertig= part_fall(img, full_partsdict, x, y, act_partsdict, alphawert)
+            act_partsdict, fertig, punkte= part_fall(img, full_partsdict, x, y, act_partsdict, alphawert)
             if fertig:
                 replay = True
                 init = False
                 started = False
                 #game_ambient.set_volume(0)
                 start_playing("pictris")
-                return
+                return(punkte)
 
             blit_field(full_partsdict, act_partsdict, alphawert)
             #Neue Kachel erzeugen wenn nicht fertig
@@ -1239,7 +1298,7 @@ def pictris(full_partsdict, grid):
                     #pygame.mixer.music.play(-1)
                     pygame.mixer.music.set_volume(0.1)
 
-                    act_partsdict, fertig= part_fall(img, full_partsdict, x, y, act_partsdict, alphawert)
+                    act_partsdict, fertig, punkte= part_fall(img, full_partsdict, x, y, act_partsdict, alphawert)
 
                     x, y = make_randpos(act_partsdict)
                     img = full_partsdict[x, y][0]
@@ -1493,7 +1552,7 @@ def slider(full_partsdict, grid):
                             else:
                                 replay = True
                                 init = False
-                            return
+                            return(counter)
                         else:
                             i +=1
                     else:
@@ -1745,7 +1804,7 @@ def start_gt():
         controlsWindow.startWatch = False
         controlsWindow.reset()
         controlsWindow.gt_start.setText("Start")
-        gt_game_list.clear()
+        game_counter_init()
         # gt_stop = True
         controlsWindow.pic_control.hide()
         controlsWindow.shuffle.setChecked(False)
@@ -1769,8 +1828,10 @@ def start_game(game):
     global started
     global fertig
     global abbruch
+    global game_list
 
     uncheck(game)
+    game_counter_init()
 
     started = False
     fertig = False
