@@ -1266,7 +1266,7 @@ def pictris(full_partsdict, grid):
                 init = False
                 started = False
                 #game_ambient.set_volume(0)
-                start_playing("pictris")
+                #start_playing("pictris")
                 return(punkte)
 
             blit_field(full_partsdict, act_partsdict, alphawert)
@@ -1355,6 +1355,8 @@ def slider(full_partsdict, grid):
     global replay
     global replay_dict
     global init
+    global started
+    global abbruch
 
     sender = controlsWindow.sender()
     spiel = sender.text()
@@ -1433,7 +1435,6 @@ def slider(full_partsdict, grid):
     pygame.mixer.music.set_volume(0.1)
 
     while running:
-
         if controlsWindow.shuffle.isChecked() == True:
             counter_name = "Punkte"
         else:
@@ -1451,11 +1452,24 @@ def slider(full_partsdict, grid):
                 if event.key == pygame.K_ESCAPE:
                     sys.exit()
                 if event.key == pygame.K_SPACE:
-                    game_rounds = 1
-                    counter = 0
-                    init = True
-                    replay = False
-                    return
+                    # game_rounds = 1
+                    # counter = 0
+                    # init = True
+                    # replay = False
+                    # return
+                    if started and not controlsWindow.gt_mode:
+                        fertig = True
+                        game_rounds = 0
+                        counter = 0
+                        init = True
+                        replay = False
+                        started = False
+                        fertig = True
+                        abbruch = True
+                        pygame.mixer.music.set_volume(0)
+                        return
+                    else:
+                        pass
 
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 eventpos_x, eventpos_y = event.pos
@@ -1581,6 +1595,9 @@ def slider(full_partsdict, grid):
                 text_surface = pygame.font.Font.render(font, f'{counter_name}: {counter}', True, (55, 55, 55))
                 screen.blit(text_surface, dest=(50, 50))
 
+                if not controlsWindow.gt_mode:
+                    screen.blit(text_surface_3, dest=(controlsWindow.screen_width / 3, controlsWindow.screen_height - 50))
+
                 blit_grid(grid, (255, 0, 0))
                 pygame.display.update()
 
@@ -1592,6 +1609,10 @@ def slider(full_partsdict, grid):
 
             text_surface = pygame.font.Font.render(font, f'{counter_name}: {counter}', True, (55, 55, 55))
             screen.blit(text_surface, dest=(50, 50))
+
+            if not controlsWindow.gt_mode:
+                screen.blit(text_surface_3,
+                            dest=(controlsWindow.screen_width / 3, controlsWindow.screen_height - 50))
 
             blit_grid(grid, (255, 0, 0))
             pygame.display.update()
