@@ -247,16 +247,22 @@ class Controls(QtWidgets.QMainWindow):
         timer.start(100)
 
         #Counter
-        self.counter_y = int(0.5 * self.screen_height) + self.label_height+18
+        self.counter_y = int(0.5 * self.screen_height) + 2 * self.label_height - 25
+
+        self.counter_label = QtWidgets.QLabel(self)
+        self.counter_label.setText("Runden \ Punkte:")
+        self.counter_label.setGeometry(self.label_start_x, self.counter_y-45, self.start_button_width, self.start_button_height)
+        self.counter_label.setStyleSheet("font-size: 18px;")
+
         self.counter_window = QtWidgets.QLabel(self)
         self.counter_window_path = os.path.join(graf_dir, "fenster")
         self.counter_window_pic = QtGui.QPixmap(self.counter_window_path)
-        self.counter_window_pic.scaled(self.start_button_width, int(self.label_height))
-        self.counter_window_pic = QtGui.QPixmap(self.start_button_width, int(self.label_height))
+        self.counter_window_pic.scaled(self.start_button_width, int(self.label_height/2))
+        self.counter_window_pic = QtGui.QPixmap(self.start_button_width, int(self.label_height/2))
         self.counter_window.setPixmap(self.counter_window_pic)
         self.counter_window.setGeometry(self.label_start_x,
                                    self.counter_y, self.start_button_width,
-                                   self.label_height)
+                                   int(self.label_height/2))
 
         self.counter_start = self.label_start_x+32
         self.counter_space = 35
@@ -356,23 +362,26 @@ GRAY = (200, 200, 200)
 
 RED = (255, 0, 0)
 
+gt_game_list = [["puzzle", 0, 0], ["slider", 0, 0], ["pictris", 0 ,0]]
+
 #Mindestzahl an Teilen auf der längeren Bildkante
 part_anz_init = 4
 #Bildabstand vom unteren Rand
-offset_y = 50
+offset_y = 55
 #Fading-Ausgangswert
 alphawert_init = 255
 #Steuerung der Geschwindigkeit des Hintergrundbildverschwindens bei Puzzle und Pictris
 fade_factor = 0.3
 #Kachel wartet bei Pictris vor dem Fall
-before_fall_init = 1000
-
-#Zähler für die Verkleinerung der Puzzleteile bei Bildpuzzle
+before_fall_init = 1500
+#Zähler für die Verkleinerung der Puzzleteile bei Bildpuzzle und Berechnung der game_id bei GT
 game_rounds = 0
-
+# Replay sorgt bei Slider für erneutes Spiel mit gleicher Ausganglage
 replay = False
+#Bringt das jeweilige Spiel zum Ende
+abbruch = False
 
-#Dictionary bewahrt die Zufallskonfiguration des Spielfelds um dieses in gleicher Form wieder spielen zu können
+#Dictionary bewahrt die Zufallskonfiguration des Spielfelds um dieses (vgl replay) in gleicher Form wieder spielen zu können
 replay_dict = {}
 
 zugzahl = 0
@@ -589,7 +598,6 @@ def start_playing(game):
         count = slider(full_partsdict, grid)
 
         if count != None:
-            #gt_game_list[1][1] += 1
             gt_game_list[1][2] = gt_game_list[1][2] + count
             if controlsWindow.gt_mode:
                 controlsWindow.counter_2_1.setText(f'<h1 style="color:white"> {gt_game_list[1][1]} </h1>')
@@ -609,7 +617,6 @@ def start_playing(game):
         count = pictris(full_partsdict, grid)
 
         if count != None:
-            #gt_game_list[2][1] += 1
             gt_game_list[2][2] = gt_game_list[2][2] + count
             if controlsWindow.gt_mode:
                 controlsWindow.counter_3_1.setText(f'<h1 style="color:white"> {gt_game_list[2][1]} </h1>')
@@ -950,10 +957,6 @@ def part_fall(img, full_partsdict, x, y, act_partsdict, alphawert):
     global started
     global abbruch
 
-    ambient_sound()
-
-    game_sounds()
-
     fertig = False
     abbruch = False
     parts += 1
@@ -1213,7 +1216,7 @@ def pictris(full_partsdict, grid):
             fails = 0
             started = True
 
-            pygame.mixer.music.set_volume(0.1)
+            #pygame.mixer.music.set_volume(0.1)
 
             screen.fill(GRAY)
 
@@ -1818,7 +1821,7 @@ def show_fullparts(full_partsdict):
 #puzzle_elements = ["puzzle", 0, 0]
 #slider_elements = ["slider", 0, 0]
 #pictris_elements = ["pictris", 0 ,0]
-gt_game_list = [["puzzle", 0, 0], ["slider", 0, 0], ["pictris", 0 ,0]]
+
 #gt_game_list = [puzzle_elements, slider_elements, pictris_elements]
 def start_gt():
     global gt_stop
@@ -1837,6 +1840,7 @@ def start_gt():
         planned_rounds = 1
         start_game(gt_game_list[0][0])
     else:
+        #wird gebraucht damit nach GT-Ende direkter Neustart funktioniert
         if controlsWindow.gt_mode and ceil(game_rounds / planned_rounds) - 1 == len(gt_game_list):
             gt_stop = False
             controlsWindow.dir_button.setChecked(True)
@@ -1857,7 +1861,6 @@ def start_gt():
         pygame.display.update()
 
 
-abbruch = False
 def start_game(game):
     global init
     global replay
