@@ -466,7 +466,7 @@ def start_playing(game):
     if controlsWindow.gt_mode and ceil(game_rounds / planned_rounds) - 1 == len(gt_game_list):
         screen.fill(GRAY)
         pygame.display.update()
-        gt_stop = True
+        #gt_stop = True
         controlsWindow.startWatch = False
         pygame.mixer.music.set_volume(0)
         return
@@ -1815,10 +1815,11 @@ def show_fullparts(full_partsdict):
         screen.blit(value[0], value[1])
     pygame.display.flip()
 
-puzzle_elements = ["puzzle", 0, 0]
-slider_elements = ["slider", 0, 0]
-pictris_elements = ["pictris", 0 ,0]
-gt_game_list = [puzzle_elements, slider_elements, pictris_elements]
+#puzzle_elements = ["puzzle", 0, 0]
+#slider_elements = ["slider", 0, 0]
+#pictris_elements = ["pictris", 0 ,0]
+gt_game_list = [["puzzle", 0, 0], ["slider", 0, 0], ["pictris", 0 ,0]]
+#gt_game_list = [puzzle_elements, slider_elements, pictris_elements]
 def start_gt():
     global gt_stop
     global gt_game_list
@@ -1836,7 +1837,11 @@ def start_gt():
         planned_rounds = 1
         start_game(gt_game_list[0][0])
     else:
-        gt_stop = True
+        if controlsWindow.gt_mode and ceil(game_rounds / planned_rounds) - 1 == len(gt_game_list):
+            gt_stop = False
+            controlsWindow.dir_button.setChecked(True)
+        else:
+            gt_stop = True
         controlsWindow.gt_mode = False
         controlsWindow.timer_label.hide()
         controlsWindow.race_flag.show()
@@ -1873,23 +1878,21 @@ def start_game(game):
     replay = False
     game_rounds = 0
 
-    # while True:
-    #     if controlsWindow.gt_mode and ceil(game_rounds / planned_rounds) - 1 == len(gt_game_list):
-    #         controlsWindow.startWatch = False
-    #         break
-    #     if gt_stop or abbruch:
-    #         gt_stop = False
-    #         screen.fill(GRAY)
-    #         pygame.display.update()
-    #         game_counter_init()
-    #         uncheck("abbruch")
-    #         return
     while True:
         if controlsWindow.gt_mode and ceil(game_rounds / planned_rounds) - 1 == len(gt_game_list):
             controlsWindow.startWatch = False
             screen.fill(GRAY)
             pygame.display.update()
+            #gt_stop = True
             break
+            # if gt_stop or abbruch:
+            #     gt_stop = False
+            #     screen.fill(GRAY)
+            #     pygame.display.update()
+            #     game_counter_init()
+            #     uncheck("abbruch")
+            #     controlsWindow.dir_button.setChecked(True)
+            #     break
 
         elif gt_stop or abbruch:
             gt_stop = False
