@@ -213,9 +213,13 @@ class Controls(QtWidgets.QMainWindow):
         self.ambient.setChecked(True)
 
         self.game_sounds = QCheckBox("Spiel Sounds", self)
-        self.game_sounds.setGeometry(self.label_start_x + 2*self.label_width, self.screen_height - self.start_button_space, 2*self.label_width, self.button_height)
+        self.game_sounds.setGeometry(self.label_start_x + 3*self.label_width, self.screen_height - self.start_button_space, 2*self.label_width, self.button_height)
         self.game_sounds.setAutoExclusive(False)
         self.game_sounds.setChecked(True)
+
+        self.end_all = QPushButton("Ende", self)
+        self.end_all.setGeometry(self.label_start_x + int(1.5*self.label_width), self.screen_height - int(1.1*self.start_button_space), self.label_width, 2*self.button_height)
+        self.end_all.setCheckable(True)
 
         #Kontrollbild hinter Spielfeld
         self.pic_control = QtWidgets.QLabel(self)
@@ -323,7 +327,7 @@ class Controls(QtWidgets.QMainWindow):
         self.timer_label.setText('<h1 style="color:red">' + text + '</h1>')
 
 
-    def reset(self):
+    def timer_reset(self):
         self.startWatch = False
         # Reset all counter variables
         self.counter = 0
@@ -387,6 +391,11 @@ kachelpasst = pygame.mixer.Sound(r"Sounds\salamisound-3402567-tischglocke-einmal
 kachelplop = pygame.mixer.Sound(r"Sounds\245645__unfa__cartoon-pop-clean.wav")
 kachelfalsch = pygame.mixer.Sound(r"Sounds\salamisound-4681975-kleine-hupe-einmal-kurz.mp3")
 
+gt_stop = False
+
+font_2 = pygame.font.Font(pygame.font.get_default_font(), 15)
+text_surface_3 = pygame.font.Font.render(font_2, f'Abbruch mit Leertaste', True, (55, 55, 55))
+
 def make_game_floor(game):
     global w_floor
     global h_floor
@@ -439,28 +448,17 @@ def start_playing(game):
     global gt_game_list
     global planned_rounds
 
-    if gt_stop:
-        #gt_stop = False
-        screen.fill(GRAY)
-        pygame.display.update()
-        pygame.mixer.music.set_volume(0)
-        #pygame.time.delay(1000)
-        return
-    if abbruch:
-        #gt_stop = False
-        screen.fill(GRAY)
-        pygame.display.update()
-        pygame.mixer.music.set_volume(0)
-        #pygame.time.delay(1000)
-        return
+    # if gt_stop or abbruch:
+    #     screen.fill(GRAY)
+    #     pygame.display.update()
+    #     game_counter_init()
+    #     pygame.mixer.music.set_volume(0)
+    #     return
 
-
-
-    # if controlsWindow.dir_button.isChecked() == True or controlsWindow.pic_button.isChecked() == True:
     if init == True and replay == False:
         spielbild = find_pic()
         controlsWindow.pic_path.setText(spielbild)
-        part_anz = part_anz_init
+        #part_anz = part_anz_init
         game_rounds = 1
     else:
         game_rounds += 1
@@ -468,22 +466,17 @@ def start_playing(game):
     if controlsWindow.gt_mode and ceil(game_rounds / planned_rounds) - 1 == len(gt_game_list):
         screen.fill(GRAY)
         pygame.display.update()
+        gt_stop = True
+        controlsWindow.startWatch = False
+        pygame.mixer.music.set_volume(0)
         return
-
 
     if controlsWindow.gt_mode:
         game_id = ceil(game_rounds / planned_rounds) - 1
-        #print(f'game_id: {game_id}')
+        print(f'game_id: {game_id}')
         gt_game_list[game_id][1] += 1
-        # rounds_per_game = gt_game_list[game_id][1]
-        # part_anz = part_anz + rounds_per_game - 1
-        if game_rounds > len(gt_game_list) * planned_rounds:
-            gt_stop = True
-            controlsWindow.startWatch = False
-            pygame.mixer.music.set_volume(0)
-            return
         game = gt_game_list[game_id][0]
-
+        uncheck(game)
 
     if controlsWindow.nine_button.isChecked() == True:
         part_anz = 3
@@ -498,7 +491,7 @@ def start_playing(game):
         if controlsWindow.gt_mode:
             part_anz = part_anz_init + gt_game_list[game_id][1] - 1
         else:
-            part_anz = part_anz + game_rounds -1
+            part_anz = part_anz_init + game_rounds -1
 
     #print(f'Game: {game}, in Liste: {gt_game_list[game_id][1]} Teile: {part_anz}')
 
@@ -582,6 +575,14 @@ def start_playing(game):
             else:
                 controlsWindow.counter_1_1.setText(f'<h1 style="color:white"> 0 </h1>')
                 controlsWindow.counter_1_2.setText(f'<h1 style="color:white"> 00 </h1>')
+
+        if gt_stop or abbruch:
+            screen.fill(GRAY)
+            pygame.display.update()
+            game_counter_init()
+            pygame.mixer.music.set_volume(0)
+            return
+
         return
 
     if game == "slider":
@@ -719,10 +720,6 @@ def resize(file):
 
     return(image)
 
-gt_stop = False
-
-font_2 = pygame.font.Font(pygame.font.get_default_font(), 15)
-text_surface_3 = pygame.font.Font.render(font_2, f'Abbruch mit Leertaste', True, (55, 55, 55))
 
 abbruch = False
 def puzzle(full_partsdict, grid):
@@ -791,8 +788,8 @@ def puzzle(full_partsdict, grid):
     running = True
     while running:
         if gt_stop == True:
-            #counter = 999
-            return(counter)
+            break
+            #return(counter)
         screen.fill(GRAY)
 
         ambient_sound()
@@ -917,6 +914,9 @@ def puzzle(full_partsdict, grid):
                     if alphawert <= 5:
                         alphawert = 5
                     #print(f'Zugzahl: {zugzahl}  Abzug: {abzug}  Alphawert: {alphawert}')
+
+        if gt_stop:
+            return
 
         screen.blit(img, rect)
 
@@ -1833,27 +1833,23 @@ def start_gt():
         controlsWindow.gt_mode = True
         controlsWindow.gt_start.setText("Stop")
         controlsWindow.shuffle.setChecked(True)
-        planned_rounds = 2
+        planned_rounds = 1
         start_game(gt_game_list[0][0])
     else:
+        gt_stop = True
         controlsWindow.gt_mode = False
-        controlsWindow.race_flag.show()
         controlsWindow.timer_label.hide()
+        controlsWindow.race_flag.show()
         controlsWindow.startWatch = False
-        controlsWindow.reset()
+        controlsWindow.timer_reset()
         controlsWindow.gt_start.setText("Start")
         game_counter_init()
-        # gt_stop = True
         controlsWindow.pic_control.hide()
         controlsWindow.shuffle.setChecked(False)
-        # screen.fill(GRAY)
-        # pygame.display.update()
         pygame.mixer.music.set_volume(0)
         uncheck("abbruch")
-        gt_stop = True
         screen.fill(GRAY)
         pygame.display.update()
-
 
 
 abbruch = False
@@ -1873,29 +1869,50 @@ def start_game(game):
 
     started = False
     fertig = False
-    # if game == "stop_game":
-    #     return
-
     init = True
     replay = False
     game_rounds = 0
+
+    # while True:
+    #     if controlsWindow.gt_mode and ceil(game_rounds / planned_rounds) - 1 == len(gt_game_list):
+    #         controlsWindow.startWatch = False
+    #         break
+    #     if gt_stop or abbruch:
+    #         gt_stop = False
+    #         screen.fill(GRAY)
+    #         pygame.display.update()
+    #         game_counter_init()
+    #         uncheck("abbruch")
+    #         return
     while True:
         if controlsWindow.gt_mode and ceil(game_rounds / planned_rounds) - 1 == len(gt_game_list):
             controlsWindow.startWatch = False
+            screen.fill(GRAY)
+            pygame.display.update()
             break
-        if gt_stop:
+
+        elif gt_stop or abbruch:
             gt_stop = False
             screen.fill(GRAY)
             pygame.display.update()
-            return
-        if abbruch:
-            abbruch = False
-            screen.fill(GRAY)
-            pygame.display.update()
+            game_counter_init()
             uncheck("abbruch")
-            controlsWindow.pic_control.hide()
-            return
-        start_playing(game)
+            controlsWindow.dir_button.setChecked(True)
+            break
+
+        else:
+            start_playing(game)
+
+    # while True:
+    #     if gt_stop or abbruch:
+    #         gt_stop = False
+    #         screen.fill(GRAY)
+    #         pygame.display.update()
+    #         game_counter_init()
+    #         uncheck("abbruch")
+    #         controlsWindow.dir_button.setChecked(True)
+    #         break
+
 
 
 if __name__ == '__main__':
@@ -1913,6 +1930,7 @@ if __name__ == '__main__':
     controlsWindow.game_sounds.toggled.connect(make_game_floor)
     controlsWindow.shuffle.toggled.connect(make_game_floor)
     controlsWindow.gt_start.clicked.connect(start_gt)
+    controlsWindow.end_all.clicked.connect(sys.exit)
 
 
 #pygame.quit()
