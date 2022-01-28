@@ -265,7 +265,7 @@ class Controls(QtWidgets.QMainWindow):
                                    int(self.label_height/2))
 
         self.counter_start = self.label_start_x+32
-        self.counter_space = 35
+        self.counter_space = 32
         self.counter_2_counter = 112
         self.counter_1_1 = QtWidgets.QLabel(self)
         self.counter_1_1.setText('<h1 style="color:white">' + "0" + '</h1>')
@@ -1216,8 +1216,6 @@ def pictris(full_partsdict, grid):
             fails = 0
             started = True
 
-            #pygame.mixer.music.set_volume(0.1)
-
             screen.fill(GRAY)
 
             x, y = make_randpos(act_partsdict)
@@ -1886,19 +1884,11 @@ def start_game(game):
             controlsWindow.startWatch = False
             screen.fill(GRAY)
             pygame.display.update()
-            #gt_stop = True
             break
-            # if gt_stop or abbruch:
-            #     gt_stop = False
-            #     screen.fill(GRAY)
-            #     pygame.display.update()
-            #     game_counter_init()
-            #     uncheck("abbruch")
-            #     controlsWindow.dir_button.setChecked(True)
-            #     break
 
         elif gt_stop or abbruch:
             gt_stop = False
+            abbruch = False
             screen.fill(GRAY)
             pygame.display.update()
             game_counter_init()
@@ -1908,17 +1898,6 @@ def start_game(game):
 
         else:
             start_playing(game)
-
-    # while True:
-    #     if gt_stop or abbruch:
-    #         gt_stop = False
-    #         screen.fill(GRAY)
-    #         pygame.display.update()
-    #         game_counter_init()
-    #         uncheck("abbruch")
-    #         controlsWindow.dir_button.setChecked(True)
-    #         break
-
 
 
 if __name__ == '__main__':
