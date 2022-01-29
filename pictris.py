@@ -206,23 +206,14 @@ class Controls(QtWidgets.QMainWindow):
         self.race_flag.setGeometry(self.label_start_x + int(2.5*self.gt_button_size), int(0.5 * self.screen_height) - self.gt_offset, self.label_width,
                                     self.label_height)
 
-        # Sound Controls
-        self.ambient = QCheckBox("Ambient Sound", self)
-        self.ambient.setGeometry(self.label_start_x, self.screen_height - self.start_button_space, 2*self.label_width, self.button_height)
-        self.ambient.setAutoExclusive(False)
-        self.ambient.setChecked(True)
+        #Rundenvorwahl (rpg = rounds per game)
+        self.rpg = QSpinBox(self)
+        self.rpg.setRange(1, 5)
+        self.rpg.setPrefix("Runden: ")
+        self.rpg.setStyleSheet("font-size: 15px;"
+                               "font-weight: bold;")
+        self.rpg.setGeometry(self.label_start_x, int(0.5 * self.screen_height) + 4, int(self.start_button_width/3-10), self.start_button_height-10)
 
-        self.game_sounds = QCheckBox("Spiel Sounds", self)
-        self.game_sounds.setGeometry(self.label_start_x + 3*self.label_width, self.screen_height - self.start_button_space, 2*self.label_width, self.button_height)
-        self.game_sounds.setAutoExclusive(False)
-        self.game_sounds.setChecked(True)
-
-        self.end_all = QPushButton("Ende", self)
-        self.end_all.setGeometry(self.label_start_x + int(1.5*self.label_width), self.screen_height - int(1.1*self.start_button_space), self.label_width, 2*self.button_height)
-        self.end_all.setCheckable(True)
-
-        #Kontrollbild hinter Spielfeld
-        self.pic_control = QtWidgets.QLabel(self)
 
         # Timer
         # Set the necessary variables
@@ -299,6 +290,26 @@ class Controls(QtWidgets.QMainWindow):
         self.counter_3_2.setGeometry(self.counter_start + 2*self.counter_2_counter +self.counter_space,
                                         self.counter_y, 50,
                                         50)
+
+
+        # Sound Controls
+        self.ambient = QCheckBox("Ambient Sound", self)
+        self.ambient.setGeometry(self.label_start_x, self.screen_height - self.start_button_space, 2*self.label_width, self.button_height)
+        self.ambient.setAutoExclusive(False)
+        self.ambient.setChecked(True)
+
+        self.game_sounds = QCheckBox("Spiel Sounds", self)
+        self.game_sounds.setGeometry(self.label_start_x + 3*self.label_width, self.screen_height - self.start_button_space, 2*self.label_width, self.button_height)
+        self.game_sounds.setAutoExclusive(False)
+        self.game_sounds.setChecked(True)
+
+        self.end_all = QPushButton("Ende", self)
+        self.end_all.setGeometry(self.label_start_x + int(1.5*self.label_width), self.screen_height - int(1.1*self.start_button_space), self.label_width, 2*self.button_height)
+        self.end_all.setCheckable(True)
+
+
+        #Kontrollbild hinter Spielfeld
+        self.pic_control = QtWidgets.QLabel(self)
 
 
 
@@ -378,6 +389,11 @@ before_fall_init = 1500
 game_rounds = 0
 # Replay sorgt bei Slider für erneutes Spiel mit gleicher Ausganglage
 replay = False
+
+started = False
+
+gt_stop = False
+
 #Bringt das jeweilige Spiel zum Ende
 abbruch = False
 
@@ -400,7 +416,6 @@ kachelpasst = pygame.mixer.Sound(r"Sounds\salamisound-3402567-tischglocke-einmal
 kachelplop = pygame.mixer.Sound(r"Sounds\245645__unfa__cartoon-pop-clean.wav")
 kachelfalsch = pygame.mixer.Sound(r"Sounds\salamisound-4681975-kleine-hupe-einmal-kurz.mp3")
 
-gt_stop = False
 
 font_2 = pygame.font.Font(pygame.font.get_default_font(), 15)
 text_surface_3 = pygame.font.Font.render(font_2, f'Abbruch mit Leertaste', True, (55, 55, 55))
@@ -457,13 +472,6 @@ def start_playing(game):
     global gt_game_list
     global planned_rounds
 
-    # if gt_stop or abbruch:
-    #     screen.fill(GRAY)
-    #     pygame.display.update()
-    #     game_counter_init()
-    #     pygame.mixer.music.set_volume(0)
-    #     return
-
     if init == True and replay == False:
         spielbild = find_pic()
         controlsWindow.pic_path.setText(spielbild)
@@ -496,7 +504,8 @@ def start_playing(game):
     elif controlsWindow.abc_button.isChecked() == True:
         part_anz = 5
 
-    elif controlsWindow.pic_button.isChecked() == True or controlsWindow.dir_button.isChecked() == True:
+    # elif controlsWindow.pic_button.isChecked() == True or controlsWindow.dir_button.isChecked() == True:
+    else:
         if controlsWindow.gt_mode:
             part_anz = part_anz_init + gt_game_list[game_id][1] - 1
         else:
@@ -564,6 +573,7 @@ def start_playing(game):
                 controlsWindow.showCounter()
                 if controlsWindow.dir_button.isChecked() == True:
                     controlsWindow.pic_button.setChecked(True)
+               # controlsWindow.rpg.setDisabled(True)
 
     if game == "puzzle":
         count = puzzle(full_partsdict, grid)
@@ -1816,11 +1826,21 @@ def show_fullparts(full_partsdict):
         screen.blit(value[0], value[1])
     pygame.display.flip()
 
-#puzzle_elements = ["puzzle", 0, 0]
-#slider_elements = ["slider", 0, 0]
-#pictris_elements = ["pictris", 0 ,0]
+def rpg_value():
+    global started
+    global planned_rounds
+    global game
 
-#gt_game_list = [puzzle_elements, slider_elements, pictris_elements]
+    if started:
+        controlsWindow.rpg.setValue(planned_rounds)
+        make_game_floor(gt_game_list[0])
+    else:
+        planned_rounds = controlsWindow.rpg.value()
+
+    return(planned_rounds)
+
+planned_rounds = rpg_value()
+
 def start_gt():
     global gt_stop
     global gt_game_list
@@ -1835,7 +1855,7 @@ def start_gt():
         controlsWindow.gt_mode = True
         controlsWindow.gt_start.setText("Stop")
         controlsWindow.shuffle.setChecked(True)
-        planned_rounds = 1
+        # planned_rounds = rpg_value()
         start_game(gt_game_list[0][0])
     else:
         #wird gebraucht damit nach GT-Ende direkter Neustart funktioniert
@@ -1884,6 +1904,7 @@ def start_game(game):
             controlsWindow.startWatch = False
             screen.fill(GRAY)
             pygame.display.update()
+            controlsWindow.rpg.setEnabled(True)
             break
 
         elif gt_stop or abbruch:
@@ -1894,6 +1915,7 @@ def start_game(game):
             game_counter_init()
             uncheck("abbruch")
             controlsWindow.dir_button.setChecked(True)
+            controlsWindow.rpg.setEnabled(True)
             break
 
         else:
@@ -1914,6 +1936,7 @@ if __name__ == '__main__':
     controlsWindow.ambient.toggled.connect(make_game_floor)
     controlsWindow.game_sounds.toggled.connect(make_game_floor)
     controlsWindow.shuffle.toggled.connect(make_game_floor)
+    controlsWindow.rpg.valueChanged.connect(rpg_value)
     controlsWindow.gt_start.clicked.connect(start_gt)
     controlsWindow.end_all.clicked.connect(sys.exit)
 
