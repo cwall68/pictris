@@ -203,16 +203,42 @@ class Controls(QtWidgets.QMainWindow):
         self.race_flag_pic.scaled(self.label_width, self.label_height)
         self.race_flag_pic = QtGui.QPixmap(self.label_width, self.label_height)
         self.race_flag.setPixmap(self.race_flag_pic)
-        self.race_flag.setGeometry(self.label_start_x + int(2.5*self.gt_button_size), int(0.5 * self.screen_height) - self.gt_offset, self.label_width,
+        self.race_flag.setGeometry(self.label_start_x + int(2.5*self.gt_button_size), int(0.5 * self.screen_height) - self.gt_offset - 15, self.label_width,
                                     self.label_height)
 
         #Rundenvorwahl (rpg = rounds per game)
+        self.rpg_label = QtWidgets.QLabel(self)
+        self.rpg_label.setText("Runden je Spiel:")
+        self.rpg_label.setGeometry(self.label_start_x, int(0.5 * self.screen_height - self.start_button_height/2), int(self.start_button_width/3 - 10),
+                             self.start_button_height-10)
+        self.rpg_label.setStyleSheet("font-size: 12px;"
+                                     "font-weight: bold;"
+                                     )
+
         self.rpg = QSpinBox(self)
         self.rpg.setRange(1, 5)
-        self.rpg.setPrefix("Runden: ")
-        self.rpg.setStyleSheet("font-size: 15px;"
+        self.rpg.setWrapping(True)
+        self.rpg.setPrefix("Runden = ")
+        self.rpg.setStyleSheet("font-size: 12px;"
                                "font-weight: bold;")
-        self.rpg.setGeometry(self.label_start_x, int(0.5 * self.screen_height) + 4, int(self.start_button_width/3-10), self.start_button_height-10)
+        self.rpg.setGeometry(self.label_start_x, int(0.5 * self.screen_height) + 8, int(self.start_button_width/3 - 10),
+                             self.start_button_height-15)
+
+        #Gesamtpunkte
+        self.fullpoints_label = QtWidgets.QLabel(self)
+        self.fullpoints_label.setText("Volles Ergebnis:")
+        self.fullpoints_label.setGeometry(self.label_start_x + int(2.2*self.gt_button_size), int(0.5 * self.screen_height - self.start_button_height/2), int(self.start_button_width/3 - 10),
+                             self.start_button_height-10)
+        self.fullpoints_label.setStyleSheet("font-size: 12px;"
+                                            "font-weight: bold;"
+                                            )
+
+        self.fullpoints = QtWidgets.QLabel(self)
+        # self.fullpoints.setText("000 Punkte")
+        self.fullpoints.setStyleSheet("font-size: 18px;"
+                               "font-weight: bold;")
+        self.fullpoints.setGeometry(self.label_start_x + int(2.2*self.gt_button_size), int(0.5 * self.screen_height) + 4, int(self.start_button_width/3 - 10),
+                             self.start_button_height-10)
 
 
         # Timer
@@ -259,34 +285,34 @@ class Controls(QtWidgets.QMainWindow):
         self.counter_space = 32
         self.counter_2_counter = 112
         self.counter_1_1 = QtWidgets.QLabel(self)
-        self.counter_1_1.setText('<h1 style="color:white">' + "0" + '</h1>')
+        self.counter_1_1.setText('<h2 style="color:white">' + "0" + '</h2>')
         self.counter_1_1.setGeometry(self.counter_start,
                                         self.counter_y, 50,
                                         50)
         self.counter_1_2 = QtWidgets.QLabel(self)
-        self.counter_1_2.setText('<h1 style="color:white">' + "00" + '</h1>')
+        self.counter_1_2.setText('<h2 style="color:white">' + "000" + '</h2>')
         self.counter_1_2.setGeometry(self.counter_start + self.counter_space,
                                         self.counter_y, 50,
                                         50)
 
         self.counter_2_1 = QtWidgets.QLabel(self)
-        self.counter_2_1.setText('<h1 style="color:white">' + "0" + '</h1>')
+        self.counter_2_1.setText('<h2 style="color:white">' + "0" + '</h2>')
         self.counter_2_1.setGeometry(self.counter_start + self.counter_2_counter,
                                         self.counter_y, 50,
                                         50)
         self.counter_2_2 = QtWidgets.QLabel(self)
-        self.counter_2_2.setText('<h1 style="color:white">' + "00" + '</h1>')
+        self.counter_2_2.setText('<h2 style="color:white">' + "000" + '</h2>')
         self.counter_2_2.setGeometry(self.counter_start + self.counter_2_counter +self.counter_space,
                                         self.counter_y, 50,
                                         50)
 
         self.counter_3_1 = QtWidgets.QLabel(self)
-        self.counter_3_1.setText('<h1 style="color:white">' + "0" + '</h1>')
+        self.counter_3_1.setText('<h2 style="color:white">' + "0" + '</h2>')
         self.counter_3_1.setGeometry(self.counter_start + 2*self.counter_2_counter,
                                         self.counter_y, 50,
                                         50)
         self.counter_3_2 = QtWidgets.QLabel(self)
-        self.counter_3_2.setText('<h1 style="color:white">' + "00" + '</h1>')
+        self.counter_3_2.setText('<h2 style="color:white">' + "000" + '</h2>')
         self.counter_3_2.setGeometry(self.counter_start + 2*self.counter_2_counter +self.counter_space,
                                         self.counter_y, 50,
                                         50)
@@ -677,6 +703,8 @@ def game_counter_init():
 
     controlsWindow.counter_3_1.setText(f'<h1 style="color:white"> 0 </h1>')
     controlsWindow.counter_3_2.setText(f'<h1 style="color:white"> 00 </h1>')
+
+    controlsWindow.fullpoints.setText("")
 
 
 def find_part_size(width, height, part_anz):
@@ -1902,6 +1930,7 @@ def start_game(game):
     while True:
         if controlsWindow.gt_mode and ceil(game_rounds / planned_rounds) - 1 == len(gt_game_list):
             controlsWindow.startWatch = False
+            controlsWindow.fullpoints.setText(str(gt_game_list[0][2] + gt_game_list[1][2] + gt_game_list[1][2]) + "  Punkte")
             screen.fill(GRAY)
             pygame.display.update()
             controlsWindow.rpg.setEnabled(True)
@@ -1916,6 +1945,7 @@ def start_game(game):
             uncheck("abbruch")
             controlsWindow.dir_button.setChecked(True)
             controlsWindow.rpg.setEnabled(True)
+            controlsWindow.fullpoints.setText("")
             break
 
         else:
