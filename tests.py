@@ -49,13 +49,7 @@ class ColorSlider(QtWidgets.QWidget):
 
 
 fenster = Controls()
-# fenster.setStyleSheet(
-#     ":checked{background: solid lightgreen}"
-#     ":checked{border: 4px solid red}"
-#     ":!checked{background-color: rgb(0,200,210)}"
-#     ":!checked{border: 4px solid lightgreen}"
-#     ":!checked{font-size: 13px}"
-# )
+
 fenster.show()
 
 red = ColorSlider()
@@ -120,69 +114,35 @@ fenster.blue.show()
 fenster.blue_value = QtWidgets.QLabel(fenster)
 fenster.blue_value.setGeometry(1000, 300, 100, 50)
 
-
-result = Controls()
-result.setWindowTitle('Farb-Ergebnis')
+result = QtWidgets.QLabel(fenster)
 result.setGeometry(500, 100, 300, 500)
+# result.show()
 
 def show():
-    # result.setStyleSheet(
-    #     f'background-color: rgb({int(fenster.red.value())},{int(fenster.green.value())},{int(fenster.blue.value())});'
-    #     "border: 2px solid lightGrey;"
-    #     "color: black; "
-    #     "font-size: 9px;"
-    #     "text-align: left; "
-    # )
 
     result.setStyleSheet(
-        f'background-color: rgb({int(red.slider.value())},{int(green.slider.value())},{int(blue.slider.value())});'
+        f'background-color: rgb({int(fenster.red.value())},{int(fenster.green.value())},{int(fenster.blue.value())});'
         "border: 2px solid lightGrey;"
         "color: black; "
         "font-size: 9px;"
         "text-align: left; "
     )
 
-    # fenster.red_value.setText(f'Rot: {str(fenster.red.value())}')
-    # fenster.red_value.show()
-    # fenster.green_value.setText(f'Grün: {str(fenster.green.value())}')
-    # fenster.green_value.show()
-    # fenster.blue_value.setText(f'Blau: {str(fenster.blue.value())}')
-    # fenster.blue_value.show()
 
-    fenster.red_value.setText(f'Rot: {str(red.slider.value())}')
+    fenster.red_value.setText(f'Rot: {str(fenster.red.value())}')
     fenster.red_value.show()
-    fenster.green_value.setText(f'Grün: {str(green.slider.value())}')
+    fenster.green_value.setText(f'Grün: {str(fenster.green.value())}')
     fenster.green_value.show()
-    fenster.blue_value.setText(f'Blau: {str(blue.slider.value())}')
+    fenster.blue_value.setText(f'Blau: {str(fenster.blue.value())}')
     fenster.blue_value.show()
 
     result.show()
-    result.raise_()
 
 
-# fenster.red.valueChanged.connect(show)
-# fenster.green.valueChanged.connect(show)
-# fenster.blue.valueChanged.connect(show)
+fenster.red.valueChanged.connect(show)
+fenster.green.valueChanged.connect(show)
+fenster.blue.valueChanged.connect(show)
 
-red.slider.valueChanged.connect(show)
-green.slider.valueChanged.connect(show)
-blue.slider.valueChanged.connect(show)
 
-datei = __file__
-print("___")
-print(datei)
-verz = os.getcwd()
-print("___")
-print(verz)
-
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-print(f'BASE_DIR: {BASE_DIR}')
-
-pic_dir = os.path.join(BASE_DIR,"best of puzzles")
-print(f'Bilder in: {pic_dir}')
-
-graf_dir = os.path.join(BASE_DIR,"Grafiken")
-pic = os.path.join(graf_dir,"lieblingsordner.png" )
-print(f'Bild: {pic}')
 
 sys.exit(app.exec())

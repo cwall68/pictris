@@ -1796,7 +1796,9 @@ def success(anz):
 
 
     #sucht nach Zufall ein Bild aus dem Spielbildverzeichnis
+select_pic_list = []
 def find_pic():
+    global select_pic_list
 
     if controlsWindow.dir_button.isChecked() == True:
         dir_text = controlsWindow.dir_path.toPlainText()
@@ -1818,8 +1820,16 @@ def find_pic():
                         path = os.path.join(root, file)
                         full_pic_dict[file_count] = path
 
-            select_pic = random.randint(1, file_count)
-            select_pic_file = full_pic_dict[select_pic]
+            while True:
+                select_pic = random.randint(1, file_count)
+                if select_pic in select_pic_list:
+                    pass
+                else:
+                    select_pic_list.append(select_pic)
+                    select_pic_file = full_pic_dict[select_pic]
+                    if len(select_pic_list) == file_count:
+                        select_pic_list.clear()
+                    break
         else:
             select_pic_file = r"Grafiken\lieblingsordner.png"
 
@@ -1930,7 +1940,7 @@ def start_game(game):
     while True:
         if controlsWindow.gt_mode and ceil(game_rounds / planned_rounds) - 1 == len(gt_game_list):
             controlsWindow.startWatch = False
-            controlsWindow.fullpoints.setText(str(gt_game_list[0][2] + gt_game_list[1][2] + gt_game_list[1][2]) + "  Punkte")
+            controlsWindow.fullpoints.setText(str(gt_game_list[0][2] + gt_game_list[1][2] + gt_game_list[2][2]) + "  Punkte")
             screen.fill(GRAY)
             pygame.display.update()
             controlsWindow.rpg.setEnabled(True)
