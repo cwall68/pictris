@@ -124,7 +124,7 @@ class Controls(QtWidgets.QMainWindow):
         # Dimensionen der Spielbuttons
         self.start_button_height = 40
         self.start_button_space = int(1.5 * self.start_button_height)
-        self.start_button_y = int(0.5 * self.screen_height) + int(4.2*self.start_button_space)
+        self.start_button_y = int(0.5 * self.screen_height) + int(4.2*self.start_button_space) + 15
         self.start_button_width = 2*self.label_space + self.label_width
 
         # Spielwahl
@@ -264,11 +264,11 @@ class Controls(QtWidgets.QMainWindow):
         timer.start(100)
 
         #Counter
-        self.counter_y = int(0.5 * self.screen_height) + 2 * self.label_height - 25
+        self.counter_y = int(0.5 * self.screen_height) + 2 * self.label_height - 35
 
         self.counter_label = QtWidgets.QLabel(self)
         self.counter_label.setText("Runden \ Punkte:")
-        self.counter_label.setGeometry(self.label_start_x, self.counter_y-45, self.start_button_width, self.start_button_height)
+        self.counter_label.setGeometry(self.label_start_x, self.counter_y-35, self.start_button_width, self.start_button_height)
         self.counter_label.setStyleSheet("font-size: 18px;")
 
         self.counter_window = QtWidgets.QLabel(self)
@@ -278,7 +278,7 @@ class Controls(QtWidgets.QMainWindow):
         self.counter_window_pic = QtGui.QPixmap(self.start_button_width, int(self.label_height/2))
         self.counter_window.setPixmap(self.counter_window_pic)
         self.counter_window.setGeometry(self.label_start_x,
-                                   self.counter_y, self.start_button_width,
+                                   self.counter_y+4, self.start_button_width,
                                    int(self.label_height/2))
 
         self.counter_start = self.label_start_x+32
@@ -1856,6 +1856,7 @@ def find_pic():
     elif controlsWindow.abc_button.isChecked() == True:
         select_pic_file = r"Quadrate\ABC Puzzle.jpg"
 
+    #print(select_pic_file)
     return(select_pic_file)
 
 def show_fullparts(full_partsdict):
