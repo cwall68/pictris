@@ -134,7 +134,7 @@ class Controls(QtWidgets.QMainWindow):
         self.start_label.setStyleSheet("font-size: 18px;")
 
         self.puzzle_start = QPushButton("Puzzle", self)
-        self.puzzle_start.setGeometry(self.label_start_x, self.start_button_y, self.start_button_width, self.start_button_height)
+        self.puzzle_start.setGeometry(self.label_start_x, self.start_button_y-10, self.start_button_width, self.start_button_height)
         self.puzzle_start.setCheckable(True)
         self.puzzle_start.setStyleSheet(
             ":checked{background: solid lightgreen}"
@@ -144,8 +144,13 @@ class Controls(QtWidgets.QMainWindow):
             ":!checked{font-size: 13px}"
         )
 
+        self.blind = QCheckBox("blind", self)
+        self.blind.setGeometry(self.label_start_x, self.start_button_y + int(0.6*self.start_button_space), 2*self.label_width, self.button_height)
+        self.blind.setAutoExclusive(False)
+        self.blind.setChecked(False)
+
         self.slider_start = QPushButton("Slider", self)
-        self.slider_start.setGeometry(self.label_start_x, self.start_button_y + self.start_button_space, self.start_button_width, self.start_button_height)
+        self.slider_start.setGeometry(self.label_start_x, self.start_button_y + int(1.1*self.start_button_space), self.start_button_width, self.start_button_height)
         self.slider_start.setCheckable(True)
         self.slider_start.setStyleSheet(
             ":checked{background: solid lightblue}"
@@ -156,7 +161,7 @@ class Controls(QtWidgets.QMainWindow):
         )
 
         self.shuffle = QCheckBox("Shuffle", self)
-        self.shuffle.setGeometry(self.label_start_x, self.start_button_y + int(1.8*self.start_button_space), 2*self.label_width, self.button_height)
+        self.shuffle.setGeometry(self.label_start_x, self.start_button_y + int(1.85*self.start_button_space), 2*self.label_width, self.button_height)
         self.shuffle.setAutoExclusive(False)
         self.shuffle.setChecked(False)
 
@@ -398,8 +403,8 @@ FPS = 60
 GRAY = (200, 200, 200)
 
 RED = (255, 0, 0)
-
-gt_game_list = [["puzzle", 0, 0], ["slider", 0, 0], ["pictris", 0 ,0]]
+#Spielname, Runden, Punkte, Max-Punkte
+gt_game_list = [["puzzle", 0, 0, 0], ["slider", 0, 0, 0], ["pictris", 0 ,0, 0]]
 
 #Mindestzahl an Teilen auf der längeren Bildkante
 part_anz_init = 4
@@ -540,7 +545,10 @@ def start_playing(game):
     #print(f'Game: {game}, in Liste: {gt_game_list[game_id][1]} Teile: {part_anz}')
 
     #Hier wird das oben bestimmte Spielbild in das Spieformat gebracht und in diesem Format als tmp Pic abgelegt
-    image = resize(spielbild)
+    try:
+        image = resize(spielbild)
+    except:
+        return
     width, height = image.size
     part_size, part_anz = find_part_size(width, height, part_anz)
 
@@ -608,6 +616,7 @@ def start_playing(game):
             print(count)
             #gt_game_list[0][1] = gt_game_list[0][1] + 1
             gt_game_list[0][2] = gt_game_list[0][2] + count
+            gt_game_list[0][3] = gt_game_list[0][3] + (x_anz*y_anz)
             if controlsWindow.gt_mode:
                 controlsWindow.counter_1_1.setText(f'<h1 style="color:white"> {gt_game_list[0][1]} </h1>')
             else:
@@ -635,6 +644,7 @@ def start_playing(game):
 
         if count != None:
             gt_game_list[1][2] = gt_game_list[1][2] + count
+            gt_game_list[1][3] = gt_game_list[1][3] + (x_anz*y_anz)-1
             if controlsWindow.gt_mode:
                 controlsWindow.counter_2_1.setText(f'<h1 style="color:white"> {gt_game_list[1][1]} </h1>')
             else:
@@ -654,6 +664,7 @@ def start_playing(game):
 
         if count != None:
             gt_game_list[2][2] = gt_game_list[2][2] + count
+            gt_game_list[2][3] = gt_game_list[2][3] + (x_anz*y_anz)
             if controlsWindow.gt_mode:
                 controlsWindow.counter_3_1.setText(f'<h1 style="color:white"> {gt_game_list[2][1]} </h1>')
             else:
@@ -840,10 +851,15 @@ def puzzle(full_partsdict, grid):
         ambient_sound()
         game_sounds()
 
-        #Ausgabe langsam verblassender Hintergrund
+        #Ausgabe langsam verblassender Hintergrund oder blank bei "blind-mode"
+        if controlsWindow.blind.isChecked() == True:
+            alphawert = 0
+            alpha = 0
+        else:
+            alpha = 255
         for key, value in full_partsdict.items():
             if zugzahl == 0:
-                value[0].set_alpha(255)
+                value[0].set_alpha(alpha)
                 screen.blit(value[0], value[1])
             else:
                 value[0].set_alpha(alphawert)
@@ -936,6 +952,14 @@ def puzzle(full_partsdict, grid):
                     else:
                         counter -= 1
                         pygame.mixer.Sound.play(kachelfalsch)
+                        if controlsWindow.blind.isChecked() == True:
+                            screen.fill(GRAY)
+                            blit_grid(grid, (255,255,255))
+                            full_partsdict[x_neu, y_neu][0].set_alpha(255)
+                            screen.blit(full_partsdict[x_neu, y_neu][0], full_partsdict[x_neu, y_neu][1])
+                            pygame.display.flip()
+                            pygame.time.delay(1000)
+
 
                     if fertig == False:
                         x = random. randint(0,x_anz-1)
@@ -1942,6 +1966,11 @@ def start_game(game):
         if controlsWindow.gt_mode and ceil(game_rounds / planned_rounds) - 1 == len(gt_game_list):
             controlsWindow.startWatch = False
             controlsWindow.fullpoints.setText(str(gt_game_list[0][2] + gt_game_list[1][2] + gt_game_list[2][2]) + "  Punkte")
+            result_points = gt_game_list[0][2] + gt_game_list[1][2] + gt_game_list[2][2]
+            max_points = gt_game_list[0][3] + gt_game_list[1][3] + gt_game_list[2][3]
+            #print(f'Max-Points = {gt_game_list[0][3] + gt_game_list[1][3] + gt_game_list[2][3]}')
+            result_percent = int((result_points / max_points) * 100)
+            controlsWindow.gt_start.setText(str(result_percent) + " %")
             screen.fill(GRAY)
             pygame.display.update()
             controlsWindow.rpg.setEnabled(True)
@@ -1977,6 +2006,7 @@ if __name__ == '__main__':
     controlsWindow.ambient.toggled.connect(make_game_floor)
     controlsWindow.game_sounds.toggled.connect(make_game_floor)
     controlsWindow.shuffle.toggled.connect(make_game_floor)
+    controlsWindow.blind.toggled.connect(make_game_floor)
     controlsWindow.rpg.valueChanged.connect(rpg_value)
     controlsWindow.gt_start.clicked.connect(start_gt)
     controlsWindow.end_all.clicked.connect(sys.exit)
