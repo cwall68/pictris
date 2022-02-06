@@ -958,7 +958,7 @@ def puzzle(full_partsdict, grid):
                             full_partsdict[x_neu, y_neu][0].set_alpha(255)
                             screen.blit(full_partsdict[x_neu, y_neu][0], full_partsdict[x_neu, y_neu][1])
                             pygame.display.flip()
-                            pygame.time.delay(1000)
+                            pygame.time.delay(1100)
 
 
                     if fertig == False:
@@ -1974,6 +1974,7 @@ def start_game(game):
             screen.fill(GRAY)
             pygame.display.update()
             controlsWindow.rpg.setEnabled(True)
+            uncheck("abbruch")
             break
 
         elif gt_stop or abbruch:
