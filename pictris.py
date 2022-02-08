@@ -208,7 +208,7 @@ class Controls(QtWidgets.QMainWindow):
         self.race_flag_pic.scaled(self.label_width, self.label_height)
         self.race_flag_pic = QtGui.QPixmap(self.label_width, self.label_height)
         self.race_flag.setPixmap(self.race_flag_pic)
-        self.race_flag.setGeometry(self.label_start_x + int(2.5*self.gt_button_size), int(0.5 * self.screen_height) - self.gt_offset - 15, self.label_width,
+        self.race_flag.setGeometry(self.label_start_x + int(2.3*self.gt_button_size), int(0.5 * self.screen_height) - self.gt_offset - 15, self.label_width,
                                     self.label_height)
 
         #Rundenvorwahl (rpg = rounds per game)
@@ -257,7 +257,7 @@ class Controls(QtWidgets.QMainWindow):
         # Create label to display the watch
         self.timer_label = QLabel(self)
         # Set geometry for the label
-        self.timer_label.setGeometry(self.label_start_x + int(2.5 * self.gt_button_size) - 20,
+        self.timer_label.setGeometry(self.label_start_x + int(2.2*self.gt_button_size),
                                      int(0.5 * self.screen_height) - self.gt_offset, self.label_width + 20,
                                      self.label_height - 30)
 
@@ -269,7 +269,7 @@ class Controls(QtWidgets.QMainWindow):
         timer.start(100)
 
         #Counter
-        self.counter_y = int(0.5 * self.screen_height) + 2 * self.label_height - 35
+        self.counter_y = int(0.5 * self.screen_height) + 2 * self.label_height - 15
 
         self.counter_label = QtWidgets.QLabel(self)
         self.counter_label.setText("Runden \ Punkte:")
@@ -407,7 +407,7 @@ RED = (255, 0, 0)
 gt_game_list = [["puzzle", 0, 0, 0], ["slider", 0, 0, 0], ["pictris", 0 ,0, 0]]
 
 #Mindestzahl an Teilen auf der längeren Bildkante
-part_anz_init = 4
+part_anz_min = 4
 #Bildabstand vom unteren Rand
 offset_y = 55
 #Fading-Ausgangswert
@@ -479,6 +479,8 @@ def start_playing(game):
     global fade_factor
     global part_size
     global part_anz
+    global part_anz_init
+    global part_anz_min
     global game_rounds
     global init
     global grid
@@ -506,7 +508,7 @@ def start_playing(game):
     if init == True and replay == False:
         spielbild = find_pic()
         controlsWindow.pic_path.setText(spielbild)
-        #part_anz = part_anz_init
+        part_anz_init = part_anz_min
         game_rounds = 1
     else:
         game_rounds += 1
@@ -535,14 +537,11 @@ def start_playing(game):
     elif controlsWindow.abc_button.isChecked() == True:
         part_anz = 5
 
-    # elif controlsWindow.pic_button.isChecked() == True or controlsWindow.dir_button.isChecked() == True:
-    else:
+    elif controlsWindow.pic_button.isChecked() == True or controlsWindow.dir_button.isChecked() == True:
         if controlsWindow.gt_mode:
             part_anz = part_anz_init + gt_game_list[game_id][1] - 1
         else:
             part_anz = part_anz_init + game_rounds -1
-
-    #print(f'Game: {game}, in Liste: {gt_game_list[game_id][1]} Teile: {part_anz}')
 
     #Hier wird das oben bestimmte Spielbild in das Spieformat gebracht und in diesem Format als tmp Pic abgelegt
     try:
@@ -719,16 +718,19 @@ def game_counter_init():
 
 
 def find_part_size(width, height, part_anz):
+    global part_anz_init
 
     if width > height:
         part_size = width // part_anz
         while height // part_size < 3:
             part_anz += 1
+            part_anz_init += 1
             part_size = width // part_anz
     else:
         part_size = height // part_anz
         while width // part_size < 3:
             part_anz += 1
+            part_anz_init += 1
             part_size = height // part_anz
 
     return(part_size, part_anz)
@@ -954,11 +956,17 @@ def puzzle(full_partsdict, grid):
                         pygame.mixer.Sound.play(kachelfalsch)
                         if controlsWindow.blind.isChecked() == True:
                             screen.fill(GRAY)
-                            blit_grid(grid, (255,255,255))
+                            for key, value in act_partsdict.items():
+                                if key in parts_list:
+                                    value[0].set_alpha(75)
+                                    screen.blit(value[0], value[1])
+                            blit_grid(grid, (255,255,0))
                             full_partsdict[x_neu, y_neu][0].set_alpha(255)
                             screen.blit(full_partsdict[x_neu, y_neu][0], full_partsdict[x_neu, y_neu][1])
                             pygame.display.flip()
                             pygame.time.delay(1100)
+                            for key, value in act_partsdict.items():
+                                value[0].set_alpha(255)
 
 
                     if fertig == False:
@@ -1643,6 +1651,7 @@ def slider(full_partsdict, grid):
                             pygame.display.flip()
                             success(6)
                             pygame.time.delay(1100)
+
                             if controlsWindow.dir_button.isChecked() == True or controlsWindow.pic_button.isChecked() == True:
                                 replay = False
                                 init = False
@@ -1930,6 +1939,7 @@ def start_gt():
         replay = False
         controlsWindow.gt_mode = True
         controlsWindow.gt_start.setText("Stop")
+        #controlsWindow.gt_start.setToolTip("Für Ende GT-Mode hier Klicken")
         controlsWindow.shuffle.setChecked(True)
         # planned_rounds = rpg_value()
         start_game(gt_game_list[0][0])
@@ -1946,6 +1956,7 @@ def start_gt():
         controlsWindow.startWatch = False
         controlsWindow.timer_reset()
         controlsWindow.gt_start.setText("Start")
+        #controlsWindow.gt_start.setToolTip("Für GT-Mode hier Klicken")
         game_counter_init()
         controlsWindow.pic_control.hide()
         controlsWindow.shuffle.setChecked(False)
@@ -1965,6 +1976,10 @@ def start_game(game):
     global fertig
     global abbruch
     global game_list
+    global part_anz_init
+    global part_anz_min
+    global full_partsdict
+    global act_partsdict
 
     uncheck(game)
     game_counter_init()
@@ -1985,22 +2000,40 @@ def start_game(game):
 
             result_percent = int((result_points / max_points) * 100)
             controlsWindow.gt_start.setText(str(result_percent) + " %")
-            screen.fill(GRAY)
-            pygame.display.update()
+            #controlsWindow.gt_start.setToolTip("Für Ende GT-Mode hier Klicken")
+            #controlsWindow.counter_3_2.setText(f'<h1 style="color:white"> {gt_game_list[2][2]} </h1>')
+            #controlsWindow.gt_start.setText(f'<h2 style="color:black"> {result_percent} % </h2><br/><h3 Stop</h3>')
+
             controlsWindow.rpg.setEnabled(True)
             uncheck("abbruch")
+            part_anz_init = part_anz_min
+            started = False
+            fertig = False
+            init = True
+            replay = False
+            game_rounds = 0
+            controlsWindow.pic_control.hide()
+            screen.fill(GRAY)
+            pygame.display.update()
             break
 
         elif gt_stop or abbruch:
             gt_stop = False
             abbruch = False
-            screen.fill(GRAY)
-            pygame.display.update()
             game_counter_init()
+            part_anz_init = part_anz_min
+            started = False
+            fertig = False
+            init = True
+            replay = False
+            game_rounds = 0
             uncheck("abbruch")
             controlsWindow.dir_button.setChecked(True)
             controlsWindow.rpg.setEnabled(True)
             controlsWindow.fullpoints.setText("")
+            controlsWindow.pic_control.hide()
+            screen.fill(GRAY)
+            pygame.display.update()
             break
 
         else:
