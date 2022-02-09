@@ -524,7 +524,8 @@ def start_playing(game):
         pygame.display.update()
         #gt_stop = True
         controlsWindow.startWatch = False
-        pygame.mixer.music.set_volume(0)
+        pygame.mixer.music.fadeout(2000)
+        #pygame.mixer.music.set_volume(0)
         return
 
     if controlsWindow.gt_mode:
@@ -2082,9 +2083,9 @@ def start_game(game):
             start_playing(game)
 
 
+
 if __name__ == '__main__':
     controlsWindow.show()
-    controlsWindow.dir_label.show()
     controlsWindow.puzzle_start.released.connect(lambda: init_start("puzzle"))
     controlsWindow.slider_start.released.connect(lambda: init_start("slider"))
     controlsWindow.pictris_start.released.connect(lambda: init_start("pictris"))
