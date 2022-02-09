@@ -343,6 +343,12 @@ class Controls(QtWidgets.QMainWindow):
         self.pic_control = QtWidgets.QLabel(self)
 
 
+        self.game_back2front = QPushButton("Spiel zurück in Vordergrund", self)
+        self.game_back2front.setStyleSheet("font-size: 12px;"
+                                            "font-weight: bold;")
+        self.game_back2front.setGeometry(int(self.screen_width/2), self.label_height, 3*self.label_width, int(self.label_height/4))
+        self.game_back2front.hide()
+
 
     def showCounter(self):
         # Check the value of startWatch  variable to start or stop the Stop Watch
@@ -567,6 +573,7 @@ def start_playing(game):
     controlsWindow.pic_control.setGeometry(screen_width - width - offset_y, screen_height - height - offset_y, width, height)
     controlsWindow.pic_control.setPixmap(control_pic)
     controlsWindow.pic_control.show()
+    controlsWindow.game_back2front.show()
 
     grid = make_grid(full_image_x, full_image_y, x_anz, y_anz, part_size)
     full_partsdict = make_full_partsdict(x_anz, y_anz, game)
@@ -599,6 +606,7 @@ def start_playing(game):
                 pygame.time.delay(10)
             move = False
             started = True
+
             if controlsWindow.gt_mode == True:
                 controlsWindow.race_flag.hide()
                 controlsWindow.timer_label.show()
@@ -612,7 +620,7 @@ def start_playing(game):
         count = puzzle(full_partsdict, grid)
 
         if count != None:
-            print(count)
+            #print(count)
             #gt_game_list[0][1] = gt_game_list[0][1] + 1
             gt_game_list[0][2] = gt_game_list[0][2] + count
             gt_game_list[0][3] = gt_game_list[0][3] + (x_anz*y_anz)
@@ -1823,8 +1831,10 @@ def blit_grid(grid, color):
 
 #Versteckt das Kontrollbild beim Bildwechsel und bringt das Spielfeld wieder nach vorn
 def after_toggle():
-    controlsWindow.pic_control.hide()
+    if controlsWindow.gt_start.isChecked() == False:
+        controlsWindow.pic_control.hide()
     make_game_floor("have fun")
+
 
 #Blinken und Klingeln bei Erfolg
 def success(anz):
@@ -1921,6 +1931,7 @@ def rpg_value():
         make_game_floor(gt_game_list[0])
     else:
         planned_rounds = controlsWindow.rpg.value()
+        make_game_floor(gt_game_list[0])
 
     return(planned_rounds)
 
@@ -1928,28 +1939,47 @@ planned_rounds = rpg_value()
 
 def start_gt():
     global gt_stop
+    global abbruch
     global gt_game_list
     global planned_rounds
     global init
     global replay
 
     #if controlsWindow.gt_mode == False:
-    if controlsWindow.gt_start.isChecked() == True and not gt_stop:
+    if controlsWindow.gt_start.isChecked() == True:
         init = True
         replay = False
         controlsWindow.gt_mode = True
         controlsWindow.gt_start.setText("Stop")
-        #controlsWindow.gt_start.setToolTip("Für Ende GT-Mode hier Klicken")
         controlsWindow.shuffle.setChecked(True)
-        # planned_rounds = rpg_value()
+
+        controlsWindow.puzzle_start.setEnabled(False)
+        controlsWindow.slider_start.setEnabled(False)
+        controlsWindow.pictris_start.setEnabled(False)
+
+
         start_game(gt_game_list[0][0])
-    else:
+    #elif controlsWindow.gt_mode == True:
+    elif controlsWindow.gt_start.isChecked() == False:
         #wird gebraucht damit nach GT-Ende direkter Neustart funktioniert
-        if controlsWindow.gt_mode and ceil(game_rounds / planned_rounds) - 1 == len(gt_game_list):
-            gt_stop = False
-            controlsWindow.dir_button.setChecked(True)
-        else:
-            gt_stop = True
+        # if controlsWindow.gt_mode and ceil(game_rounds / planned_rounds) - 1 == len(gt_game_list):
+        #     gt_stop = False
+        #     abbruch = False
+        #     controlsWindow.gt_mode = False
+        #     controlsWindow.dir_button.setChecked(True)
+        # else:
+        #     gt_stop = True
+
+        gt_stop = True
+        abbruch = True
+        #controlsWindow.gt_mode = False
+        controlsWindow.dir_button.setChecked(True)
+
+        controlsWindow.puzzle_start.setEnabled(True)
+        controlsWindow.slider_start.setEnabled(True)
+        controlsWindow.pictris_start.setEnabled(True)
+
+
         controlsWindow.gt_mode = False
         controlsWindow.timer_label.hide()
         controlsWindow.race_flag.show()
@@ -1964,6 +1994,21 @@ def start_gt():
         uncheck("abbruch")
         screen.fill(GRAY)
         pygame.display.update()
+
+
+
+def init_start(game):
+    if controlsWindow.gt_start.isChecked() == True:
+        if game == "puzzle":
+            controlsWindow.puzzle_start.setChecked(False)
+        elif game == "slider":
+            controlsWindow.slider_start.setChecked(False)
+        elif game == "pictris":
+            controlsWindow.pictris_start.setChecked(False)
+        make_game_floor(game)
+        return
+    else:
+        start_game(game)
 
 
 def start_game(game):
@@ -2000,9 +2045,6 @@ def start_game(game):
 
             result_percent = int((result_points / max_points) * 100)
             controlsWindow.gt_start.setText(str(result_percent) + " %")
-            #controlsWindow.gt_start.setToolTip("Für Ende GT-Mode hier Klicken")
-            #controlsWindow.counter_3_2.setText(f'<h1 style="color:white"> {gt_game_list[2][2]} </h1>')
-            #controlsWindow.gt_start.setText(f'<h2 style="color:black"> {result_percent} % </h2><br/><h3 Stop</h3>')
 
             controlsWindow.rpg.setEnabled(True)
             uncheck("abbruch")
@@ -2043,9 +2085,9 @@ def start_game(game):
 if __name__ == '__main__':
     controlsWindow.show()
     controlsWindow.dir_label.show()
-    controlsWindow.puzzle_start.clicked.connect(lambda: start_game("puzzle"))
-    controlsWindow.slider_start.released.connect(lambda: start_game("slider"))
-    controlsWindow.pictris_start.released.connect(lambda: start_game("pictris"))
+    controlsWindow.puzzle_start.released.connect(lambda: init_start("puzzle"))
+    controlsWindow.slider_start.released.connect(lambda: init_start("slider"))
+    controlsWindow.pictris_start.released.connect(lambda: init_start("pictris"))
     controlsWindow.nine_button.toggled.connect(after_toggle)
     controlsWindow.sixteen_button.toggled.connect(after_toggle)
     controlsWindow.abc_button.toggled.connect(after_toggle)
@@ -2057,7 +2099,8 @@ if __name__ == '__main__':
     controlsWindow.blind.toggled.connect(make_game_floor)
     controlsWindow.rpg.valueChanged.connect(rpg_value)
     controlsWindow.gt_start.clicked.connect(start_gt)
-    controlsWindow.end_all.clicked.connect(sys.exit)
+    controlsWindow.end_all.clicked.connect(lambda: sys.exit(0))
+    controlsWindow.game_back2front.clicked.connect(make_game_floor)
 
 
 #pygame.quit()
