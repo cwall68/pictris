@@ -229,6 +229,11 @@ class Controls(QtWidgets.QMainWindow):
         self.rpg.setGeometry(self.label_start_x, int(0.5 * self.screen_height) + 8, int(self.start_button_width/3 - 10),
                              self.start_button_height-15)
 
+        #Hall of Fame Komponenten
+        self.call_h_o_f = QPushButton("Hall of Fame", self)
+        self. call_h_o_f.setGeometry(self.label_start_x, int(0.5 * self.screen_height) + self.label_height, int(self.start_button_width/3 - 10),
+                             self.start_button_height-15)
+
         #Gesamtpunkte
         self.fullpoints_label = QtWidgets.QLabel(self)
         self.fullpoints_label.setText("Ergebnis-Punkte:")
@@ -295,7 +300,7 @@ class Controls(QtWidgets.QMainWindow):
                                         self.counter_y, 50,
                                         50)
         self.counter_1_2 = QtWidgets.QLabel(self)
-        self.counter_1_2.setText('<h2 style="color:white">' + "000" + '</h2>')
+        self.counter_1_2.setText('<h2 style="color:white">' + "00" + '</h2>')
         self.counter_1_2.setGeometry(self.counter_start + self.counter_space,
                                         self.counter_y, 50,
                                         50)
@@ -306,7 +311,7 @@ class Controls(QtWidgets.QMainWindow):
                                         self.counter_y, 50,
                                         50)
         self.counter_2_2 = QtWidgets.QLabel(self)
-        self.counter_2_2.setText('<h2 style="color:white">' + "000" + '</h2>')
+        self.counter_2_2.setText('<h2 style="color:white">' + "00" + '</h2>')
         self.counter_2_2.setGeometry(self.counter_start + self.counter_2_counter +self.counter_space,
                                         self.counter_y, 50,
                                         50)
@@ -317,7 +322,7 @@ class Controls(QtWidgets.QMainWindow):
                                         self.counter_y, 50,
                                         50)
         self.counter_3_2 = QtWidgets.QLabel(self)
-        self.counter_3_2.setText('<h2 style="color:white">' + "000" + '</h2>')
+        self.counter_3_2.setText('<h2 style="color:white">' + "00" + '</h2>')
         self.counter_3_2.setGeometry(self.counter_start + 2*self.counter_2_counter +self.counter_space,
                                         self.counter_y, 50,
                                         50)
@@ -392,11 +397,24 @@ class Controls(QtWidgets.QMainWindow):
         self.timer_label.setText(str(self.counter))
 
 
+class HallOfFame(QWidget):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+
+        self.screen_width, self.screen_height = pyautogui.size()
+        #self.statusBar()
+        self.setGeometry(0, 0, int(self.screen_width/4), int(self.screen_height/2.5))
+        self.setWindowTitle('Hall of Fame')
+
+
 #Anlegen des Fensters mit den Auswhl- und Kontrollfeldern für das Spiel
 controlsWindow = Controls()
 screen_width = controlsWindow.screen_width
 screen_height = controlsWindow.screen_height
 controlsWindow.setGeometry(0, 0, screen_width, screen_height)
+
+fameWindow = HallOfFame()
+# fameWindow.show()
 
 controlsWindow.timer_label.hide()
 
@@ -703,14 +721,17 @@ def game_counter_init():
 
     gt_game_list[0][1] = 0
     gt_game_list[0][2] = 0
+    gt_game_list[0][3] = 0
     # controlsWindow.counter_1_1.setText(f'<h1 style="color:white"> {gt_game_list[0][1]} </h1>')
     # controlsWindow.counter_1_2.setText(f'<h1 style="color:white"> {gt_game_list[0][2]} </h1>')
     gt_game_list[1][1] = 0
     gt_game_list[1][2] = 0
+    gt_game_list[1][3] = 0
     # controlsWindow.counter_2_1.setText(f'<h1 style="color:white"> {gt_game_list[1][1]} </h1>')
     # controlsWindow.counter_2_2.setText(f'<h1 style="color:white"> {gt_game_list[1][2]} </h1>')
     gt_game_list[2][1] = 0
     gt_game_list[2][2] = 0
+    gt_game_list[2][3] = 0
     # controlsWindow.counter_3_1.setText(f'<h1 style="color:white"> {gt_game_list[2][1]} </h1>')
     # controlsWindow.counter_3_2.setText(f'<h1 style="color:white"> {gt_game_list[2][2]} </h1>')
 
@@ -1927,7 +1948,8 @@ def rpg_value():
     global planned_rounds
     global game
 
-    if started:
+    if controlsWindow.gt_start.isChecked() == True:
+    # if started:
         controlsWindow.rpg.setValue(planned_rounds)
         make_game_floor(gt_game_list[0])
     else:
@@ -1950,6 +1972,8 @@ def start_gt():
     if controlsWindow.gt_start.isChecked() == True:
         init = True
         replay = False
+        abbruch = False
+        gt_stop = False
         controlsWindow.gt_mode = True
         controlsWindow.gt_start.setText("Stop")
         controlsWindow.shuffle.setChecked(True)
@@ -2035,6 +2059,7 @@ def start_game(game):
     init = True
     replay = False
     game_rounds = 0
+    abbruch = False
 
     while True:
         if controlsWindow.gt_mode and ceil(game_rounds / planned_rounds) - 1 == len(gt_game_list):
@@ -2082,6 +2107,16 @@ def start_game(game):
         else:
             start_playing(game)
 
+fame_show = False
+def show_h_o_f():
+    global fame_show
+
+    if fame_show == False:
+        fameWindow.show()
+        fame_show = True
+    elif fame_show == True:
+        fameWindow.hide()
+        fame_show = False
 
 
 if __name__ == '__main__':
@@ -2102,6 +2137,7 @@ if __name__ == '__main__':
     controlsWindow.gt_start.clicked.connect(start_gt)
     controlsWindow.end_all.clicked.connect(lambda: sys.exit(0))
     controlsWindow.game_back2front.clicked.connect(make_game_floor)
+    controlsWindow.call_h_o_f.clicked.connect(show_h_o_f)
 
 
 #pygame.quit()
