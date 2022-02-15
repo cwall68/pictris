@@ -231,13 +231,17 @@ class Controls(QtWidgets.QMainWindow):
 
         #Hall of Fame Komponenten
         self.call_h_o_f = QPushButton("Hall of Fame", self)
-        self. call_h_o_f.setGeometry(self.label_start_x, int(0.5 * self.screen_height) + self.label_height, int(self.start_button_width/3 - 10),
+        self. call_h_o_f.setGeometry(self.label_start_x, int(0.5 * self.screen_height) + self.label_height-5, int(self.start_button_width/3 ),
+                             self.start_button_height-15)
+
+        self.fame_save = QPushButton("Save to Fame", self)
+        self. fame_save.setGeometry(self.label_start_x + int(2.1*self.gt_button_size)-15, int(0.5 * self.screen_height) + self.label_height-5, int(self.start_button_width/3 ),
                              self.start_button_height-15)
 
         #Gesamtpunkte
         self.fullpoints_label = QtWidgets.QLabel(self)
         self.fullpoints_label.setText("Ergebnis-Punkte:")
-        self.fullpoints_label.setGeometry(self.label_start_x + int(2.2*self.gt_button_size), int(0.5 * self.screen_height - self.start_button_height/2), int(self.start_button_width/3 - 10),
+        self.fullpoints_label.setGeometry(self.label_start_x + int(2.1*self.gt_button_size), int(0.5 * self.screen_height - self.start_button_height/2), int(self.start_button_width/3 ),
                              self.start_button_height-10)
         self.fullpoints_label.setStyleSheet("font-size: 12px;"
                                             "font-weight: bold;"
@@ -247,7 +251,7 @@ class Controls(QtWidgets.QMainWindow):
         # self.fullpoints.setText("000 Punkte")
         self.fullpoints.setStyleSheet("font-size: 18px;"
                                "font-weight: bold;")
-        self.fullpoints.setGeometry(self.label_start_x + int(2.2*self.gt_button_size), int(0.5 * self.screen_height) + 4, int(self.start_button_width/3 - 10),
+        self.fullpoints.setGeometry(self.label_start_x + int(2.1*self.gt_button_size), int(0.5 * self.screen_height) + 4, int(self.start_button_width/3 - 10),
                              self.start_button_height-10)
 
 
@@ -262,7 +266,7 @@ class Controls(QtWidgets.QMainWindow):
         # Create label to display the watch
         self.timer_label = QLabel(self)
         # Set geometry for the label
-        self.timer_label.setGeometry(self.label_start_x + int(2.2*self.gt_button_size),
+        self.timer_label.setGeometry(self.label_start_x + int(2.1*self.gt_button_size),
                                      int(0.5 * self.screen_height) - self.gt_offset, self.label_width + 20,
                                      self.label_height - 30)
 
@@ -274,7 +278,7 @@ class Controls(QtWidgets.QMainWindow):
         timer.start(100)
 
         #Counter
-        self.counter_y = int(0.5 * self.screen_height) + 2 * self.label_height - 15
+        self.counter_y = int(0.5 * self.screen_height) + 2 * self.label_height - 5
 
         self.counter_label = QtWidgets.QLabel(self)
         self.counter_label.setText("Runden \ Punkte:")
@@ -400,11 +404,23 @@ class Controls(QtWidgets.QMainWindow):
 class HallOfFame(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
-
         self.screen_width, self.screen_height = pyautogui.size()
+        self.width = int(self.screen_width/4)
+        self.height = int(self.screen_height/2.5)
         #self.statusBar()
-        self.setGeometry(0, 0, int(self.screen_width/4), int(self.screen_height/2.5))
+        self.setGeometry(0, 0, self.width, self.height)
         self.setWindowTitle('Hall of Fame')
+        # layout = QVBoxLayout()
+        # self.label_1 = QLabel("Ein-Runden-Rekorde")
+        # layout.addWidget(self.label_1)
+        # self.label_2 = QLabel("Zwei-Runden-Rekorde")
+        # layout.addWidget(self.label_2)
+        # self.label_3 = QLabel("Drei-Runden-Rekorde")
+        # layout.addWidget(self.label_3)
+        # self.setLayout(layout)
+        # self.label_4 = QLabel("Vier-Runden-Rekorde")
+        # layout.addWidget(self.label_4)
+
 
 
 #Anlegen des Fensters mit den Auswhl- und Kontrollfeldern für das Spiel
@@ -418,7 +434,7 @@ fameWindow = HallOfFame()
 
 controlsWindow.timer_label.hide()
 
-pygame.init()
+# pygame.init()
 
 clock = pygame.time.Clock()
 
@@ -461,12 +477,13 @@ w_floor, h_floor = screen_width - screen_width // 4, screen_height
 game_x = screen_width - w_floor
 game_y = screen_height - h_floor - offset_y
 
+pygame.init()
+
 pygame.mixer.music.load(r"Sounds\02 - Abiding Love.mp3")
 #Parameter -1 für Dauerschleife
 pygame.mixer.music.play(-1)
 pygame.mixer.music.set_volume(0)
-# game_ambient = pygame.mixer.Sound(r"Sounds\02 - Abiding Love.mp3")
-# game_ambient.set_volume(0.1)
+
 kachelpasst = pygame.mixer.Sound(r"Sounds\salamisound-3402567-tischglocke-einmal.mp3")
 kachelplop = pygame.mixer.Sound(r"Sounds\245645__unfa__cartoon-pop-clean.wav")
 kachelfalsch = pygame.mixer.Sound(r"Sounds\salamisound-4681975-kleine-hupe-einmal-kurz.mp3")
@@ -2050,6 +2067,8 @@ def start_game(game):
     global part_anz_min
     global full_partsdict
     global act_partsdict
+    global result_percent
+    global result_points
 
     uncheck(game)
     game_counter_init()
@@ -2107,9 +2126,103 @@ def start_game(game):
         else:
             start_playing(game)
 
+def make_contender_line(i):
+    global contenders
+
+    hbox_contenders = QHBoxLayout()
+
+    label_result_name = QtWidgets.QLabel()
+    label_result_rounds = QtWidgets.QLabel()
+    label_result_percent = QtWidgets.QLabel()
+    label_result_points = QtWidgets.QLabel()
+    label_result_pic = QtWidgets.QLabel()
+
+    label_result_name.setText(contenders[i][0])
+    label_result_rounds.setText(str(contenders[i][1]))
+    label_result_percent.setText(str(contenders[i][2]))
+    label_result_points.setText(str(contenders[i][3]))
+    label_result_pic.setText(contenders[i][4])
+
+    hbox_contenders.addWidget(label_result_name)
+    hbox_contenders.addWidget(label_result_rounds)
+    hbox_contenders.addWidget(label_result_percent)
+    hbox_contenders.addWidget(label_result_points)
+    hbox_contenders.addWidget(label_result_pic)
+
+    return(hbox_contenders)
+
+def make_fame_window():
+    global contenders
+
+    fameWindow.formLayout = QFormLayout()
+    fameWindow.groupbox = QGroupBox("Strasse der Besten")
+
+    hbox_labels = QHBoxLayout()
+    # hbox_contenders = QHBoxLayout()
+
+    label_name = QtWidgets.QLabel("Spieler")
+    label_rounds = QtWidgets.QLabel("Runden")
+    label_percent = QtWidgets.QLabel("%")
+    label_points = QtWidgets.QLabel("Punkte")
+    label_pic = QtWidgets.QLabel("Bild")
+
+    hbox_labels.addWidget(label_name)
+    hbox_labels.addWidget(label_rounds)
+    hbox_labels.addWidget(label_percent)
+    hbox_labels.addWidget(label_points)
+    hbox_labels.addWidget(label_pic)
+
+    fameWindow.formLayout.addRow(hbox_labels)
+
+    for i in range(len(contenders)):
+        hbox_line = make_contender_line(i)
+        fameWindow.formLayout.addRow(hbox_line)
+
+    fameWindow.groupbox.setLayout(fameWindow.formLayout)
+
+    scroll = QScrollArea()
+    scroll.setWidget(fameWindow.groupbox)
+    scroll.setWidgetResizable(True)
+    scroll.setFixedHeight(fameWindow.width)
+    scroll.setFixedWidth(fameWindow.height)
+
+    fameWindow.layout = QVBoxLayout()
+    fameWindow.layout.addWidget(scroll)
+    fameWindow.layoutexists = True
+
+    fameWindow.setLayout(fameWindow.layout)
+
+contenders = []
+#contenders.append(["ds", 1, 77, 12, "img_33.jpg"])
+def save_fame():
+    global contenders
+    global result_percent
+    global spielbild
+    global gt_game_list
+    global result_points
+
+    try:
+        gt_result = []
+        name = "CC"
+        gt_result.append(name)
+        rounds = gt_game_list[2][1]
+        gt_result.append(rounds)
+        gt_result.append(result_percent)
+        points = result_points
+        gt_result.append(points)
+        gt_result.append(spielbild)
+
+        contenders.append(gt_result)
+
+    except:
+        pass
+
+
 fame_show = False
 def show_h_o_f():
     global fame_show
+
+    make_fame_window()
 
     if fame_show == False:
         fameWindow.show()
@@ -2137,6 +2250,7 @@ if __name__ == '__main__':
     controlsWindow.gt_start.clicked.connect(start_gt)
     controlsWindow.end_all.clicked.connect(lambda: sys.exit(0))
     controlsWindow.game_back2front.clicked.connect(make_game_floor)
+    controlsWindow.fame_save.clicked.connect(save_fame)
     controlsWindow.call_h_o_f.clicked.connect(show_h_o_f)
 
 
