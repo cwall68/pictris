@@ -202,6 +202,21 @@ class Controls(QtWidgets.QMainWindow):
             ":!checked{color: white}"
         )
 
+        self.player_label = QtWidgets.QLabel(self)
+        self.player_label.setText("Spieler:")
+        self.player_label.setGeometry(QtCore.QRect(self.label_start_x + int(1.1 * self.label_space),
+                                             int(0.5 * self.screen_height) - int(1.2*self.gt_offset),
+                                             int(self.start_button_width / 4),
+                                             self.start_button_height - 15))
+        self.player_label.setStyleSheet("font-size: 12px;"
+                               "font-weight: bold;")
+
+        self.player = QtWidgets.QComboBox(self)
+        self.player.setGeometry(QtCore.QRect(self.label_start_x + int(1.1*self.label_space), int(0.5 * self.screen_height) - self.gt_offset+10, int(self.start_button_width/4),
+                             self.start_button_height-15))
+        self.player.setEditable(True)
+        self.player.setObjectName("Spieler")
+
         self.race_flag = QtWidgets.QLabel(self)
         self.race_flag_pic_path = os.path.join(graf_dir, "race_start")
         self.race_flag_pic = QtGui.QPixmap(self.race_flag_pic_path)
@@ -238,22 +253,6 @@ class Controls(QtWidgets.QMainWindow):
         self.gt_onoff_label.setStyleSheet("font-size: 10px;")
 
         #Hall of Fame Komponenten
-        self.player_label = QtWidgets.QLabel(self)
-        self.player_label.setText("Spieler:")
-        self.player_label.setGeometry(QtCore.QRect(self.label_start_x + int(1.1 * self.label_space),
-                                             int(0.5 * self.screen_height) - int(1.2*self.gt_offset),
-                                             int(self.start_button_width / 4),
-                                             self.start_button_height - 15))
-        self.player_label.setStyleSheet("font-size: 12px;"
-                               "font-weight: bold;")
-
-        self.player = QtWidgets.QComboBox(self)
-        self.player.setGeometry(QtCore.QRect(self.label_start_x + int(1.1*self.label_space), int(0.5 * self.screen_height) - self.gt_offset+10, int(self.start_button_width/4),
-                             self.start_button_height-15))
-        self.player.setEditable(True)
-        self.player.setObjectName("Spieler")
-
-
         self.call_h_o_f = QPushButton("Hall of Fame", self)
         self. call_h_o_f.setGeometry(self.label_start_x, int(0.5 * self.screen_height) + int(0.9*self.label_height), int(self.start_button_width/3 ),
                              self.start_button_height-15)
@@ -2156,21 +2155,36 @@ def make_contender_line(i):
     hbox_contenders = QHBoxLayout()
 
     label_result_name = QtWidgets.QLabel()
+    label_result_name.setMinimumSize(QSize(40, 20))
+    label_result_name.setMaximumSize(QSize(40, 20))
     label_result_rounds = QtWidgets.QLabel()
+    label_result_rounds.setMaximumSize(QSize(40, 20))
+    label_result_rounds.setMinimumSize(QSize(40, 20))
     label_result_percent = QtWidgets.QLabel()
+    label_result_percent.setMaximumSize(QSize(40, 20))
+    label_result_percent.setMinimumSize(QSize(40, 20))
     label_result_points = QtWidgets.QLabel()
+    label_result_points.setMaximumSize(QSize(40, 20))
+    label_result_points.setMinimumSize(QSize(40, 20))
+    label_result_time = QtWidgets.QLabel()
+    label_result_time.setMaximumSize(QSize(60, 20))
+    label_result_time.setMinimumSize(QSize(60, 20))
     label_result_pic = QtWidgets.QLabel()
+    label_result_pic.setMaximumSize(QSize(180, 20))
+    label_result_pic.setMinimumSize(QSize(180, 20))
 
     label_result_name.setText(contenders[i][0])
     label_result_rounds.setText(str(contenders[i][1]))
     label_result_percent.setText(str(contenders[i][2]))
     label_result_points.setText(str(contenders[i][3]))
-    label_result_pic.setText(contenders[i][4])
+    label_result_time.setText(str(contenders[i][4]))
+    label_result_pic.setText(contenders[i][5])
 
     hbox_contenders.addWidget(label_result_name)
     hbox_contenders.addWidget(label_result_rounds)
     hbox_contenders.addWidget(label_result_percent)
     hbox_contenders.addWidget(label_result_points)
+    hbox_contenders.addWidget(label_result_time)
     hbox_contenders.addWidget(label_result_pic)
 
     return(hbox_contenders)
@@ -2178,22 +2192,31 @@ def make_contender_line(i):
 def make_fame_window():
     global contenders
 
+    #print(contenders)
+
     fameWindow.formLayout = QFormLayout()
     fameWindow.groupbox = QGroupBox("Strasse der Besten")
 
     hbox_labels = QHBoxLayout()
-    # hbox_contenders = QHBoxLayout()
 
     label_name = QtWidgets.QLabel("Spieler")
+    label_name.setMaximumSize(QSize(40, 20))
     label_rounds = QtWidgets.QLabel("Runden")
-    label_percent = QtWidgets.QLabel("%")
+    label_rounds.setMaximumSize(QSize(40, 20))
+    label_percent = QtWidgets.QLabel("Prozent")
+    label_percent.setMaximumSize(QSize(40, 20))
     label_points = QtWidgets.QLabel("Punkte")
+    label_points.setMaximumSize(QSize(40, 20))
+    label_time = QtWidgets.QLabel("Zeit")
+    label_time.setMaximumSize(QSize(60, 20))
     label_pic = QtWidgets.QLabel("Bild")
+    label_pic.setMaximumSize(QSize(180, 20))
 
     hbox_labels.addWidget(label_name)
     hbox_labels.addWidget(label_rounds)
     hbox_labels.addWidget(label_percent)
     hbox_labels.addWidget(label_points)
+    hbox_labels.addWidget(label_time)
     hbox_labels.addWidget(label_pic)
 
     fameWindow.formLayout.addRow(hbox_labels)
@@ -2201,6 +2224,7 @@ def make_fame_window():
     for i in range(len(contenders)):
         hbox_line = make_contender_line(i)
         fameWindow.formLayout.addRow(hbox_line)
+        print(f'contender {i}')
 
     fameWindow.groupbox.setLayout(fameWindow.formLayout)
 
@@ -2216,14 +2240,25 @@ def make_fame_window():
 
     fameWindow.setLayout(fameWindow.layout)
 
+
+def clear_fame():
+
+    for label in fameWindow.groupbox.findChildren(QtWidgets.QLabel):
+        label.deleteLater()
+    fameWindow.layout.deleteLater()
+    # fameWindow.layoutexists = False
+    fameWindow.close()
+    fameWindow.destroy()
+
 contenders = []
-contenders.append(["ds", 1, 77, 12, "img_33.jpg"])
+contenders.append(["ds", 1, 77, 12,"01:33:09", "best of puzzles\IMG_4556.jpeg"])
 def save_fame():
     global contenders
     global result_percent
     global spielbild
     global gt_game_list
     global result_points
+    global fame_show
 
     try:
         gt_result = []
@@ -2234,6 +2269,11 @@ def save_fame():
         gt_result.append(result_percent)
         points = result_points
         gt_result.append(points)
+        doc = QtGui.QTextDocument()
+        doc.setHtml(controlsWindow.timer_label.text())
+        time = doc.toPlainText()
+        print(time)
+        gt_result.append(time)
         gt_result.append(spielbild)
 
         contenders.append(gt_result)
@@ -2241,18 +2281,26 @@ def save_fame():
     except:
         pass
 
+    try:
+        clear_fame()
+        fame_show = False
+        print("geschlossen")
+    except:
+        pass
+
+    make_game_floor()
+
 
 fame_show = False
 def show_h_o_f():
     global fame_show
 
-    make_fame_window()
-
     if fame_show == False:
+        make_fame_window()
         fameWindow.show()
         fame_show = True
     elif fame_show == True:
-        fameWindow.hide()
+        clear_fame()
         fame_show = False
 
 
