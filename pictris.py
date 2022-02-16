@@ -229,13 +229,37 @@ class Controls(QtWidgets.QMainWindow):
         self.rpg.setGeometry(self.label_start_x, int(0.5 * self.screen_height) + 8, int(self.start_button_width/3 - 10),
                              self.start_button_height-15)
 
+        self.gt_onoff_label = QtWidgets.QLabel(self)
+        self.gt_onoff_label.setText("GT an/aus")
+        self.gt_onoff_label.setGeometry(QtCore.QRect(self.label_start_x + int(1.2 * self.label_space),
+                                             int(0.5 * self.screen_height) + int(0.9*self.label_height),
+                                             int(self.start_button_width / 4),
+                                             self.start_button_height - 15))
+        self.gt_onoff_label.setStyleSheet("font-size: 10px;")
+
         #Hall of Fame Komponenten
+        self.player_label = QtWidgets.QLabel(self)
+        self.player_label.setText("Spieler:")
+        self.player_label.setGeometry(QtCore.QRect(self.label_start_x + int(1.1 * self.label_space),
+                                             int(0.5 * self.screen_height) - int(1.2*self.gt_offset),
+                                             int(self.start_button_width / 4),
+                                             self.start_button_height - 15))
+        self.player_label.setStyleSheet("font-size: 12px;"
+                               "font-weight: bold;")
+
+        self.player = QtWidgets.QComboBox(self)
+        self.player.setGeometry(QtCore.QRect(self.label_start_x + int(1.1*self.label_space), int(0.5 * self.screen_height) - self.gt_offset+10, int(self.start_button_width/4),
+                             self.start_button_height-15))
+        self.player.setEditable(True)
+        self.player.setObjectName("Spieler")
+
+
         self.call_h_o_f = QPushButton("Hall of Fame", self)
-        self. call_h_o_f.setGeometry(self.label_start_x, int(0.5 * self.screen_height) + self.label_height-5, int(self.start_button_width/3 ),
+        self. call_h_o_f.setGeometry(self.label_start_x, int(0.5 * self.screen_height) + int(0.9*self.label_height), int(self.start_button_width/3 ),
                              self.start_button_height-15)
 
         self.fame_save = QPushButton("Save to Fame", self)
-        self. fame_save.setGeometry(self.label_start_x + int(2.1*self.gt_button_size)-15, int(0.5 * self.screen_height) + self.label_height-5, int(self.start_button_width/3 ),
+        self. fame_save.setGeometry(self.label_start_x + int(2.1*self.gt_button_size)-15, int(0.5 * self.screen_height) + int(0.9*self.label_height), int(self.start_button_width/3 ),
                              self.start_button_height-15)
 
         #Gesamtpunkte
@@ -2193,7 +2217,7 @@ def make_fame_window():
     fameWindow.setLayout(fameWindow.layout)
 
 contenders = []
-#contenders.append(["ds", 1, 77, 12, "img_33.jpg"])
+contenders.append(["ds", 1, 77, 12, "img_33.jpg"])
 def save_fame():
     global contenders
     global result_percent
@@ -2203,7 +2227,7 @@ def save_fame():
 
     try:
         gt_result = []
-        name = "CC"
+        name = controlsWindow.player.currentText()
         gt_result.append(name)
         rounds = gt_game_list[2][1]
         gt_result.append(rounds)
