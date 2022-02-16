@@ -2251,7 +2251,7 @@ def clear_fame():
     fameWindow.destroy()
 
 contenders = []
-contenders.append(["ds", 1, 77, 12,"01:33:09", "best of puzzles\IMG_4556.jpeg"])
+#contenders.append(["ds", 1, 77, 12,"01:33:09", "best of puzzles\IMG_4556.jpeg"])
 def save_fame():
     global contenders
     global result_percent
@@ -2281,14 +2281,13 @@ def save_fame():
     except:
         pass
 
-    try:
+    if fame_show == True:
         clear_fame()
         fame_show = False
-        print("geschlossen")
-    except:
-        pass
+    else:
+        show_h_o_f()
 
-    make_game_floor()
+    make_game_floor("have fun")
 
 
 fame_show = False
