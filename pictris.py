@@ -6,6 +6,8 @@ from PIL import Image
 import random
 import math
 from math import ceil
+import csv
+from operator import itemgetter
 
 
 from PyQt5 import QtCore, QtGui,QtWidgets
@@ -468,6 +470,35 @@ GRAY = (200, 200, 200)
 RED = (255, 0, 0)
 #Spielname, Runden, Punkte, Max-Punkte
 gt_game_list = [["puzzle", 0, 0, 0], ["slider", 0, 0, 0], ["pictris", 0 ,0, 0]]
+
+#Einlesen der List of Fame
+contenders = []
+# try:
+with open(r'C:\Users\User\PycharmProjects\pictris\contenders.csv', newline = '') as players_file:
+    player_infos = csv.reader(players_file, quotechar='"', quoting=csv.QUOTE_NONNUMERIC, delimiter=";")
+    for line in player_infos:
+        print(line)
+        contenders.append(line)
+# with open(r'C:\Users\User\PycharmProjects\pictris\contenders.csv', newline = '') as players_file:
+#     player_infos = csv.reader(players_file, quotechar='"', delimiter=";")
+#     for line in player_infos:
+#         print(line)
+#         contenders.append(line)
+# except:
+#      pass
+
+# Spielerliste aus List of Fame
+players = []
+for line in contenders:
+    if line[0] not in players:
+        players.append(line[0])
+
+# Spieler in GT-Spieler-Box laden
+controlsWindow.player.addItem("???")
+players.sort()
+for element in players:
+    controlsWindow.player.addItem(element)
+controlsWindow.player.setCurrentText("???")
 
 #Mindestzahl an Teilen auf der längeren Bildkante
 part_anz_min = 4
@@ -2007,6 +2038,7 @@ def start_gt():
     global planned_rounds
     global init
     global replay
+    global players
 
     #if controlsWindow.gt_mode == False:
     if controlsWindow.gt_start.isChecked() == True:
@@ -2022,19 +2054,16 @@ def start_gt():
         controlsWindow.slider_start.setEnabled(False)
         controlsWindow.pictris_start.setEnabled(False)
 
+        player = controlsWindow.player.currentText()
+        if player in players:
+            pass
+        else:
+            players.append(player)
+            controlsWindow.player.addItem(player)
 
         start_game(gt_game_list[0][0])
-    #elif controlsWindow.gt_mode == True:
-    elif controlsWindow.gt_start.isChecked() == False:
-        #wird gebraucht damit nach GT-Ende direkter Neustart funktioniert
-        # if controlsWindow.gt_mode and ceil(game_rounds / planned_rounds) - 1 == len(gt_game_list):
-        #     gt_stop = False
-        #     abbruch = False
-        #     controlsWindow.gt_mode = False
-        #     controlsWindow.dir_button.setChecked(True)
-        # else:
-        #     gt_stop = True
 
+    elif controlsWindow.gt_start.isChecked() == False:
         gt_stop = True
         abbruch = True
         #controlsWindow.gt_mode = False
@@ -2051,7 +2080,8 @@ def start_gt():
         controlsWindow.startWatch = False
         controlsWindow.timer_reset()
         controlsWindow.gt_start.setText("Start")
-        #controlsWindow.gt_start.setToolTip("Für GT-Mode hier Klicken")
+        #Hall of Fame Toggle
+        show_h_o_f()
         game_counter_init()
         controlsWindow.pic_control.hide()
         controlsWindow.shuffle.setChecked(False)
@@ -2155,28 +2185,28 @@ def make_contender_line(i):
     hbox_contenders = QHBoxLayout()
 
     label_result_name = QtWidgets.QLabel()
-    label_result_name.setMinimumSize(QSize(40, 20))
-    label_result_name.setMaximumSize(QSize(40, 20))
+    label_result_name.setMinimumSize(QSize(40, 15))
+    label_result_name.setMaximumSize(QSize(40, 15))
     label_result_rounds = QtWidgets.QLabel()
-    label_result_rounds.setMaximumSize(QSize(40, 20))
-    label_result_rounds.setMinimumSize(QSize(40, 20))
+    label_result_rounds.setMaximumSize(QSize(40, 15))
+    label_result_rounds.setMinimumSize(QSize(40, 15))
     label_result_percent = QtWidgets.QLabel()
-    label_result_percent.setMaximumSize(QSize(40, 20))
-    label_result_percent.setMinimumSize(QSize(40, 20))
+    label_result_percent.setMaximumSize(QSize(40, 15))
+    label_result_percent.setMinimumSize(QSize(40, 15))
     label_result_points = QtWidgets.QLabel()
-    label_result_points.setMaximumSize(QSize(40, 20))
-    label_result_points.setMinimumSize(QSize(40, 20))
+    label_result_points.setMaximumSize(QSize(40, 15))
+    label_result_points.setMinimumSize(QSize(40, 15))
     label_result_time = QtWidgets.QLabel()
-    label_result_time.setMaximumSize(QSize(60, 20))
-    label_result_time.setMinimumSize(QSize(60, 20))
+    label_result_time.setMaximumSize(QSize(60, 15))
+    label_result_time.setMinimumSize(QSize(60, 15))
     label_result_pic = QtWidgets.QLabel()
-    label_result_pic.setMaximumSize(QSize(180, 20))
-    label_result_pic.setMinimumSize(QSize(180, 20))
+    label_result_pic.setMaximumSize(QSize(180, 15))
+    label_result_pic.setMinimumSize(QSize(180, 15))
 
     label_result_name.setText(contenders[i][0])
-    label_result_rounds.setText(str(contenders[i][1]))
-    label_result_percent.setText(str(contenders[i][2]))
-    label_result_points.setText(str(contenders[i][3]))
+    label_result_rounds.setText(str(int(contenders[i][1])))
+    label_result_percent.setText(str(int(contenders[i][2])))
+    label_result_points.setText(str(int(contenders[i][3])))
     label_result_time.setText(str(contenders[i][4]))
     label_result_pic.setText(contenders[i][5])
 
@@ -2221,10 +2251,11 @@ def make_fame_window():
 
     fameWindow.formLayout.addRow(hbox_labels)
 
+    contenders = sorted(sorted(contenders, key=itemgetter(2), reverse=True), key=itemgetter(1))
+
     for i in range(len(contenders)):
         hbox_line = make_contender_line(i)
         fameWindow.formLayout.addRow(hbox_line)
-        print(f'contender {i}')
 
     fameWindow.groupbox.setLayout(fameWindow.formLayout)
 
@@ -2250,8 +2281,7 @@ def clear_fame():
     fameWindow.close()
     fameWindow.destroy()
 
-contenders = []
-#contenders.append(["ds", 1, 77, 12,"01:33:09", "best of puzzles\IMG_4556.jpeg"])
+
 def save_fame():
     global contenders
     global result_percent
@@ -2277,6 +2307,13 @@ def save_fame():
         gt_result.append(spielbild)
 
         contenders.append(gt_result)
+
+        with open(r'C:\Users\User\PycharmProjects\pictris\contenders.csv', mode='w') as players_file:
+            player_writer = csv.writer(players_file, delimiter=";", quoting=csv.QUOTE_NONNUMERIC,
+                                       lineterminator="\r")
+            for line in contenders:
+                if line:
+                    player_writer.writerow([str(line[0]), int(line[1]), int(line[2]), int(line[3]), str(line[4]), str(line[5])])
 
     except:
         pass
