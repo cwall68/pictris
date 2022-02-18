@@ -473,19 +473,18 @@ gt_game_list = [["puzzle", 0, 0, 0], ["slider", 0, 0, 0], ["pictris", 0 ,0, 0]]
 
 #Einlesen der List of Fame
 contenders = []
-# try:
-with open(r'C:\Users\User\PycharmProjects\pictris\contenders.csv', newline = '') as players_file:
-    player_infos = csv.reader(players_file, quotechar='"', quoting=csv.QUOTE_NONNUMERIC, delimiter=";")
-    for line in player_infos:
-        print(line)
-        contenders.append(line)
+try:
+    with open(r'C:\Users\User\PycharmProjects\pictris\contenders.csv', newline = '') as players_file:
+        player_infos = csv.reader(players_file, quotechar='"', quoting=csv.QUOTE_NONNUMERIC, delimiter=";")
+        for line in player_infos:
+            contenders.append(line)
 # with open(r'C:\Users\User\PycharmProjects\pictris\contenders.csv', newline = '') as players_file:
 #     player_infos = csv.reader(players_file, quotechar='"', delimiter=";")
 #     for line in player_infos:
 #         print(line)
 #         contenders.append(line)
-# except:
-#      pass
+except:
+     pass
 
 # Spielerliste aus List of Fame
 players = []
@@ -497,7 +496,10 @@ for line in contenders:
 controlsWindow.player.addItem("???")
 players.sort()
 for element in players:
-    controlsWindow.player.addItem(element)
+    if element == "???":
+        continue
+    else:
+        controlsWindow.player.addItem(element)
 controlsWindow.player.setCurrentText("???")
 
 #Mindestzahl an Teilen auf der längeren Bildkante
@@ -2179,6 +2181,7 @@ def start_game(game):
         else:
             start_playing(game)
 
+#Erzeugt eine Zeile in der Hall of Fame liste aus der contenders Datei
 def make_contender_line(i):
     global contenders
 
@@ -2200,8 +2203,9 @@ def make_contender_line(i):
     label_result_time.setMaximumSize(QSize(60, 15))
     label_result_time.setMinimumSize(QSize(60, 15))
     label_result_pic = QtWidgets.QLabel()
-    label_result_pic.setMaximumSize(QSize(180, 15))
-    label_result_pic.setMinimumSize(QSize(180, 15))
+    label_result_pic.setTextInteractionFlags(Qt.TextSelectableByMouse)
+    label_result_pic.setMaximumSize(QSize(250, 15))
+    label_result_pic.setMinimumSize(QSize(250, 15))
 
     label_result_name.setText(contenders[i][0])
     label_result_rounds.setText(str(int(contenders[i][1])))
@@ -2225,7 +2229,7 @@ def make_fame_window():
     #print(contenders)
 
     fameWindow.formLayout = QFormLayout()
-    fameWindow.groupbox = QGroupBox("Strasse der Besten")
+    fameWindow.groupbox = QGroupBox()
 
     hbox_labels = QHBoxLayout()
 
@@ -2246,7 +2250,7 @@ def make_fame_window():
     label_time.setMaximumSize(QSize(60, 20))
     label_pic = QtWidgets.QLabel('<h4 style="color:black">' + "Bild" + '</h4>')
     # label_pic = QtWidgets.QLabel("Bild")
-    label_pic.setMaximumSize(QSize(180, 20))
+    label_pic.setMaximumSize(QSize(250, 20))
 
     hbox_labels.addWidget(label_name)
     hbox_labels.addWidget(label_rounds)
@@ -2259,19 +2263,44 @@ def make_fame_window():
 
     contenders = sorted(sorted(contenders, key=itemgetter(2), reverse=True), key=itemgetter(1))
 
+
+    label_round = QtWidgets.QLabel("Spiele mit 1 Runde")
+    fameWindow.formLayout.addRow(label_round)
+    rounds_old = 1
+    fifecount = 1
     for i in range(len(contenders)):
-        hbox_line = make_contender_line(i)
-        fameWindow.formLayout.addRow(hbox_line)
+        if contenders[i][1] == rounds_old:
+            if fifecount <= 5:
+                hbox_line = make_contender_line(i)
+                fameWindow.formLayout.addRow(hbox_line)
+                fifecount += 1
+            else:
+                pass
+        else:
+            label_round = QtWidgets.QLabel(f'Spiele mit {int(contenders[i][1])} Runden')
+            fameWindow.formLayout.addRow(label_round)
+            rounds_old = contenders[i][1]
+            fifecount = 1
 
     fameWindow.groupbox.setLayout(fameWindow.formLayout)
 
     scroll = QScrollArea()
     scroll.setWidget(fameWindow.groupbox)
     scroll.setWidgetResizable(True)
-    scroll.setFixedHeight(fameWindow.width)
-    scroll.setFixedWidth(fameWindow.height)
+    scroll.setFixedHeight(fameWindow.height -55)
+    scroll.setFixedWidth(fameWindow.width-15)
 
     fameWindow.layout = QVBoxLayout()
+
+    crown = QtWidgets.QLabel()
+    crown_pic_path = os.path.join(graf_dir, "Krone")
+    crown_pic = QtGui.QPixmap(crown_pic_path)
+    crown_pic.scaled(int(fameWindow.width*0.9), int(fameWindow.width/5))
+    crown_pic = QtGui.QPixmap(int(fameWindow.width*0.9), int(fameWindow.width/5))
+    crown.setPixmap(crown_pic)
+    crown.setGeometry(0,0,fameWindow.width-20,int(fameWindow.width/5))
+
+    fameWindow.layout.addWidget(crown)
     fameWindow.layout.addWidget(scroll)
     fameWindow.layoutexists = True
 
