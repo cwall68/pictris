@@ -516,7 +516,9 @@ before_fall_init = 1500
 game_rounds = 0
 # Replay sorgt bei Slider für erneutes Spiel mit gleicher Ausganglage
 replay = False
-
+#Ist True während das Spielbild gesenkt wird
+move = False
+#Ist True nachdem Spielbild gesenkt wurde und Spiel angefangen hat
 started = False
 
 gt_stop = False
@@ -2127,6 +2129,7 @@ def start_gt():
         pygame.mixer.music.set_volume(0)
         uncheck("abbruch")
         make_game_floor("have fun")
+        fameWindow.raise_()
 
 
 def init_start(game):
@@ -2428,6 +2431,8 @@ def show_h_o_f():
         clear_fame()
         controlsWindow.call_h_o_f.setText("Hall of Fame zeigen")
         fame_show = False
+
+    make_game_floor("have fun")
 
 
 if __name__ == '__main__':
