@@ -255,7 +255,7 @@ class Controls(QtWidgets.QMainWindow):
         self.gt_onoff_label.setStyleSheet("font-size: 10px;")
 
         #Hall of Fame Komponenten
-        self.call_h_o_f = QPushButton("Hall of Fame", self)
+        self.call_h_o_f = QPushButton("Hall of Fame zeigen", self)
         self. call_h_o_f.setGeometry(self.label_start_x, int(0.5 * self.screen_height) + int(0.9*self.label_height), int(self.start_button_width/3 ),
                              self.start_button_height-15)
 
@@ -1244,6 +1244,7 @@ def part_fall(img, full_partsdict, x, y, act_partsdict, alphawert):
                                 if stop:
                                     if fits == fits_old:
                                         fails += 1
+                                        pygame.mixer.Sound.play(kachelfalsch)
                                     break
                             pic_pos_y += 1
 
@@ -2041,6 +2042,7 @@ def start_gt():
     global init
     global replay
     global players
+    global fame_show
 
     #if controlsWindow.gt_mode == False:
     if controlsWindow.gt_start.isChecked() == True:
@@ -2051,6 +2053,11 @@ def start_gt():
         controlsWindow.gt_mode = True
         controlsWindow.gt_start.setText("Stop")
         controlsWindow.shuffle.setChecked(True)
+
+        if fame_show == True:
+            clear_fame()
+            controlsWindow.call_h_o_f.setText("Hall of Fame zeigen")
+            fame_show = False
 
         controlsWindow.puzzle_start.setEnabled(False)
         controlsWindow.slider_start.setEnabled(False)
@@ -2124,6 +2131,7 @@ def start_game(game):
     global act_partsdict
     global result_percent
     global result_points
+    global fame_saveable
 
     uncheck(game)
     game_counter_init()
@@ -2145,6 +2153,7 @@ def start_game(game):
 
             result_percent = int((result_points / max_points) * 100)
             controlsWindow.gt_start.setText(str(result_percent) + " %")
+            fame_saveable = True
 
             controlsWindow.rpg.setEnabled(True)
             uncheck("abbruch")
@@ -2211,7 +2220,7 @@ def make_contender_line(i):
     label_result_rounds.setText(str(int(contenders[i][1])))
     label_result_percent.setText(str(int(contenders[i][2])))
     label_result_points.setText(str(int(contenders[i][3])))
-    label_result_time.setText(str(contenders[i][4]))
+    label_result_time.setText(contenders[i][4])
     label_result_pic.setText(contenders[i][5])
 
     hbox_contenders.addWidget(label_result_name)
@@ -2233,6 +2242,8 @@ def make_fame_window():
 
     hbox_labels = QHBoxLayout()
 
+    label_space = QtWidgets.QLabel('<h4 style="color:black">' + " " + '</h4>')
+    label_space.setMaximumSize(QSize(4, 20))
     label_name = QtWidgets.QLabel('<h4 style="color:black">' + "Spieler" + '</h4>')
     # label_name = QtWidgets.QLabel("Spieler")
     label_name.setMaximumSize(QSize(45, 20))
@@ -2252,6 +2263,7 @@ def make_fame_window():
     # label_pic = QtWidgets.QLabel("Bild")
     label_pic.setMaximumSize(QSize(250, 20))
 
+    hbox_labels.addWidget(label_space)
     hbox_labels.addWidget(label_name)
     hbox_labels.addWidget(label_rounds)
     hbox_labels.addWidget(label_percent)
@@ -2259,7 +2271,7 @@ def make_fame_window():
     hbox_labels.addWidget(label_time)
     hbox_labels.addWidget(label_pic)
 
-    fameWindow.formLayout.addRow(hbox_labels)
+    #fameWindow.formLayout.addRow(hbox_labels)
 
     contenders = sorted(sorted(contenders, key=itemgetter(2), reverse=True), key=itemgetter(1))
 
@@ -2279,6 +2291,8 @@ def make_fame_window():
         else:
             label_round = QtWidgets.QLabel(f'Spiele mit {int(contenders[i][1])} Runden')
             fameWindow.formLayout.addRow(label_round)
+            hbox_line = make_contender_line(i)
+            fameWindow.formLayout.addRow(hbox_line)
             rounds_old = contenders[i][1]
             fifecount = 1
 
@@ -2287,8 +2301,8 @@ def make_fame_window():
     scroll = QScrollArea()
     scroll.setWidget(fameWindow.groupbox)
     scroll.setWidgetResizable(True)
-    scroll.setFixedHeight(fameWindow.height -55)
-    scroll.setFixedWidth(fameWindow.width-15)
+    scroll.setFixedHeight(fameWindow.height -75)
+    scroll.setFixedWidth(fameWindow.width-25)
 
     fameWindow.layout = QVBoxLayout()
 
@@ -2301,6 +2315,7 @@ def make_fame_window():
     crown.setGeometry(0,0,fameWindow.width-20,int(fameWindow.width/5))
 
     fameWindow.layout.addWidget(crown)
+    fameWindow.layout.addLayout(hbox_labels)
     fameWindow.layout.addWidget(scroll)
     fameWindow.layoutexists = True
 
@@ -2316,7 +2331,7 @@ def clear_fame():
     fameWindow.close()
     fameWindow.destroy()
 
-
+fame_saveable = False
 def save_fame():
     global contenders
     global result_percent
@@ -2324,41 +2339,51 @@ def save_fame():
     global gt_game_list
     global result_points
     global fame_show
+    global fame_saveable
 
-    try:
-        gt_result = []
-        name = controlsWindow.player.currentText()
-        gt_result.append(name)
-        rounds = gt_game_list[2][1]
-        gt_result.append(rounds)
-        gt_result.append(result_percent)
-        points = result_points
-        gt_result.append(points)
-        doc = QtGui.QTextDocument()
-        doc.setHtml(controlsWindow.timer_label.text())
-        time = doc.toPlainText()
-        print(time)
-        gt_result.append(time)
-        gt_result.append(spielbild)
-
-        contenders.append(gt_result)
-
-        with open(r'C:\Users\User\PycharmProjects\pictris\contenders.csv', mode='w') as players_file:
-            player_writer = csv.writer(players_file, delimiter=";", quoting=csv.QUOTE_NONNUMERIC,
-                                       lineterminator="\r")
-            for line in contenders:
-                if line:
-                    player_writer.writerow([str(line[0]), int(line[1]), int(line[2]), int(line[3]), str(line[4]), str(line[5])])
-
-    except:
+    if fame_saveable == False:
         pass
-
-    if fame_show == True:
-        clear_fame()
-        fame_show = False
     else:
-        show_h_o_f()
 
+        try:
+            gt_result = []
+            name = controlsWindow.player.currentText()
+            gt_result.append(name)
+            rounds = gt_game_list[2][1]
+            gt_result.append(rounds)
+            gt_result.append(result_percent)
+            points = result_points
+            gt_result.append(points)
+            doc = QtGui.QTextDocument()
+            doc.setHtml(controlsWindow.timer_label.text())
+            time = doc.toPlainText()
+            print(time)
+            gt_result.append(time)
+            gt_result.append(spielbild)
+
+            contenders.append(gt_result)
+
+            with open(r'C:\Users\User\PycharmProjects\pictris\contenders.csv', mode='w') as players_file:
+                player_writer = csv.writer(players_file, delimiter=";", quoting=csv.QUOTE_NONNUMERIC,
+                                           lineterminator="\r")
+                for line in contenders:
+                    if line:
+                        player_writer.writerow([str(line[0]), int(line[1]), int(line[2]), int(line[3]), str(line[4]), str(line[5])])
+
+        except:
+            pass
+
+        if fame_show == True:
+            clear_fame()
+            fame_show = False
+        else:
+            show_h_o_f()
+            controlsWindow.call_h_o_f.setText("Hall of Fame schließen")
+            fame_show = True
+
+        fame_saveable = False
+    if fame_show == True:
+        fameWindow.raise_()
     make_game_floor("have fun")
 
 
@@ -2369,9 +2394,11 @@ def show_h_o_f():
     if fame_show == False:
         make_fame_window()
         fameWindow.show()
+        controlsWindow.call_h_o_f.setText("Hall of Fame schließen")
         fame_show = True
     elif fame_show == True:
         clear_fame()
+        controlsWindow.call_h_o_f.setText("Hall of Fame zeigen")
         fame_show = False
 
 
@@ -2395,6 +2422,7 @@ if __name__ == '__main__':
     controlsWindow.game_back2front.clicked.connect(make_game_floor)
     controlsWindow.fame_save.clicked.connect(save_fame)
     controlsWindow.call_h_o_f.clicked.connect(show_h_o_f)
+    controlsWindow.player.currentTextChanged.connect(make_game_floor)
 
 
 #pygame.quit()
