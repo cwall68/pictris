@@ -601,6 +601,11 @@ def start_playing(game):
     global abbruch
     global gt_game_list
     global planned_rounds
+    global gt_stop
+    global move
+
+    if gt_stop == True:
+        return
 
     if init == True and replay == False:
         spielbild = find_pic()
@@ -662,8 +667,11 @@ def start_playing(game):
     make_game_floor(game)
 
     control_pic = QtGui.QPixmap(r"tmp_resize.JPG")
-    controlsWindow.pic_control.setGeometry(screen_width - width - offset_y, screen_height - height - offset_y, width, height)
-    controlsWindow.pic_control.setPixmap(control_pic)
+    control_width = int(width/2)
+    control_height = int(height/2)
+    co_pic = control_pic.scaled(control_width, control_height)
+    controlsWindow.pic_control.setGeometry(screen_width - control_width - int(0.5*offset_y), screen_height - control_height - 2*offset_y, control_width, control_height)
+    controlsWindow.pic_control.setPixmap(co_pic)
     controlsWindow.pic_control.show()
     controlsWindow.game_back2front.show()
 
@@ -904,8 +912,10 @@ def puzzle(full_partsdict, grid):
     global gt_stop
     global started
     global abbruch
+    global gt_stop
 
-
+    if gt_stop == True:
+        return
 
     act_partsdict = {}
 
@@ -949,6 +959,8 @@ def puzzle(full_partsdict, grid):
     running = True
     while running:
         if gt_stop == True:
+            print(gt_stop)
+            running = False
             break
             #return(counter)
         screen.fill(GRAY)
@@ -1360,6 +1372,10 @@ def pictris(full_partsdict, grid):
     global before_fall_init
     global started
     global abbruch
+    global gt_stop
+
+    if gt_stop == True:
+        return
 
     act_partsdict = {}
 
@@ -1379,6 +1395,9 @@ def pictris(full_partsdict, grid):
 
     running = True
     while running:
+        if gt_stop == True:
+            running = False
+            break
         if abbruch:
             return
         if not started:
@@ -1533,6 +1552,9 @@ def slider(full_partsdict, grid):
     global started
     global abbruch
 
+    if gt_stop == True:
+        return
+
     sender = controlsWindow.sender()
     spiel = sender.text()
     #print(f'Spiel: {spiel}')
@@ -1610,6 +1632,9 @@ def slider(full_partsdict, grid):
     pygame.mixer.music.set_volume(0.1)
 
     while running:
+        if gt_stop == True:
+            break
+
         if controlsWindow.shuffle.isChecked() == True:
             counter_name = "Punkte"
         else:
@@ -2043,6 +2068,13 @@ def start_gt():
     global replay
     global players
     global fame_show
+    global started
+    global move
+
+    if (started == True or move == True) and controlsWindow.gt_mode == False:
+        controlsWindow.gt_start.setChecked(False)
+        make_game_floor("have fun")
+        return
 
     #if controlsWindow.gt_mode == False:
     if controlsWindow.gt_start.isChecked() == True:
@@ -2075,30 +2107,26 @@ def start_gt():
     elif controlsWindow.gt_start.isChecked() == False:
         gt_stop = True
         abbruch = True
-        #controlsWindow.gt_mode = False
+        init = True
+        replay = False
+        controlsWindow.gt_mode = False
         controlsWindow.dir_button.setChecked(True)
 
         controlsWindow.puzzle_start.setEnabled(True)
         controlsWindow.slider_start.setEnabled(True)
         controlsWindow.pictris_start.setEnabled(True)
 
-
-        controlsWindow.gt_mode = False
         controlsWindow.timer_label.hide()
         controlsWindow.race_flag.show()
         controlsWindow.startWatch = False
         controlsWindow.timer_reset()
         controlsWindow.gt_start.setText("Start")
-        #Hall of Fame Toggle
-        show_h_o_f()
         game_counter_init()
         controlsWindow.pic_control.hide()
         controlsWindow.shuffle.setChecked(False)
         pygame.mixer.music.set_volume(0)
         uncheck("abbruch")
-        screen.fill(GRAY)
-        pygame.display.update()
-
+        make_game_floor("have fun")
 
 
 def init_start(game):
