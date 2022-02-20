@@ -572,7 +572,7 @@ def make_game_floor(game):
     pygame.display.set_caption(game)
     pygame.display.update()
 
-
+level = 0
 def start_playing(game):
     global spielbild
     global fade_factor
@@ -605,6 +605,7 @@ def start_playing(game):
     global planned_rounds
     global gt_stop
     global move
+    global level
 
     if gt_stop == True:
         return
@@ -614,22 +615,28 @@ def start_playing(game):
         controlsWindow.pic_path.setText(spielbild)
         part_anz_init = part_anz_min
         game_rounds = 1
+
     else:
         game_rounds += 1
 
-    if controlsWindow.gt_mode and ceil(game_rounds / planned_rounds) - 1 == len(gt_game_list):
-        screen.fill(GRAY)
-        pygame.display.update()
-        #gt_stop = True
-        controlsWindow.startWatch = False
-        pygame.mixer.music.fadeout(2000)
-        #pygame.mixer.music.set_volume(0)
-        return
+    level = ceil(game_rounds / len(gt_game_list))
+    print(f'Level: {level}')
+
+    # if controlsWindow.gt_mode and ceil(game_rounds / planned_rounds) - 1 == len(gt_game_list):
+    #     screen.fill(GRAY)
+    #     pygame.display.update()
+    #     #gt_stop = True
+    #     controlsWindow.startWatch = False
+    #     pygame.mixer.music.fadeout(2000)
+    #     #pygame.mixer.music.set_volume(0)
+    #     return
 
     if controlsWindow.gt_mode:
-        game_id = ceil(game_rounds / planned_rounds) - 1
+        print(f'game_rounds: {game_rounds}')
+        game_id = int(game_rounds - (level-1)*len(gt_game_list)-1)
+        # game_id = ceil(game_rounds / planned_rounds) - 1
         print(f'game_id: {game_id}')
-        gt_game_list[game_id][1] += 1
+        gt_game_list[game_id][1] = level
         game = gt_game_list[game_id][0]
         uncheck(game)
 
@@ -644,7 +651,8 @@ def start_playing(game):
 
     elif controlsWindow.pic_button.isChecked() == True or controlsWindow.dir_button.isChecked() == True:
         if controlsWindow.gt_mode:
-            part_anz = part_anz_init + gt_game_list[game_id][1] - 1
+            part_anz = part_anz_init + level - 1
+            # part_anz = part_anz_init + gt_game_list[game_id][1] - 1
         else:
             part_anz = part_anz_init + game_rounds -1
 
@@ -654,7 +662,9 @@ def start_playing(game):
     except:
         return
     width, height = image.size
-    part_size, part_anz = find_part_size(width, height, part_anz)
+    print(f'part_anz: {part_anz}')
+    part_size = find_part_size(width, height, part_anz)
+    print(f'part_size: {part_size}')
 
     #Bestimmung der Position des Gesamtspielbildes
     full_image_x = (w_floor - width) / 2
@@ -846,7 +856,7 @@ def find_part_size(width, height, part_anz):
             part_anz_init += 1
             part_size = height // part_anz
 
-    return(part_size, part_anz)
+    return(part_size)
 
 def uncheck(game):
 
@@ -1458,7 +1468,7 @@ def pictris(full_partsdict, grid):
             #Kachelfalldurchlauf
             act_partsdict, fertig, punkte= part_fall(img, full_partsdict, x, y, act_partsdict, alphawert)
             if fertig:
-                replay = True
+                #replay = True
                 init = False
                 started = False
                 #game_ambient.set_volume(0)
@@ -1612,7 +1622,7 @@ def slider(full_partsdict, grid):
 
     else:
         act_pos_dict = replay_dict.copy()
-        #print(f'Replay {replay}')
+        print(f'Replay {replay}')
 
     if controlsWindow.shuffle.isChecked() == True:
         counter_name = "Punkte"
@@ -2175,31 +2185,31 @@ def start_game(game):
     abbruch = False
 
     while True:
-        if controlsWindow.gt_mode and ceil(game_rounds / planned_rounds) - 1 == len(gt_game_list):
-            controlsWindow.startWatch = False
+        # if controlsWindow.gt_mode and ceil(game_rounds / planned_rounds) - 1 == len(gt_game_list):
+        #     controlsWindow.startWatch = False
+        #
+        #     result_points = gt_game_list[0][2] + gt_game_list[1][2] + gt_game_list[2][2]
+        #     max_points = gt_game_list[0][3] + gt_game_list[1][3] + gt_game_list[2][3]
+        #     controlsWindow.fullpoints.setText(str(result_points) + "  von " + str(max_points))
+        #
+        #     result_percent = int((result_points / max_points) * 100)
+        #     controlsWindow.gt_start.setText(str(result_percent) + " %")
+        #     fame_saveable = True
+        #
+        #     controlsWindow.rpg.setEnabled(True)
+        #     uncheck("abbruch")
+        #     part_anz_init = part_anz_min
+        #     started = False
+        #     fertig = False
+        #     init = True
+        #     replay = False
+        #     game_rounds = 0
+        #     controlsWindow.pic_control.hide()
+        #     screen.fill(GRAY)
+        #     pygame.display.update()
+        #     break
 
-            result_points = gt_game_list[0][2] + gt_game_list[1][2] + gt_game_list[2][2]
-            max_points = gt_game_list[0][3] + gt_game_list[1][3] + gt_game_list[2][3]
-            controlsWindow.fullpoints.setText(str(result_points) + "  von " + str(max_points))
-
-            result_percent = int((result_points / max_points) * 100)
-            controlsWindow.gt_start.setText(str(result_percent) + " %")
-            fame_saveable = True
-
-            controlsWindow.rpg.setEnabled(True)
-            uncheck("abbruch")
-            part_anz_init = part_anz_min
-            started = False
-            fertig = False
-            init = True
-            replay = False
-            game_rounds = 0
-            controlsWindow.pic_control.hide()
-            screen.fill(GRAY)
-            pygame.display.update()
-            break
-
-        elif gt_stop or abbruch:
+        if gt_stop or abbruch:
             gt_stop = False
             abbruch = False
             game_counter_init()
@@ -2304,7 +2314,8 @@ def make_fame_window():
 
     #fameWindow.formLayout.addRow(hbox_labels)
 
-    contenders = sorted(sorted(contenders, key=itemgetter(2), reverse=True), key=itemgetter(1))
+    contenders = sorted(sorted(sorted(contenders, key=itemgetter(4)) ,key=itemgetter(2), reverse=True), key=itemgetter(1))
+    # contenders = sorted(sorted(contenders, key=itemgetter(2), reverse=True), key=itemgetter(1))
 
 
     label_round = QtWidgets.QLabel("Spiele mit 1 Runde")
