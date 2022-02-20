@@ -606,6 +606,9 @@ def start_playing(game):
     global gt_stop
     global move
     global level
+    global fame_saveable
+    global result_points
+    global result_percent
 
     if gt_stop == True:
         return
@@ -620,7 +623,7 @@ def start_playing(game):
         game_rounds += 1
 
     level = ceil(game_rounds / len(gt_game_list))
-    print(f'Level: {level}')
+    #print(f'Level: {level}')
 
     # if controlsWindow.gt_mode and ceil(game_rounds / planned_rounds) - 1 == len(gt_game_list):
     #     screen.fill(GRAY)
@@ -639,6 +642,20 @@ def start_playing(game):
         gt_game_list[game_id][1] = level
         game = gt_game_list[game_id][0]
         uncheck(game)
+
+        if (gt_game_list[0][1] == gt_game_list[0][1]) and (gt_game_list[1][1] == gt_game_list[2][1]):
+
+            result_points = gt_game_list[0][2] + gt_game_list[1][2] + gt_game_list[2][2]
+
+            max_points = gt_game_list[0][3] + gt_game_list[1][3] + gt_game_list[2][3]
+            controlsWindow.fullpoints.setText(str(result_points) + "  von " + str(max_points))
+            if max_points > 0:
+                result_percent = int((result_points / max_points) * 100)
+                controlsWindow.gt_start.setText(str(result_percent) + " %")
+            fame_saveable = True
+
+        else:
+            fame_saveable = False
 
     if controlsWindow.nine_button.isChecked() == True:
         part_anz = 3
@@ -662,9 +679,9 @@ def start_playing(game):
     except:
         return
     width, height = image.size
-    print(f'part_anz: {part_anz}')
+    #print(f'part_anz: {part_anz}')
     part_size = find_part_size(width, height, part_anz)
-    print(f'part_size: {part_size}')
+    #print(f'part_size: {part_size}')
 
     #Bestimmung der Position des Gesamtspielbildes
     full_image_x = (w_floor - width) / 2
@@ -2382,6 +2399,8 @@ def save_fame():
     global result_points
     global fame_show
     global fame_saveable
+    global gt_stop
+
 
     if fame_saveable == False:
         pass
@@ -2426,6 +2445,7 @@ def save_fame():
         fame_saveable = False
     if fame_show == True:
         fameWindow.raise_()
+
     make_game_floor("have fun")
 
 
