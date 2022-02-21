@@ -229,21 +229,34 @@ class Controls(QtWidgets.QMainWindow):
                                     self.label_height)
 
         #Rundenvorwahl (rpg = rounds per game)
-        self.rpg_label = QtWidgets.QLabel(self)
-        self.rpg_label.setText("Runden je Spiel:")
-        self.rpg_label.setGeometry(self.label_start_x, int(0.5 * self.screen_height - self.start_button_height/2), int(self.start_button_width/3 - 10),
-                             self.start_button_height-10)
-        self.rpg_label.setStyleSheet("font-size: 12px;"
-                                     "font-weight: bold;"
-                                     )
+        # self.rpg_label = QtWidgets.QLabel(self)
+        # self.rpg_label.setText("Runden je Spiel:")
+        # self.rpg_label.setGeometry(self.label_start_x, int(0.5 * self.screen_height - self.start_button_height/2), int(self.start_button_width/3 - 10),
+        #                      self.start_button_height-10)
+        # self.rpg_label.setStyleSheet("font-size: 12px;"
+        #                              "font-weight: bold;"
+        #                              )
 
-        self.rpg = QSpinBox(self)
-        self.rpg.setRange(1, 5)
-        self.rpg.setWrapping(True)
-        self.rpg.setPrefix("Runden = ")
-        self.rpg.setStyleSheet("font-size: 12px;"
-                               "font-weight: bold;")
-        self.rpg.setGeometry(self.label_start_x, int(0.5 * self.screen_height) + 8, int(self.start_button_width/3 - 10),
+        # self.rpg = QSpinBox(self)
+        # self.rpg.setRange(1, 5)
+        # self.rpg.setWrapping(True)
+        # self.rpg.setPrefix("Runden = ")
+        # self.rpg.setStyleSheet("font-size: 12px;"
+        #                        "font-weight: bold;")
+        # self.rpg.setGeometry(self.label_start_x, int(0.5 * self.screen_height) + 8, int(self.start_button_width/3 - 10),
+        #                      self.start_button_height-15)
+
+        self.level_label = QtWidgets.QLabel(self)
+        self.level_label.setStyleSheet("font-size: 18px;")
+        self.level_label.setText("Level:")
+        self.level_label.setGeometry(self.label_start_x, int(0.5 * self.screen_height) + 8, int(0.7*self.start_button_width/3),
+                             self.start_button_height-15)
+
+        self.label_level_counter = QtWidgets.QLabel(self)
+        self.label_level_counter.setStyleSheet("font-size: 18px;"
+                                               "font-weight: bold;"
+                                               "color: red;")
+        self.label_level_counter.setGeometry(self.label_start_x +int(0.5*self.start_button_width/3) , int(0.5 * self.screen_height) + 8, int(0.75*self.start_button_width/3),
                              self.start_button_height-15)
 
         self.gt_onoff_label = QtWidgets.QLabel(self)
@@ -502,6 +515,10 @@ for element in players:
         controlsWindow.player.addItem(element)
 controlsWindow.player.setCurrentText("???")
 
+# Levelzähler auf 0 setzen
+level = 0
+controlsWindow.label_level_counter.setText(f'{level}')
+
 #Mindestzahl an Teilen auf der längeren Bildkante
 part_anz_min = 4
 #Bildabstand vom unteren Rand
@@ -623,6 +640,7 @@ def start_playing(game):
         game_rounds += 1
 
     level = ceil(game_rounds / len(gt_game_list))
+    controlsWindow.label_level_counter.setText(f'{level}')
     #print(f'Level: {level}')
 
     # if controlsWindow.gt_mode and ceil(game_rounds / planned_rounds) - 1 == len(gt_game_list):
@@ -2081,12 +2099,12 @@ def rpg_value():
         controlsWindow.rpg.setValue(planned_rounds)
         make_game_floor(gt_game_list[0])
     else:
-        planned_rounds = controlsWindow.rpg.value()
+        planned_rounds = 1
         make_game_floor(gt_game_list[0])
 
     return(planned_rounds)
 
-planned_rounds = rpg_value()
+planned_rounds = 1
 
 def start_gt():
     global gt_stop
@@ -2480,13 +2498,13 @@ if __name__ == '__main__':
     controlsWindow.game_sounds.toggled.connect(make_game_floor)
     controlsWindow.shuffle.toggled.connect(make_game_floor)
     controlsWindow.blind.toggled.connect(make_game_floor)
-    controlsWindow.rpg.valueChanged.connect(rpg_value)
+    #controlsWindow.rpg.valueChanged.connect(rpg_value)
     controlsWindow.gt_start.clicked.connect(start_gt)
     controlsWindow.end_all.clicked.connect(lambda: sys.exit(0))
     controlsWindow.game_back2front.clicked.connect(make_game_floor)
     controlsWindow.fame_save.clicked.connect(save_fame)
     controlsWindow.call_h_o_f.clicked.connect(show_h_o_f)
-    controlsWindow.player.currentTextChanged.connect(make_game_floor)
+    #controlsWindow.player.currentTextChanged.connect(make_game_floor)
 
 
 #pygame.quit()
