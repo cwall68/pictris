@@ -639,7 +639,13 @@ def start_playing(game):
     else:
         game_rounds += 1
 
-    level = ceil(game_rounds / len(gt_game_list))
+    if controlsWindow.gt_mode:
+        level = ceil(game_rounds / len(gt_game_list))
+    else:
+        if replay:
+            level = 1
+        else:
+            level = game_rounds
     controlsWindow.label_level_counter.setText(f'{level}')
     #print(f'Level: {level}')
 
@@ -1111,6 +1117,14 @@ def puzzle(full_partsdict, grid):
                             screen.blit(text_surface, dest=(50, 50))
                             pygame.display.flip()
                             success(6)
+
+                            if controlsWindow.dir_button.isChecked() == True or controlsWindow.pic_button.isChecked() == True:
+                                replay = False
+                                init = False
+                            else:
+                                replay = True
+                                init = False
+
                             #counter = 0
                             return(counter)
                     else:
@@ -1343,6 +1357,13 @@ def part_fall(img, full_partsdict, x, y, act_partsdict, alphawert):
                 pygame.time.delay(1000)
                 stop = True
 
+                if controlsWindow.dir_button.isChecked() == True or controlsWindow.pic_button.isChecked() == True:
+                    replay = False
+                    init = False
+                else:
+                    replay = True
+                    init = False
+
             if stop:
                 break
 
@@ -1469,12 +1490,35 @@ def pictris(full_partsdict, grid):
             start_pos_Y = (full_image_y // 2) - int(part_size / 2)
             screen.blit(img, (start_pos_x, start_pos_Y))
             blit_grid(grid, RED)
-            if not controlsWindow.gt_mode:
-                screen.blit(text_surface_3, dest=(controlsWindow.screen_width / 3, controlsWindow.screen_height - 50))
+
+            text_surface_4 = pygame.font.Font.render(font_2, f'Start mit Leertaste', True, (55, 55, 55))
+            screen.blit(text_surface_4, dest=(controlsWindow.screen_width / 3, controlsWindow.screen_height - 50))
             pygame.display.update()
 
             # Kachel wird für spezifizierte Zeit vor Fall gezeigt
-            pygame.time.delay(before_fall)
+            #pygame.time.delay(before_fall)
+
+            wait = True
+            while wait == True:
+                for event in pygame.event.get():
+
+                    if event.type == pygame.QUIT:
+                        sys.exit()
+
+                    if event.type == pygame.KEYDOWN:
+                        if event.key == pygame.K_ESCAPE:
+                            sys.exit()
+
+                        if event.key == pygame.K_SPACE:
+                            # Kachel wird für spezifizierte Zeit vor Fall gezeigt
+                            pygame.time.delay(before_fall)
+
+                            text_surface_3 = pygame.font.Font.render(font_2, f'Abbruch mit Leertaste', True, (55, 55, 55))
+                            screen.blit(text_surface_3,
+                                        dest=(controlsWindow.screen_width / 3, controlsWindow.screen_height - 50))
+                            pygame.display.update()
+
+                            wait = False
 
             act_partsdict, fertig, punkte = part_fall(img, full_partsdict, x, y, act_partsdict, alphawert)
 
@@ -1657,7 +1701,6 @@ def slider(full_partsdict, grid):
 
     else:
         act_pos_dict = replay_dict.copy()
-        print(f'Replay {replay}')
 
     if controlsWindow.shuffle.isChecked() == True:
         counter_name = "Punkte"
@@ -2256,9 +2299,10 @@ def start_game(game):
             replay = False
             game_rounds = 0
             uncheck("abbruch")
-            controlsWindow.dir_button.setChecked(True)
+            #controlsWindow.dir_button.setChecked(True)
             #controlsWindow.rpg.setEnabled(True)
             controlsWindow.fullpoints.setText("")
+            controlsWindow.label_level_counter.setText(f'0')
             controlsWindow.pic_control.hide()
             screen.fill(GRAY)
             pygame.display.update()
