@@ -268,12 +268,12 @@ class Controls(QtWidgets.QMainWindow):
         self.gt_onoff_label.setStyleSheet("font-size: 10px;")
 
         #Hall of Fame Komponenten
-        self.call_h_o_f = QPushButton("Hall of Fame zeigen", self)
+        self.call_h_o_f = QPushButton("Ruhmeshalle zeigen", self)
         self. call_h_o_f.setGeometry(self.label_start_x, int(0.5 * self.screen_height) + int(0.9*self.label_height), int(self.start_button_width/3 ),
                              self.start_button_height-15)
 
-        self.fame_save = QPushButton("Save to Fame", self)
-        self. fame_save.setGeometry(self.label_start_x + int(2.1*self.gt_button_size)-15, int(0.5 * self.screen_height) + int(0.9*self.label_height), int(self.start_button_width/3 ),
+        self.fame_save = QPushButton("Ruhm und Ende", self)
+        self. fame_save.setGeometry(self.label_start_x + int(2.1*self.gt_button_size)-15, int(0.5 * self.screen_height) + int(0.9*self.label_height), int(self.start_button_width/3 +5),
                              self.start_button_height-15)
 
         #Gesamtpunkte
@@ -447,7 +447,7 @@ class HallOfFame(QWidget):
         self.height = int(self.screen_height/2.5)
         #self.statusBar()
         self.setGeometry(0, 0, self.width, self.height)
-        self.setWindowTitle('Hall of Fame')
+        self.setWindowTitle('Ruhmeshalle')
         # layout = QVBoxLayout()
         # self.label_1 = QLabel("Ein-Runden-Rekorde")
         # layout.addWidget(self.label_1)
@@ -624,6 +624,7 @@ def start_playing(game):
     global move
     global level
     global fame_saveable
+    global fame_show
     global result_points
     global result_percent
 
@@ -647,21 +648,10 @@ def start_playing(game):
         else:
             level = game_rounds
     controlsWindow.label_level_counter.setText(f'{level}')
-    #print(f'Level: {level}')
-
-    # if controlsWindow.gt_mode and ceil(game_rounds / planned_rounds) - 1 == len(gt_game_list):
-    #     screen.fill(GRAY)
-    #     pygame.display.update()
-    #     #gt_stop = True
-    #     controlsWindow.startWatch = False
-    #     pygame.mixer.music.fadeout(2000)
-    #     #pygame.mixer.music.set_volume(0)
-    #     return
 
     if controlsWindow.gt_mode:
         print(f'game_rounds: {game_rounds}')
         game_id = int(game_rounds - (level-1)*len(gt_game_list)-1)
-        # game_id = ceil(game_rounds / planned_rounds) - 1
         print(f'game_id: {game_id}')
         gt_game_list[game_id][1] = level
         game = gt_game_list[game_id][0]
@@ -680,6 +670,10 @@ def start_playing(game):
 
         else:
             fame_saveable = False
+
+            # if fame_show == True:
+            #     clear_fame()
+            #     fame_show = False
 
     if controlsWindow.nine_button.isChecked() == True:
         part_anz = 3
@@ -767,7 +761,9 @@ def start_playing(game):
                 controlsWindow.showCounter()
                 if controlsWindow.dir_button.isChecked() == True:
                     controlsWindow.pic_button.setChecked(True)
-               # controlsWindow.rpg.setDisabled(True)
+                if fame_show == True:
+                    clear_fame()
+                    fame_show = False
 
     if game == "puzzle":
         count = puzzle(full_partsdict, grid)
@@ -966,6 +962,7 @@ def puzzle(full_partsdict, grid):
     global started
     global abbruch
     global gt_stop
+    global fame_show
 
     if gt_stop == True:
         return
@@ -1066,6 +1063,12 @@ def puzzle(full_partsdict, grid):
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 if rect.collidepoint(event.pos):
                     sliding = True
+
+                    if fame_show == True:
+                        clear_fame()
+                        controlsWindow.call_h_o_f.setText("Ruhmeshalle zeigen")
+                        fame_show = False
+
                     #print("Buttondown angenommen")
 
 
@@ -2178,7 +2181,7 @@ def start_gt():
 
         if fame_show == True:
             clear_fame()
-            controlsWindow.call_h_o_f.setText("Hall of Fame zeigen")
+            controlsWindow.call_h_o_f.setText("Ruhmeshalle zeigen")
             fame_show = False
 
         controlsWindow.puzzle_start.setEnabled(False)
@@ -2403,7 +2406,7 @@ def make_fame_window():
     fifecount = 1
     for i in range(len(contenders)):
         if contenders[i][1] == rounds_old:
-            if fifecount < 10:
+            if fifecount < 5:
                 hbox_line = make_contender_line(i)
                 fameWindow.formLayout.addRow(hbox_line)
                 fifecount += 1
@@ -2484,14 +2487,17 @@ def save_fame():
             gt_result.append(time)
             gt_result.append(spielbild)
 
-            contenders.append(gt_result)
+            if name == "???":
+                pass
+            else:
+                contenders.append(gt_result)
 
-            with open(r'C:\Users\User\PycharmProjects\pictris\contenders.csv', mode='w') as players_file:
-                player_writer = csv.writer(players_file, delimiter=";", quoting=csv.QUOTE_NONNUMERIC,
-                                           lineterminator="\r")
-                for line in contenders:
-                    if line:
-                        player_writer.writerow([str(line[0]), int(line[1]), int(line[2]), int(line[3]), str(line[4]), str(line[5])])
+                with open(r'C:\Users\User\PycharmProjects\pictris\contenders.csv', mode='w') as players_file:
+                    player_writer = csv.writer(players_file, delimiter=";", quoting=csv.QUOTE_NONNUMERIC,
+                                               lineterminator="\r")
+                    for line in contenders:
+                        if line:
+                            player_writer.writerow([str(line[0]), int(line[1]), int(line[2]), int(line[3]), str(line[4]), str(line[5])])
 
         except:
             pass
@@ -2501,12 +2507,16 @@ def save_fame():
             fame_show = False
         else:
             show_h_o_f()
-            controlsWindow.call_h_o_f.setText("Hall of Fame schließen")
+            controlsWindow.call_h_o_f.setText("Ruhmeshalle schließen")
             fame_show = True
 
         fame_saveable = False
+
     if fame_show == True:
         fameWindow.raise_()
+
+    controlsWindow.gt_start.setChecked(False)
+    start_gt()
 
     make_game_floor("have fun")
 
@@ -2518,11 +2528,11 @@ def show_h_o_f():
     if fame_show == False:
         make_fame_window()
         fameWindow.show()
-        controlsWindow.call_h_o_f.setText("Hall of Fame schließen")
+        controlsWindow.call_h_o_f.setText("Ruhmeshalle schließen")
         fame_show = True
     elif fame_show == True:
         clear_fame()
-        controlsWindow.call_h_o_f.setText("Hall of Fame zeigen")
+        controlsWindow.call_h_o_f.setText("Ruhmeshalle zeigen")
         fame_show = False
 
     make_game_floor("have fun")
