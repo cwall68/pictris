@@ -2168,6 +2168,7 @@ def start_gt():
         controlsWindow.startWatch = False
         controlsWindow.timer_reset()
         controlsWindow.gt_start.setText("Start")
+        controlsWindow.label_level_counter.setText(f'0')
         game_counter_init()
         controlsWindow.pic_control.hide()
         controlsWindow.shuffle.setChecked(False)
@@ -2256,7 +2257,7 @@ def start_game(game):
             game_rounds = 0
             uncheck("abbruch")
             controlsWindow.dir_button.setChecked(True)
-            controlsWindow.rpg.setEnabled(True)
+            #controlsWindow.rpg.setEnabled(True)
             controlsWindow.fullpoints.setText("")
             controlsWindow.pic_control.hide()
             screen.fill(GRAY)
@@ -2323,7 +2324,7 @@ def make_fame_window():
     label_name = QtWidgets.QLabel('<h4 style="color:black">' + "Spieler" + '</h4>')
     # label_name = QtWidgets.QLabel("Spieler")
     label_name.setMaximumSize(QSize(45, 20))
-    label_rounds = QtWidgets.QLabel('<h4 style="color:black">' + "Runden" + '</h4>')
+    label_rounds = QtWidgets.QLabel('<h4 style="color:black">' + "Level" + '</h4>')
     # label_rounds = QtWidgets.QLabel("Runden")
     label_rounds.setMaximumSize(QSize(45, 20))
     label_percent = QtWidgets.QLabel('<h4 style="color:black">' + "Prozent" + '</h4>')
@@ -2349,24 +2350,23 @@ def make_fame_window():
 
     #fameWindow.formLayout.addRow(hbox_labels)
 
-    contenders = sorted(sorted(sorted(contenders, key=itemgetter(4)) ,key=itemgetter(2), reverse=True), key=itemgetter(1))
-    # contenders = sorted(sorted(contenders, key=itemgetter(2), reverse=True), key=itemgetter(1))
+    contenders = sorted(sorted(sorted(contenders, key=itemgetter(3), reverse=True) ,key=itemgetter(2), reverse=True), key=itemgetter(1), reverse=True)
+    # contenders = sorted(sorted(sorted(contenders, key=itemgetter(4)) ,key=itemgetter(2), reverse=True), key=itemgetter(1))
 
-
-    label_round = QtWidgets.QLabel("Spiele mit 1 Runde")
-    fameWindow.formLayout.addRow(label_round)
+    # label_round = QtWidgets.QLabel("Spiele mit 1 Runde")
+    # fameWindow.formLayout.addRow(label_round)
     rounds_old = 1
     fifecount = 1
     for i in range(len(contenders)):
         if contenders[i][1] == rounds_old:
-            if fifecount <= 5:
+            if fifecount < 10:
                 hbox_line = make_contender_line(i)
                 fameWindow.formLayout.addRow(hbox_line)
                 fifecount += 1
             else:
                 pass
         else:
-            label_round = QtWidgets.QLabel(f'Spiele mit {int(contenders[i][1])} Runden')
+            label_round = QtWidgets.QLabel(f'Beste Ergebnisse Level {int(contenders[i][1])}')
             fameWindow.formLayout.addRow(label_round)
             hbox_line = make_contender_line(i)
             fameWindow.formLayout.addRow(hbox_line)
