@@ -228,24 +228,6 @@ class Controls(QtWidgets.QMainWindow):
         self.race_flag.setGeometry(self.label_start_x + int(2.3*self.gt_button_size), int(0.5 * self.screen_height) - self.gt_offset - 15, self.label_width,
                                     self.label_height)
 
-        #Rundenvorwahl (rpg = rounds per game)
-        # self.rpg_label = QtWidgets.QLabel(self)
-        # self.rpg_label.setText("Runden je Spiel:")
-        # self.rpg_label.setGeometry(self.label_start_x, int(0.5 * self.screen_height - self.start_button_height/2), int(self.start_button_width/3 - 10),
-        #                      self.start_button_height-10)
-        # self.rpg_label.setStyleSheet("font-size: 12px;"
-        #                              "font-weight: bold;"
-        #                              )
-
-        # self.rpg = QSpinBox(self)
-        # self.rpg.setRange(1, 5)
-        # self.rpg.setWrapping(True)
-        # self.rpg.setPrefix("Runden = ")
-        # self.rpg.setStyleSheet("font-size: 12px;"
-        #                        "font-weight: bold;")
-        # self.rpg.setGeometry(self.label_start_x, int(0.5 * self.screen_height) + 8, int(self.start_button_width/3 - 10),
-        #                      self.start_button_height-15)
-
         self.level_label = QtWidgets.QLabel(self)
         self.level_label.setStyleSheet("font-size: 18px;")
         self.level_label.setText("Level:")
@@ -448,18 +430,6 @@ class HallOfFame(QWidget):
         #self.statusBar()
         self.setGeometry(0, 0, self.width, self.height)
         self.setWindowTitle('Ruhmeshalle')
-        # layout = QVBoxLayout()
-        # self.label_1 = QLabel("Ein-Runden-Rekorde")
-        # layout.addWidget(self.label_1)
-        # self.label_2 = QLabel("Zwei-Runden-Rekorde")
-        # layout.addWidget(self.label_2)
-        # self.label_3 = QLabel("Drei-Runden-Rekorde")
-        # layout.addWidget(self.label_3)
-        # self.setLayout(layout)
-        # self.label_4 = QLabel("Vier-Runden-Rekorde")
-        # layout.addWidget(self.label_4)
-
-
 
 #Anlegen des Fensters mit den Auswhl- und Kontrollfeldern für das Spiel
 controlsWindow = Controls()
@@ -468,20 +438,16 @@ screen_height = controlsWindow.screen_height
 controlsWindow.setGeometry(0, 0, screen_width, screen_height)
 
 fameWindow = HallOfFame()
-# fameWindow.show()
 
 controlsWindow.timer_label.hide()
 
-# pygame.init()
-
 clock = pygame.time.Clock()
-
 FPS = 60
 
 GRAY = (200, 200, 200)
-
 RED = (255, 0, 0)
-#Spielname, Runden, Punkte, Max-Punkte
+
+#Spielname, Runden/Level, Punkte, Max-Punkte
 gt_game_list = [["puzzle", 0, 0, 0], ["slider", 0, 0, 0], ["pictris", 0 ,0, 0]]
 
 #Einlesen der List of Fame
@@ -491,11 +457,6 @@ try:
         player_infos = csv.reader(players_file, quotechar='"', quoting=csv.QUOTE_NONNUMERIC, delimiter=";")
         for line in player_infos:
             contenders.append(line)
-# with open(r'C:\Users\User\PycharmProjects\pictris\contenders.csv', newline = '') as players_file:
-#     player_infos = csv.reader(players_file, quotechar='"', delimiter=";")
-#     for line in player_infos:
-#         print(line)
-#         contenders.append(line)
 except:
      pass
 
@@ -528,24 +489,23 @@ alphawert_init = 255
 #Steuerung der Geschwindigkeit des Hintergrundbildverschwindens bei Puzzle und Pictris
 fade_factor = 0.3
 #Kachel wartet bei Pictris vor dem Fall
-before_fall_init = 1500
-#Zähler für die Verkleinerung der Puzzleteile bei Bildpuzzle und Berechnung der game_id bei GT
+before_fall_init = 1000
+#Zähler für die Verkleinerung der Puzzleteile bei Bildpuzzle
 game_rounds = 0
-# Replay sorgt bei Slider für erneutes Spiel mit gleicher Ausganglage
+# Replay sorgt bei Slider für erneutes Spiel mit gleicher Ausganglage und Verhindert Kachelverkleinerung bei Quadraten
 replay = False
 #Ist True während das Spielbild gesenkt wird
 move = False
 #Ist True nachdem Spielbild gesenkt wurde und Spiel angefangen hat
 started = False
-
+#Wird auf True gesetzt wenn GT-Button zum stoppen gedrückt wird
 gt_stop = False
-
-#Bringt das jeweilige Spiel zum Ende
+#Bringt wenn True das jeweilige Spiel zum Ende
 abbruch = False
 
 #Dictionary bewahrt die Zufallskonfiguration des Spielfelds um dieses (vgl replay) in gleicher Form wieder spielen zu können
 replay_dict = {}
-
+#Steuert das Fading beim Puzzeln
 zugzahl = 0
 
 w_floor, h_floor = screen_width - screen_width // 4, screen_height
@@ -619,7 +579,6 @@ def start_playing(game):
     global gt_stop
     global abbruch
     global gt_game_list
-    global planned_rounds
     global gt_stop
     global move
     global level
@@ -650,9 +609,7 @@ def start_playing(game):
     controlsWindow.label_level_counter.setText(f'{level}')
 
     if controlsWindow.gt_mode:
-        print(f'game_rounds: {game_rounds}')
         game_id = int(game_rounds - (level-1)*len(gt_game_list)-1)
-        print(f'game_id: {game_id}')
         gt_game_list[game_id][1] = level
         game = gt_game_list[game_id][0]
         uncheck(game)
@@ -671,10 +628,6 @@ def start_playing(game):
         else:
             fame_saveable = False
 
-            # if fame_show == True:
-            #     clear_fame()
-            #     fame_show = False
-
     if controlsWindow.nine_button.isChecked() == True:
         part_anz = 3
 
@@ -687,7 +640,6 @@ def start_playing(game):
     elif controlsWindow.pic_button.isChecked() == True or controlsWindow.dir_button.isChecked() == True:
         if controlsWindow.gt_mode:
             part_anz = part_anz_init + level - 1
-            # part_anz = part_anz_init + gt_game_list[game_id][1] - 1
         else:
             part_anz = part_anz_init + game_rounds -1
 
@@ -697,9 +649,7 @@ def start_playing(game):
     except:
         return
     width, height = image.size
-    #print(f'part_anz: {part_anz}')
     part_size = find_part_size(width, height, part_anz)
-    #print(f'part_size: {part_size}')
 
     #Bestimmung der Position des Gesamtspielbildes
     full_image_x = (w_floor - width) / 2
@@ -713,6 +663,7 @@ def start_playing(game):
 
     make_game_floor(game)
 
+    #Anlegen des verkleinerten Bildes im Hintergrund zum Nachschauen bei Puzzel und Slider
     control_pic = QtGui.QPixmap(r"tmp_resize.JPG")
     control_width = int(width/2)
     control_height = int(height/2)
@@ -769,8 +720,6 @@ def start_playing(game):
         count = puzzle(full_partsdict, grid)
 
         if count != None:
-            #print(count)
-            #gt_game_list[0][1] = gt_game_list[0][1] + 1
             gt_game_list[0][2] = gt_game_list[0][2] + count
             gt_game_list[0][3] = gt_game_list[0][3] + (x_anz*y_anz)
             if controlsWindow.gt_mode:
@@ -846,24 +795,16 @@ def start_playing(game):
 #setzt die Zähler in der game_list auf Null und schreibt dies in die Ausgabe
 def game_counter_init():
     global gt_game_list
-    #
-    # gt_game_list = [["puzzle", 0, 0], ["slider", 0, 0], ["pictris", 0, 0]]
 
     gt_game_list[0][1] = 0
     gt_game_list[0][2] = 0
     gt_game_list[0][3] = 0
-    # controlsWindow.counter_1_1.setText(f'<h1 style="color:white"> {gt_game_list[0][1]} </h1>')
-    # controlsWindow.counter_1_2.setText(f'<h1 style="color:white"> {gt_game_list[0][2]} </h1>')
     gt_game_list[1][1] = 0
     gt_game_list[1][2] = 0
     gt_game_list[1][3] = 0
-    # controlsWindow.counter_2_1.setText(f'<h1 style="color:white"> {gt_game_list[1][1]} </h1>')
-    # controlsWindow.counter_2_2.setText(f'<h1 style="color:white"> {gt_game_list[1][2]} </h1>')
     gt_game_list[2][1] = 0
     gt_game_list[2][2] = 0
     gt_game_list[2][3] = 0
-    # controlsWindow.counter_3_1.setText(f'<h1 style="color:white"> {gt_game_list[2][1]} </h1>')
-    # controlsWindow.counter_3_2.setText(f'<h1 style="color:white"> {gt_game_list[2][2]} </h1>')
 
     controlsWindow.counter_1_1.setText(f'<h1 style="color:white"> 0 </h1>')
     controlsWindow.counter_1_2.setText(f'<h1 style="color:white"> 00 </h1>')
@@ -876,7 +817,7 @@ def game_counter_init():
 
     controlsWindow.fullpoints.setText("")
 
-
+#Bestimmt auf Basis der Bildgröße und Teilezahl-Vorgabe die Größe der Kacheln
 def find_part_size(width, height, part_anz):
     global part_anz_init
 
@@ -895,6 +836,7 @@ def find_part_size(width, height, part_anz):
 
     return(part_size)
 
+#Sorgt dafür, dass nur das aktuell angewählte Spiel als aktiviert gezeigt wird
 def uncheck(game):
 
     controlsWindow.puzzle_start.setChecked(False)
@@ -907,7 +849,7 @@ def uncheck(game):
     elif game == "pictris":
         controlsWindow.pictris_start.setChecked(True)
 
-
+# Stellt game-sounds an und ab
 def game_sounds():
     if controlsWindow.game_sounds.isChecked() == True:
         kachelpasst.set_volume(1)
@@ -918,15 +860,14 @@ def game_sounds():
         kachelplop.set_volume(0)
         kachelfalsch.set_volume(0)
 
+# Stell Hintergrund-Sound an und ab
 def ambient_sound():
     if controlsWindow.ambient.isChecked() == True:
-        #game_ambient.set_volume(0.1)
         pygame.mixer.music.set_volume(0.1)
     else:
-        #game_ambient.set_volume(0)
         pygame.mixer.music.set_volume(0)
 
-
+#Neuberechnung der Bildgröße
 def resize(file):
 
     fixed_height = 650
@@ -938,8 +879,6 @@ def resize(file):
 
     return(image)
 
-
-abbruch = False
 def puzzle(full_partsdict, grid):
     global alphawert_init
     global game_rounds
@@ -973,10 +912,8 @@ def puzzle(full_partsdict, grid):
 
     fertig = False
 
-    #if init == True:
     counter = 0
 
-    #alpha_step = alphawert_init // (x_anz*y_anz)
     alphawert = alphawert_init
 
     sliding = False
@@ -1003,16 +940,12 @@ def puzzle(full_partsdict, grid):
 
     pygame.display.flip()
 
-    #pygame.mixer.Sound.play(game_ambient)
-    # pygame.mixer.music.play(-1)
-
     running = True
     while running:
         if gt_stop == True:
-            print(gt_stop)
             running = False
             break
-            #return(counter)
+
         screen.fill(GRAY)
 
         ambient_sound()
@@ -1023,7 +956,8 @@ def puzzle(full_partsdict, grid):
             alphawert = 0
             alpha = 0
         else:
-            alpha = 255
+            #Einstiegswert verblasstes Puzzlebild
+            alpha = 175
         for key, value in full_partsdict.items():
             if zugzahl == 0:
                 value[0].set_alpha(alpha)
@@ -1069,9 +1003,6 @@ def puzzle(full_partsdict, grid):
                         controlsWindow.call_h_o_f.setText("Ruhmeshalle zeigen")
                         fame_show = False
 
-                    #print("Buttondown angenommen")
-
-
             elif event.type == pygame.MOUSEMOTION and sliding == True:
                 if fertig == False:
                     rect.move_ip(event.rel)
@@ -1094,7 +1025,6 @@ def puzzle(full_partsdict, grid):
                 # find Ablage x, y
                 x_neu = int(drop_x - full_image_x) // part_size
                 y_neu = int(drop_y - full_image_y) // part_size
-                #print(f'{x_neu} / {y_neu}')
                 if (x_neu < 0 or x_neu > x_anz-1) or (y_neu < 0 or y_neu > y_anz-1):
                     pass
                 else:
@@ -1112,8 +1042,6 @@ def puzzle(full_partsdict, grid):
                         if len(parts_list) == (y_anz * x_anz):
                             fertig = True
                             init = False
-                            #text_surface = pygame.font.Font.render(font, f'Punkte: {counter}', True, (55, 55, 55))
-                            #screen.blit(text_surface, dest=(50, 50))
                             for key, value in act_partsdict.items():
                                 screen.blit(value[0], value[1])
                             text_surface = pygame.font.Font.render(font, f'Punkte: {counter} von {x_anz*y_anz}', True, (55, 55, 55))
@@ -1128,7 +1056,6 @@ def puzzle(full_partsdict, grid):
                                 replay = True
                                 init = False
 
-                            #counter = 0
                             return(counter)
                     else:
                         counter -= 1
@@ -1163,13 +1090,11 @@ def puzzle(full_partsdict, grid):
                     sliding = False
 
                     # Ausblenden des Hintergrunds (erst schneller, dann langsam
-                    #abzug = game_rounds*alpha_step + (alpha_step)**(fade_factor/zugzahl)
                     anz = x_anz*y_anz
                     abzug = ((alphawert_init / ((anz - (anz*fade_factor))**0.5) * (zugzahl**0.5)))
                     alphawert = alphawert_init - abzug
                     if alphawert <= 5:
                         alphawert = 5
-                    #print(f'Zugzahl: {zugzahl}  Abzug: {abzug}  Alphawert: {alphawert}')
 
         if gt_stop:
             return
@@ -1179,8 +1104,6 @@ def puzzle(full_partsdict, grid):
         text_surface = pygame.font.Font.render(font, f'Punkte: {counter} von {x_anz * y_anz}', True, (55, 55, 55))
         screen.blit(text_surface, dest=(50, 50))
 
-        # font_2 = pygame.font.Font(pygame.font.get_default_font(), 15)
-        # text_surface_3 = pygame.font.Font.render(font_2, f'Abbruch mit Leertaste', True, (55, 55, 55))
         if not controlsWindow.gt_mode:
             screen.blit(text_surface_3, dest=(controlsWindow.screen_width / 3, controlsWindow.screen_height - 50))
 
@@ -1189,7 +1112,7 @@ def puzzle(full_partsdict, grid):
         blit_grid(grid, RED)
         pygame.display.update()
 
-
+#Fallen der Kachel bei Pictris
 def part_fall(img, full_partsdict, x, y, act_partsdict, alphawert):
     global x_anz
     global y_anz
@@ -1213,7 +1136,6 @@ def part_fall(img, full_partsdict, x, y, act_partsdict, alphawert):
     blit_field(full_partsdict, act_partsdict, alphawert)
     text_surface = pygame.font.Font.render(font, f'Punkte: {punkte} von {x_anz*y_anz}', True, (55, 55, 55))
     screen.blit(text_surface, dest=(50, 50))
-    #pygame.display.flip()
 
     # Hier wird das Spielteil gesenkt
     start_pos_x = (full_image_x + int(x_anz*part_size/2 - part_size/2))
@@ -1284,16 +1206,9 @@ def part_fall(img, full_partsdict, x, y, act_partsdict, alphawert):
                                                                                   full_partsdict, act_partsdict, alphawert)
 
                                     if fits > fits_old:
-                                        # print("zu schnell gedrückt")
-                                        # print(f'fits: {fits} / fits_old: {fits_old}')
-                                        # print(f'x_check: {x_check} / y_check: {y_check}')
-
                                         break
                                     else:
                                         y_check += 1
-                                        # print(f'fits: {fits} / fits_old: {fits_old}')
-                                        # print(f'x_check: {x_check} / y_check: {y_check}')
-
 
                                 if fits > fits_old:
                                     break
@@ -1355,7 +1270,6 @@ def part_fall(img, full_partsdict, x, y, act_partsdict, alphawert):
 
             if fertig:
                 success(8)
-                #punkte = 0
                 act_partsdict.clear()
                 pygame.time.delay(1000)
                 stop = True
@@ -1385,9 +1299,9 @@ def place_check(x, y, pic_pos_x, pic_pos_y, x_change, full_partsdict, act_partsd
     x_act = math.floor((pic_pos_x - full_image_x) / part_size)
     y_act = math.floor((pic_pos_y - full_image_y) / part_size)
 
-    # Wenn Sprite nicht auf Feld ausgerichtet oder durch Bewegung dazu eingenordet wurde
+    # Wenn Kachel nicht auf Feld ausgerichtet oder durch Bewegung dazu eingenordet wurde
     if (x_anz % 2) == 0 and x_change == 0:
-        # wenn Sprite mittig über Grid-Linie startet und mit der einen oder anderen Hälfte eine Kollision verursacht
+        # wenn Kachel mittig über Grid-Linie startet und mit der einen oder anderen Hälfte eine Kollision verursacht
         if ((x_act, y_act + 1) in act_partsdict.keys() or (
         x_act + 1, y_act + 1) in act_partsdict.keys()) or y_act == y_anz - 1:
             stop = True
@@ -1413,7 +1327,7 @@ def place_check(x, y, pic_pos_x, pic_pos_y, x_change, full_partsdict, act_partsd
 
     return(stop, fertig, act_partsdict)
 
-
+#Bild anzeigen
 def blit_field(full_partsdict, act_partsdict, alphawert):
     screen.fill(GRAY)
     for key, value in full_partsdict.items():
@@ -1423,6 +1337,7 @@ def blit_field(full_partsdict, act_partsdict, alphawert):
         value[0].set_alpha(255)
         screen.blit(value[0], value[1])
 
+#Rahmenprogramm für Spiel pictris
 def pictris(full_partsdict, grid):
     global spielbild
     global alphawert_init
@@ -1471,10 +1386,13 @@ def pictris(full_partsdict, grid):
             break
         if abbruch:
             return
+        #Intensitätswert für Bildhintergrund
+        alphawert = 43
+
         if not started:
             counter = 0
             punkte = 0
-            alphawert = 45
+            #alphawert = 40
             parts = 0
             fits = 0
             fails = 0
@@ -1497,9 +1415,6 @@ def pictris(full_partsdict, grid):
             text_surface_4 = pygame.font.Font.render(font_2, f'Start mit Leertaste', True, (55, 55, 55))
             screen.blit(text_surface_4, dest=(controlsWindow.screen_width / 3, controlsWindow.screen_height - 50))
             pygame.display.update()
-
-            # Kachel wird für spezifizierte Zeit vor Fall gezeigt
-            #pygame.time.delay(before_fall)
 
             wait = True
             while wait == True:
@@ -1528,9 +1443,6 @@ def pictris(full_partsdict, grid):
             x, y = make_randpos(act_partsdict)
             img = full_partsdict[x, y][0]
 
-        else:
-            alphawert = 45
-
         if started:
             before_fall = before_fall_init - int(fits*(before_fall_init-150)/(x_anz*y_anz))
             blit_field(full_partsdict, act_partsdict, alphawert)
@@ -1553,8 +1465,6 @@ def pictris(full_partsdict, grid):
                 #replay = True
                 init = False
                 started = False
-                #game_ambient.set_volume(0)
-                #start_playing("pictris")
                 return(punkte)
 
             blit_field(full_partsdict, act_partsdict, alphawert)
@@ -1631,7 +1541,7 @@ def copy_full_partsdict(full_partsdict):
 
     return(act_partsdict)
 
-
+#Kernprogramm der Spielversion slider
 def slider(full_partsdict, grid):
     global w_floor
     global h_floor
@@ -1651,7 +1561,6 @@ def slider(full_partsdict, grid):
 
     sender = controlsWindow.sender()
     spiel = sender.text()
-    #print(f'Spiel: {spiel}')
 
     font = pygame.font.Font(pygame.font.get_default_font(), 36)
 
@@ -1720,8 +1629,6 @@ def slider(full_partsdict, grid):
     screen.blit(text_surface, dest=(50, 50))
     pygame.display.flip()
 
-    #pygame.mixer.Sound.play(game_ambient)
-    #pygame.mixer.music.play(-1)
     pygame.mixer.music.set_volume(0.1)
 
     while running:
@@ -1745,11 +1652,6 @@ def slider(full_partsdict, grid):
                 if event.key == pygame.K_ESCAPE:
                     sys.exit()
                 if event.key == pygame.K_SPACE:
-                    # game_rounds = 1
-                    # counter = 0
-                    # init = True
-                    # replay = False
-                    # return
                     if started and not controlsWindow.gt_mode:
                         fertig = True
                         game_rounds = 0
@@ -1769,7 +1671,6 @@ def slider(full_partsdict, grid):
                 # find x, y
                 x_wert = int(eventpos_x - full_image_x) // part_size
                 y_wert = int(eventpos_y - full_image_y) // part_size
-                #print(f'Coord: {x_wert} / {y_wert}')
                 #Absturz bei Klick in leeres Feld verhindern
                 if (x_wert, y_wert) not in act_pos_dict.keys():
                     pass
@@ -1850,17 +1751,9 @@ def slider(full_partsdict, grid):
                     else:
                         counter += 1
 
-                # #Ausgabe der neuen Bildversion
-                # screen.fill(GRAY)
-                # for key, value in act_pos_dict.items():
-                #     screen.blit(value[0], value[1])
-
-
-
                 #Check ob Spiel abgeschlossen
                 i = 1
                 for key, value in dict(sorted(act_pos_dict.items(), key=lambda x: x[1][2])).items():
-                    #print(f'<index: {i} Wert: {value[3]}')
                     if value[3] == i:
                         #Check alle Werte in der richtigen Reihenfolge und Feld unten rechts leer
                         if i == (x_anz*y_anz - 1) and ((x_anz-1, y_anz-1) not in act_pos_dict.keys()):
@@ -1933,17 +1826,14 @@ def check_solvability(act_pos_dict, x_anz, y_anz):
     for key, value in dict(sorted(act_pos_dict.items(), key=lambda x: x[1][2])).items():
         # Wobei x[1] für Value steht (x[0] wäre der key) und der zweite Wert in der eckigen Klamer die Position in der Value-Liste bezeichnet
         # hier wird demgemäß nach Ordnungsposition sortiert
-        # print(f'Ordnung: {value[2]}, Wert: {value[3]}')
         order = value[2]
         reference = value[3]
         count = 1
-        #single_count = 0
         for key, value in dict(sorted(act_pos_dict.items(), key=lambda x: x[1][2])).items():
             if count >= order - 1:
                 break
             if value[3] > reference:
                 n2 += 1
-                #single_count += 1
             count += 1
 
     #Ausgangspunkt Leerfeld in Zeile 1 auf 0/0 und Durcheinander = n2
@@ -1952,9 +1842,6 @@ def check_solvability(act_pos_dict, x_anz, y_anz):
     #Ziel: Leerfeld im letzten Feld, n2 = 0
     n1_goal = y_anz
     parity_goal = n1_goal
-    #print(f'N2: {n2}')
-    #print(f'Parity-Ziel: {parity_goal}')
-    #print(f'Parity-Start: {parity_start}')
 
     #if (x_anz == 3 and y_anz == 4):
     if ((parity_start % 2) == 0 and (parity_goal % 2) == 0) or ((parity_start % 2) != 0 and (parity_goal % 2) != 0):
@@ -1967,11 +1854,6 @@ def check_solvability(act_pos_dict, x_anz, y_anz):
         # Sonderlocke bei nicht-quadratischen Spielfeldern
         if (x_anz % 2) != 0 and (y_anz % 2) == 0:
             loesbar = True
-
-    # if loesbar:
-        #print("lösbar")
-    # else:
-        #print("unlösbar")
 
     return(loesbar)
 
@@ -1998,13 +1880,13 @@ def make_full_partsdict(anz_x, anz_y,game):
 
     return(full_partsdict)
 
-
+#Funktion zum Aufruf beim Erstellen des full_parts_dict (externalisiert wg Variablenübergabe)
 def make_list_element(x,y, part_pos_x, part_pos_y, order, value, game):
     part = make_pic_part(x, y, game)
     list_element = [part, (part_pos_x, part_pos_y), order, value]
     return(list_element)
 
-
+#Erstellt die Kacheln
 def make_pic_part(x, y, game):
     global w_floor
     global screen_height
@@ -2025,7 +1907,7 @@ def make_pic_part(x, y, game):
 
     return(part)
 
-
+#Erstellt das Grid zwischen den Kacheln
 def make_grid(x_init, y_init, x_anz, y_anz, part_size):
     grid = {}
 
@@ -2037,18 +1919,17 @@ def make_grid(x_init, y_init, x_anz, y_anz, part_size):
 
     return(grid)
 
+#Zeigt das Grid
 def blit_grid(grid, color):
 
     for key, value in grid.items():
         pygame.draw.line(screen, color, value[0], value[1], 3)
-    #     print(f'{key}: {value[0]} / {value[1]}')
 
 #Versteckt das Kontrollbild beim Bildwechsel und bringt das Spielfeld wieder nach vorn
 def after_toggle():
     if controlsWindow.gt_start.isChecked() == False:
         controlsWindow.pic_control.hide()
     make_game_floor("have fun")
-
 
 #Blinken und Klingeln bei Erfolg
 def success(anz):
@@ -2065,7 +1946,7 @@ def success(anz):
         pygame.mixer.Sound.play(kachelpasst)
 
 
-    #sucht nach Zufall ein Bild aus dem Spielbildverzeichnis
+#sucht nach Zufall ein Bild aus dem Spielbildverzeichnis
 select_pic_list = []
 def find_pic():
     global select_pic_list
@@ -2126,37 +2007,20 @@ def find_pic():
     elif controlsWindow.abc_button.isChecked() == True:
         select_pic_file = r"Quadrate\ABC Puzzle.jpg"
 
-    #print(select_pic_file)
     return(select_pic_file)
 
+#Zeigt das Bild durch Anzeige aller Elemente des full-Parts_dict
 def show_fullparts(full_partsdict):
     for key, value in full_partsdict.items():
-        #print(f'Publikations_Ordnung: {key} / {value[1]}, Wert: {value[3]}')
         screen.blit(value[0], value[1])
     pygame.display.flip()
 
-def rpg_value():
-    global started
-    global planned_rounds
-    global game
 
-    if controlsWindow.gt_start.isChecked() == True:
-    # if started:
-        controlsWindow.rpg.setValue(planned_rounds)
-        make_game_floor(gt_game_list[0])
-    else:
-        planned_rounds = 1
-        make_game_floor(gt_game_list[0])
-
-    return(planned_rounds)
-
-planned_rounds = 1
-
+#GT-Toggle: Startet GT-Mode wenn Button gedrückt bzw Stoppt wenn wieder gedrückt
 def start_gt():
     global gt_stop
     global abbruch
     global gt_game_list
-    global planned_rounds
     global init
     global replay
     global players
@@ -2169,7 +2033,6 @@ def start_gt():
         make_game_floor("have fun")
         return
 
-    #if controlsWindow.gt_mode == False:
     if controlsWindow.gt_start.isChecked() == True:
         init = True
         replay = False
@@ -2223,7 +2086,7 @@ def start_gt():
         make_game_floor("have fun")
         fameWindow.raise_()
 
-
+#Deaktiviert Spielbuttons wenn gedrückt während GT-Mode den Start verhindert
 def init_start(game):
     if controlsWindow.gt_start.isChecked() == True:
         if game == "puzzle":
@@ -2237,13 +2100,12 @@ def init_start(game):
     else:
         start_game(game)
 
-
+#Einstiegspunkt in das Gesamtspiel
 def start_game(game):
     global init
     global replay
     global gt_stop
     global game_rounds
-    global planned_rounds
     global started
     global fertig
     global abbruch
@@ -2267,30 +2129,6 @@ def start_game(game):
     abbruch = False
 
     while True:
-        # if controlsWindow.gt_mode and ceil(game_rounds / planned_rounds) - 1 == len(gt_game_list):
-        #     controlsWindow.startWatch = False
-        #
-        #     result_points = gt_game_list[0][2] + gt_game_list[1][2] + gt_game_list[2][2]
-        #     max_points = gt_game_list[0][3] + gt_game_list[1][3] + gt_game_list[2][3]
-        #     controlsWindow.fullpoints.setText(str(result_points) + "  von " + str(max_points))
-        #
-        #     result_percent = int((result_points / max_points) * 100)
-        #     controlsWindow.gt_start.setText(str(result_percent) + " %")
-        #     fame_saveable = True
-        #
-        #     controlsWindow.rpg.setEnabled(True)
-        #     uncheck("abbruch")
-        #     part_anz_init = part_anz_min
-        #     started = False
-        #     fertig = False
-        #     init = True
-        #     replay = False
-        #     game_rounds = 0
-        #     controlsWindow.pic_control.hide()
-        #     screen.fill(GRAY)
-        #     pygame.display.update()
-        #     break
-
         if gt_stop or abbruch:
             gt_stop = False
             abbruch = False
@@ -2302,8 +2140,6 @@ def start_game(game):
             replay = False
             game_rounds = 0
             uncheck("abbruch")
-            #controlsWindow.dir_button.setChecked(True)
-            #controlsWindow.rpg.setEnabled(True)
             controlsWindow.fullpoints.setText("")
             controlsWindow.label_level_counter.setText(f'0')
             controlsWindow.pic_control.hide()
@@ -2355,36 +2191,29 @@ def make_contender_line(i):
     hbox_contenders.addWidget(label_result_pic)
 
     return(hbox_contenders)
-
+#Erstellt das Hall of Fame Window mit Inhalt
 def make_fame_window():
     global contenders
-
-    #print(contenders)
 
     fameWindow.formLayout = QFormLayout()
     fameWindow.groupbox = QGroupBox()
 
+    #Überschriftszeile über der Scrollbox mit den Einzelergebnissen
     hbox_labels = QHBoxLayout()
 
     label_space = QtWidgets.QLabel('<h4 style="color:black">' + " " + '</h4>')
     label_space.setMaximumSize(QSize(4, 20))
     label_name = QtWidgets.QLabel('<h4 style="color:black">' + "Spieler" + '</h4>')
-    # label_name = QtWidgets.QLabel("Spieler")
     label_name.setMaximumSize(QSize(45, 20))
     label_rounds = QtWidgets.QLabel('<h4 style="color:black">' + "Level" + '</h4>')
-    # label_rounds = QtWidgets.QLabel("Runden")
     label_rounds.setMaximumSize(QSize(45, 20))
     label_percent = QtWidgets.QLabel('<h4 style="color:black">' + "Prozent" + '</h4>')
-    # label_percent = QtWidgets.QLabel("Prozent")
     label_percent.setMaximumSize(QSize(45, 20))
     label_points = QtWidgets.QLabel('<h4 style="color:black">' + "Punkte" + '</h4>')
-    # label_points = QtWidgets.QLabel("Punkte")
     label_points.setMaximumSize(QSize(45, 20))
     label_time = QtWidgets.QLabel('<h4 style="color:black">' + "Zeit" + '</h4>')
-    # label_time = QtWidgets.QLabel("Zeit")
     label_time.setMaximumSize(QSize(60, 20))
     label_pic = QtWidgets.QLabel('<h4 style="color:black">' + "Bild" + '</h4>')
-    # label_pic = QtWidgets.QLabel("Bild")
     label_pic.setMaximumSize(QSize(250, 20))
 
     hbox_labels.addWidget(label_space)
@@ -2395,13 +2224,8 @@ def make_fame_window():
     hbox_labels.addWidget(label_time)
     hbox_labels.addWidget(label_pic)
 
-    #fameWindow.formLayout.addRow(hbox_labels)
-
     contenders = sorted(sorted(sorted(contenders, key=itemgetter(3), reverse=True) ,key=itemgetter(2), reverse=True), key=itemgetter(1), reverse=True)
-    # contenders = sorted(sorted(sorted(contenders, key=itemgetter(4)) ,key=itemgetter(2), reverse=True), key=itemgetter(1))
 
-    # label_round = QtWidgets.QLabel("Spiele mit 1 Runde")
-    # fameWindow.formLayout.addRow(label_round)
     rounds_old = 1
     fifecount = 1
     for i in range(len(contenders)):
@@ -2445,16 +2269,16 @@ def make_fame_window():
 
     fameWindow.setLayout(fameWindow.layout)
 
-
+#Schließt das Fame Window zur aktualisierten Neuausgabe
 def clear_fame():
 
     for label in fameWindow.groupbox.findChildren(QtWidgets.QLabel):
         label.deleteLater()
     fameWindow.layout.deleteLater()
-    # fameWindow.layoutexists = False
     fameWindow.close()
     fameWindow.destroy()
 
+#Speichern des Spielergebnisses für die Hall of Fame
 fame_saveable = False
 def save_fame():
     global contenders
@@ -2483,7 +2307,6 @@ def save_fame():
             doc = QtGui.QTextDocument()
             doc.setHtml(controlsWindow.timer_label.text())
             time = doc.toPlainText()
-            print(time)
             gt_result.append(time)
             gt_result.append(spielbild)
 
@@ -2520,7 +2343,7 @@ def save_fame():
 
     make_game_floor("have fun")
 
-
+#Aufruf des Fame_window
 fame_show = False
 def show_h_o_f():
     global fame_show
