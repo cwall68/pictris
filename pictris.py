@@ -2191,6 +2191,7 @@ def make_contender_line(i):
     hbox_contenders.addWidget(label_result_pic)
 
     return(hbox_contenders)
+
 #Erstellt das Hall of Fame Window mit Inhalt
 def make_fame_window():
     global contenders
@@ -2238,6 +2239,9 @@ def make_fame_window():
                 pass
         else:
             label_round = QtWidgets.QLabel(f'Beste Ergebnisse Level {int(contenders[i][1])}')
+            label_round.setStyleSheet("font-size: 10px;"
+                                       "font-weight: bold;"
+                                       "color: red;")
             fameWindow.formLayout.addRow(label_round)
             hbox_line = make_contender_line(i)
             fameWindow.formLayout.addRow(hbox_line)
