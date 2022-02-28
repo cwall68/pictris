@@ -1909,6 +1909,7 @@ def make_pic_part(x, y, game):
         screen.fill(GRAY)
     except:
         start_game(game)
+        return
 
     return(part)
 
