@@ -1897,13 +1897,18 @@ def make_pic_part(x, y, game):
     screen = pygame.display.set_mode((w, h))
     screen.blit(pic, (0,0))
 
+    print(part_size)
+
     rect = pygame.Rect(x * part_size, y * part_size, part_size, part_size)
 
-    sub = screen.subsurface(rect)
-    screenshot = pygame.Surface((part_size, part_size))
-    screenshot.blit(sub, (0, 0))
-    part = screenshot
-    screen.fill(GRAY)
+    try:
+        sub = screen.subsurface(rect)
+        screenshot = pygame.Surface((part_size, part_size))
+        screenshot.blit(sub, (0, 0))
+        part = screenshot
+        screen.fill(GRAY)
+    except:
+        start_game(game)
 
     return(part)
 
