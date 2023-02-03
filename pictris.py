@@ -192,16 +192,16 @@ class Controls(QtWidgets.QMainWindow):
         self.gt_start.setGeometry(self.label_start_x + self.gt_button_size, int(0.5 * self.screen_height) - self.start_button_height, self.gt_button_size, self.gt_button_size)
         self.gt_start.setCheckable(True)
         self.gt_start.setStyleSheet(
-            ":checked{background: rgb(190,255,190)}"
-            ":checked{border: 10px solid lightblue}"
+            ":!checked{background: rgb(190,255,190)}"
+            ":!checked{border: 10px solid lightblue}"
             f':checked{{border-radius: {self.gt_button_size/2}}}'
-            ":checked{color: black}"
-            ":!checked{background-color: red}"
-            ":!checked{border: 10px solid black}"
+            ":!checked{color: black}"
+            ":checked{background-color: red}"
+            ":checked{border: 10px solid black}"
             f':!checked{{border-radius: {self.gt_button_size/2}}}'            
             ":!checked{font-size: 15px}"
             ":!checked{font-weight: bold}"            
-            ":!checked{color: white}"
+            ":checked{color: white}"
         )
 
         self.player_label = QtWidgets.QLabel(self)
@@ -426,7 +426,7 @@ class HallOfFame(QWidget):
         super().__init__(parent)
         self.screen_width, self.screen_height = pyautogui.size()
         self.width = int(self.screen_width/4)
-        self.height = int(self.screen_height/2.5)
+        self.height = int(self.screen_height/3)
         #self.statusBar()
         self.setGeometry(0, 0, self.width, self.height)
         self.setWindowTitle('Ruhmeshalle')
@@ -513,6 +513,7 @@ game_x = screen_width - w_floor
 game_y = screen_height - h_floor - offset_y
 
 pygame.init()
+pygame.mixer.init()
 
 pygame.mixer.music.load(r"Sounds\02 - Abiding Love.mp3")
 #Parameter -1 für Dauerschleife
@@ -559,6 +560,7 @@ def start_playing(game):
     global part_anz_min
     global game_rounds
     global init
+    global replay
     global grid
     global offset_y
     global GRAY
@@ -740,11 +742,14 @@ def start_playing(game):
             pygame.display.update()
             game_counter_init()
             pygame.mixer.music.set_volume(0)
+            init = True
+            replay = False
             return
 
         return
 
     if game == "slider":
+        #print("Slider")
         count = slider(full_partsdict, grid)
 
         if count != None:
@@ -816,6 +821,15 @@ def game_counter_init():
     controlsWindow.counter_3_2.setText(f'<h1 style="color:white"> 00 </h1>')
 
     controlsWindow.fullpoints.setText("")
+
+    controlsWindow.timer_label.hide()
+    controlsWindow.race_flag.show()
+    controlsWindow.startWatch = False
+    controlsWindow.timer_reset()
+    controlsWindow.gt_start.setText("Start")
+    controlsWindow.label_level_counter.setText(f'0')
+
+
 
 #Bestimmt auf Basis der Bildgröße und Teilezahl-Vorgabe die Größe der Kacheln
 def find_part_size(width, height, part_anz):
@@ -910,8 +924,6 @@ def puzzle(full_partsdict, grid):
 
     parts_list = []
 
-    fertig = False
-
     counter = 0
 
     alphawert = alphawert_init
@@ -981,7 +993,6 @@ def puzzle(full_partsdict, grid):
                     sys.exit()
                 if event.key == pygame.K_SPACE:
                     if started and not controlsWindow.gt_mode:
-                        fertig = True
                         game_rounds = 0
                         counter = 0
                         init = True
@@ -1053,7 +1064,7 @@ def puzzle(full_partsdict, grid):
                                 replay = False
                                 init = False
                             else:
-                                replay = True
+                                replay = False
                                 init = False
 
                             return(counter)
@@ -1561,6 +1572,7 @@ def slider(full_partsdict, grid):
 
     sender = controlsWindow.sender()
     spiel = sender.text()
+    #print(spiel);
 
     font = pygame.font.Font(pygame.font.get_default_font(), 36)
 
@@ -1578,8 +1590,8 @@ def slider(full_partsdict, grid):
 
     if replay == False:
         replay_dict = {}
-        lösbar = False
-        while lösbar == False:
+        loesbar = False
+        while loesbar == False:
             rand_values = []
             # Aus den Bildteilen ein Puzzle machen
             for key, value in full_partsdict.items():
@@ -1609,7 +1621,7 @@ def slider(full_partsdict, grid):
                 act_pos_dict[(rand_x, rand_y)] = (value[0], rand_coord, rand_order, value[3])
                 replay_dict[(rand_x, rand_y)] = (value[0], rand_coord, rand_order, value[3])
 
-            lösbar = check_solvability(act_pos_dict, x_anz, y_anz)
+            loesbar = check_solvability(act_pos_dict, x_anz, y_anz)
 
     else:
         act_pos_dict = replay_dict.copy()
@@ -1897,7 +1909,7 @@ def make_pic_part(x, y, game):
     screen = pygame.display.set_mode((w, h))
     screen.blit(pic, (0,0))
 
-    print(part_size)
+    #print(part_size)
 
     rect = pygame.Rect(x * part_size, y * part_size, part_size, part_size)
 
@@ -2340,8 +2352,15 @@ def save_fame():
             fame_show = False
         else:
             show_h_o_f()
+            controlsWindow.startWatch = False
             controlsWindow.call_h_o_f.setText("Ruhmeshalle schließen")
             fame_show = True
+
+            controlsWindow.puzzle_start.setEnabled(True)
+            controlsWindow.slider_start.setEnabled(True)
+            controlsWindow.pictris_start.setEnabled(True)
+
+            controlsWindow.gt_mode = False
 
         fame_saveable = False
 
@@ -2349,7 +2368,7 @@ def save_fame():
         fameWindow.raise_()
 
     controlsWindow.gt_start.setChecked(False)
-    start_gt()
+    #start_gt()
 
     make_game_floor("have fun")
 
@@ -2363,13 +2382,11 @@ def show_h_o_f():
         fameWindow.show()
         controlsWindow.call_h_o_f.setText("Ruhmeshalle schließen")
         fame_show = True
+
     elif fame_show == True:
         clear_fame()
         controlsWindow.call_h_o_f.setText("Ruhmeshalle zeigen")
         fame_show = False
-
-    make_game_floor("have fun")
-
 
 if __name__ == '__main__':
     controlsWindow.show()
