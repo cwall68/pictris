@@ -829,7 +829,7 @@ def game_counter_init():
     controlsWindow.race_flag.show()
     controlsWindow.startWatch = False
     controlsWindow.timer_reset()
-    controlsWindow.gt_start.setText("Stop")
+    #controlsWindow.gt_start.setText("Stop")
     controlsWindow.label_level_counter.setText(f'0')
 
 
@@ -2079,6 +2079,7 @@ def start_gt():
             players.append(player)
             controlsWindow.player.addItem(player)
 
+        controlsWindow.gt_start.setText("Stop")
         start_game(gt_game_list[0][0])
 
     elif controlsWindow.gt_start.isChecked() == False:
