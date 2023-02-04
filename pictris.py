@@ -380,14 +380,17 @@ class Controls(QtWidgets.QMainWindow):
 
 
     def showCounter(self):
+
         # Check the value of startWatch  variable to start or stop the Stop Watch
         if self.startWatch:
             # Increment counter by 1
             self.counter += 1
 
-            # Count and set the time counter value
-            cnt = int((self.counter / 10 - int(self.counter / 10)) * 10)
-            self.count = '0' + str(cnt)
+            #Zähler Zehntel Sec
+            cnt = self.counter
+            #Reduktion der Anzeige auf zehn Zähler für Zentel Sec.
+            cnt = cnt - (cnt // 10)*10
+            self.count = str(cnt)
 
             # Set the second value
             if int(self.counter / 10) < 10:
@@ -826,7 +829,7 @@ def game_counter_init():
     controlsWindow.race_flag.show()
     controlsWindow.startWatch = False
     controlsWindow.timer_reset()
-    controlsWindow.gt_start.setText("Start")
+    controlsWindow.gt_start.setText("Stop")
     controlsWindow.label_level_counter.setText(f'0')
 
 
